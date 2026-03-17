@@ -10,7 +10,7 @@
     <div class="alert alert-success fade-in">✅ Announcement posted successfully.</div>
     <% } %>
 
-    <div style="max-width: 780px">
+    <div style="max-width: 100%;">
       <% announcements.forEach((a, idx) => { %>
       <div class="announcement-card fade-in <%= a.pinned ? 'pinned' : '' %>" style="animation-delay:<%= idx * 0.05 %>s">
         <div style="display:flex; align-items:flex-start; justify-content:space-between; gap:12px">

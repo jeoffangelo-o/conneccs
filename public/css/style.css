@@ -10,12 +10,12 @@
   --text:     #f0ebe0;
   --text2:    #c4b8a0;
   --text3:    #7a7060;
-  --accent:   #d4a944;
-  --accent2:  #c99635;
+  --accent:   #f4d03f;
+  --accent2:  #f1c40f;
   --green:    #8fb569;
   --red:      #d97171;
   --orange:   #d4944a;
-  --yellow:   #e8c547;
+  --yellow:   #f4d03f;
   --teal:     #6aad92;
   --sidebar-w: 260px;
   --radius:   12px;
@@ -36,12 +36,12 @@
   --text:     #2a2520;
   --text2:    #5a5045;
   --text3:    #8a7d6f;
-  --accent:   #c99635;
-  --accent2:  #b8862e;
+  --accent:   #f1c40f;
+  --accent2:  #e8b708;
   --green:    #6a9048;
   --red:      #c94545;
   --orange:   #c9762e;
-  --yellow:   #d4a944;
+  --yellow:   #f1c40f;
   --teal:     #4a9275;
   --shadow:   0 4px 24px rgba(0,0,0,0.08);
 }
@@ -314,8 +314,27 @@ ul { list-style: none; }
   border-radius: var(--radius-sm);
   display: flex; align-items: center; justify-content: center;
   transition: all var(--transition);
+  text-decoration: none;
 }
 .notif-btn:hover { background: var(--border2); color: var(--text); }
+
+.notif-badge {
+  position: absolute;
+  top: -4px; right: -4px;
+  min-width: 18px;
+  height: 18px;
+  background: var(--red);
+  color: #fff;
+  border-radius: 99px;
+  font-size: 0.65rem;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 5px;
+  border: 2px solid var(--bg2);
+}
+
 .notif-dot {
   position: absolute;
   top: 6px; right: 6px;
