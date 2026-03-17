@@ -1,0 +1,10 @@
+[
+  { "id": 1, "facultyId": 1, "facultyName": "Dr. Maria Santos", "reportType": "Accomplishment Report", "period": "Q1 2025", "dueDate": "2025-04-15", "submittedDate": "2025-04-10", "status": "Submitted", "fileUrl": "#", "filename": "Santos_AccomplishmentQ1.pdf" },
+  { "id": 2, "facultyId": 1, "facultyName": "Dr. Maria Santos", "reportType": "Extension Output", "period": "Q1 2025", "dueDate": "2025-04-15", "submittedDate": null, "status": "Not Submitted", "fileUrl": null, "filename": null },
+  { "id": 3, "facultyId": 2, "facultyName": "Prof. Juan Dela Cruz", "reportType": "Accomplishment Report", "period": "Q1 2025", "dueDate": "2025-04-15", "submittedDate": "2025-04-14", "status": "Submitted", "fileUrl": "#", "filename": "DelaCruz_AccomplishmentQ1.pdf" },
+  { "id": 4, "facultyId": 2, "facultyName": "Prof. Juan Dela Cruz", "reportType": "Research Output", "period": "Q1 2025", "dueDate": "2025-04-20", "submittedDate": "2025-04-18", "status": "Submitted", "fileUrl": "#", "filename": "DelaCruz_ResearchQ1.pdf" },
+  { "id": 5, "facultyId": 3, "facultyName": "Dr. Ana Reyes", "reportType": "Research Output", "period": "Q1 2025", "dueDate": "2025-04-20", "submittedDate": null, "status": "Overdue", "fileUrl": null, "filename": null },
+  { "id": 6, "facultyId": 4, "facultyName": "Prof. Carlos Mendoza", "reportType": "Accomplishment Report", "period": "Q1 2025", "dueDate": "2025-04-15", "submittedDate": "2025-04-12", "status": "Submitted", "fileUrl": "#", "filename": "Mendoza_AccomplishmentQ1.pdf" },
+  { "id": 7, "facultyId": 4, "facultyName": "Prof. Carlos Mendoza", "reportType": "Extension Output", "period": "Q1 2025", "dueDate": "2025-04-15", "submittedDate": null, "status": "Not Submitted", "fileUrl": null, "filename": null },
+  { "id": 8, "facultyId": 6, "facultyName": "Prof. Ramon Garcia", "reportType": "Accomplishment Report", "period": "Q1 2025", "dueDate": "2025-04-15", "submittedDate": null, "status": "Overdue", "fileUrl": null, "filename": null }
+]

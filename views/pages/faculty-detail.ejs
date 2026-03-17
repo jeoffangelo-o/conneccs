@@ -1,0 +1,132 @@
+<%- include('../partials/header') %>
+<%- include('../partials/sidebar') %>
+
+<div class="main-content">
+  <% const actionLabel = null; const actionHref = ''; %>
+  <%- include('../partials/topbar') %>
+
+  <div class="page-body">
+    <div style="max-width: 900px; margin: 0 auto">
+      <div style="margin-bottom: 20px">
+        <a href="/faculty" class="btn btn-secondary btn-sm">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"/></svg>
+          Back to Faculty
+        </a>
+      </div>
+
+      <!-- Profile Header -->
+      <div class="profile-card fade-in">
+        <div class="avatar avatar-xl" style="border-radius:16px; font-size:1.4rem; width:72px; height:72px; flex-shrink:0">
+          <%= member.avatar %>
+        </div>
+        <div style="flex:1">
+          <div style="font-family:var(--font-display); font-size:1.5rem; font-weight:800; letter-spacing:-0.03em"><%= member.name %></div>
+          <div style="font-size:0.8rem; color:var(--text3); margin-top:3px"><%= member.email %></div>
+          <div class="profile-badges">
+            <span class="badge badge-blue"><%= member.role %></span>
+            <span class="badge badge-gray"><%= member.program %></span>
+            <% if (member.status === 'On Leave') { %>
+              <span class="badge badge-orange">On Leave</span>
+            <% } else { %>
+              <span class="badge badge-green">Active</span>
+            <% } %>
+          </div>
+        </div>
+        <div style="display:flex; gap:16px">
+          <div style="text-align:center">
+            <div style="font-family:var(--font-display); font-size:2rem; font-weight:800; color:var(--accent)"><%= member.teachingLoad %></div>
+            <div style="font-size:0.65rem; color:var(--text3); text-transform:uppercase; letter-spacing:0.05em">Teaching</div>
+          </div>
+          <div style="text-align:center">
+            <div style="font-family:var(--font-display); font-size:2rem; font-weight:800; color:var(--teal)"><%= member.researchLoad %></div>
+            <div style="font-size:0.65rem; color:var(--text3); text-transform:uppercase; letter-spacing:0.05em">Research</div>
+          </div>
+          <div style="text-align:center">
+            <div style="font-family:var(--font-display); font-size:2rem; font-weight:800; color:var(--accent2)"><%= member.extensionLoad %></div>
+            <div style="font-size:0.65rem; color:var(--text3); text-transform:uppercase; letter-spacing:0.05em">Extension</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Reports -->
+      <div class="panel fade-in delay-1">
+        <div class="panel-header">
+          <div class="panel-title"><span class="dot"></span> Report Submissions</div>
+          <span style="font-size:0.75rem; color:var(--text3)"><%= memberReports.length %> records</span>
+        </div>
+        <% if (memberReports.length === 0) { %>
+        <div class="empty-state"><div class="icon">📭</div><p>No reports on record.</p></div>
+        <% } else { %>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr><th>Report Type</th><th>Period</th><th>Due Date</th><th>Submitted</th><th>Status</th></tr>
+            </thead>
+            <tbody>
+              <% memberReports.forEach(r => { %>
+              <tr>
+                <td><%= r.reportType %></td>
+                <td style="color:var(--text3); font-size:0.8rem"><%= r.period %></td>
+                <td style="color:var(--text3); font-size:0.8rem"><%= r.dueDate %></td>
+                <td style="font-size:0.8rem">
+                  <% if (r.submittedDate) { %>
+                    <span style="color:var(--green)"><%= r.submittedDate %></span>
+                  <% } else { %><span style="color:var(--text3)">—</span><% } %>
+                </td>
+                <td>
+                  <% if (r.status === 'Submitted') { %><span class="badge badge-green">✓ Submitted</span>
+                  <% } else if (r.status === 'Overdue') { %><span class="badge badge-red">⚠ Overdue</span>
+                  <% } else { %><span class="badge badge-orange">○ Pending</span><% } %>
+                </td>
+              </tr>
+              <% }) %>
+            </tbody>
+          </table>
+        </div>
+        <% } %>
+      </div>
+
+      <!-- IPCR -->
+      <div class="panel fade-in delay-2">
+        <div class="panel-header">
+          <div class="panel-title"><span class="dot" style="background:var(--accent2)"></span> IPCR History</div>
+          <a href="/ipcr/new" class="btn btn-secondary btn-sm">Add Entry</a>
+        </div>
+        <% if (memberIpcr.length === 0) { %>
+        <div class="empty-state"><div class="icon">📊</div><p>No IPCR entries on record.</p></div>
+        <% } else { %>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr><th>Period</th><th>Teaching</th><th>Research</th><th>Extension</th><th>Admin</th><th>Final Score</th><th>Rating</th><th>Status</th></tr>
+            </thead>
+            <tbody>
+              <% memberIpcr.forEach(i => { %>
+              <tr>
+                <td style="font-size:0.8rem"><%= i.period %></td>
+                <td><span style="font-weight:600"><%= i.teachingScore %></span></td>
+                <td><span style="font-weight:600"><%= i.researchScore %></span></td>
+                <td><span style="font-weight:600"><%= i.extensionScore %></span></td>
+                <td><span style="font-weight:600"><%= i.adminScore %></span></td>
+                <td><strong style="font-family:var(--font-display); font-size:1rem"><%= i.finalScore.toFixed(2) %></strong></td>
+                <td>
+                  <% if (i.rating === 'Outstanding') { %><span class="badge badge-green">⭐ Outstanding</span>
+                  <% } else { %><span class="badge badge-blue">✔ Very Satisfactory</span><% } %>
+                </td>
+                <td>
+                  <% if (i.status === 'Approved') { %><span class="badge badge-green">Approved</span>
+                  <% } else if (i.status === 'For Review') { %><span class="badge badge-yellow">For Review</span>
+                  <% } else { %><span class="badge badge-gray">Pending</span><% } %>
+                </td>
+              </tr>
+              <% }) %>
+            </tbody>
+          </table>
+        </div>
+        <% } %>
+      </div>
+    </div>
+  </div>
+</div>
+
+<%- include('../partials/footer') %>

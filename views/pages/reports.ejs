@@ -1,0 +1,125 @@
+<%- include('../partials/header') %>
+<%- include('../partials/sidebar') %>
+
+<div class="main-content">
+  <% const actionLabel = 'Submit Report'; const actionHref = '/reports/new'; %>
+  <%- include('../partials/topbar') %>
+
+  <div class="page-body">
+    <% if (typeof req !== 'undefined' && req && req.query && req.query.submitted) { %>
+    <div class="alert alert-success fade-in">✅ Report submitted successfully and logged with timestamp.</div>
+    <% } %>
+
+    <div class="panel fade-in">
+      <div class="filters-bar">
+        <form method="GET" action="/reports" style="display:flex; gap:10px; flex-wrap:wrap; align-items:center; width:100%">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--text3)" stroke-width="2" style="flex-shrink:0">
+            <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/>
+          </svg>
+          <select name="status" class="filter-select" onchange="this.form.submit()">
+            <option value="">All Statuses</option>
+            <option value="Submitted"     <%= filterStatus === 'Submitted'     ? 'selected' : '' %>>Submitted</option>
+            <option value="Not Submitted" <%= filterStatus === 'Not Submitted' ? 'selected' : '' %>>Not Submitted</option>
+            <option value="Overdue"       <%= filterStatus === 'Overdue'       ? 'selected' : '' %>>Overdue</option>
+          </select>
+          <select name="type" class="filter-select" onchange="this.form.submit()">
+            <option value="">All Types</option>
+            <% types.forEach(t => { %>
+            <option value="<%= t %>" <%= filterType === t ? 'selected' : '' %>><%= t %></option>
+            <% }) %>
+          </select>
+          <% if (filterStatus || filterType) { %>
+          <a href="/reports" class="btn btn-secondary btn-sm">✕ Clear</a>
+          <% } %>
+          <span style="margin-left:auto; font-size:0.78rem; color:var(--text3)"><%= reports.length %> result(s)</span>
+        </form>
+      </div>
+
+      <div class="table-wrap">
+        <% if (reports.length === 0) { %>
+        <div class="empty-state">
+          <div class="icon">📭</div>
+          <p>No reports match your filters.</p>
+        </div>
+        <% } else { %>
+        <table>
+          <thead>
+            <tr>
+              <th>Faculty Member</th>
+              <th>Report Type</th>
+              <th>Period</th>
+              <th>Due Date</th>
+              <th>Submitted Date</th>
+              <th>Status</th>
+              <th>File</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            <% reports.forEach((r, idx) => { %>
+            <tr class="fade-in" style="animation-delay:<%= idx * 0.03 %>s">
+              <td>
+                <div class="faculty-cell">
+                  <div class="avatar avatar-sm">
+                    <%= r.facultyName.split(' ').map(w => w[0]).slice(0,2).join('') %>
+                  </div>
+                  <div class="faculty-cell-info">
+                    <div class="name"><%= r.facultyName %></div>
+                  </div>
+                </div>
+              </td>
+              <td><%= r.reportType %></td>
+              <td style="color:var(--text3); font-size:0.8rem"><%= r.period %></td>
+              <td style="color:var(--text3); font-size:0.8rem"><%= r.dueDate %></td>
+              <td style="font-size:0.8rem">
+                <% if (r.submittedDate) { %>
+                  <span style="color:var(--green)"><%= r.submittedDate %></span>
+                <% } else { %>
+                  <span style="color:var(--text3)">—</span>
+                <% } %>
+              </td>
+              <td>
+                <% if (r.status === 'Submitted') { %>
+                  <span class="badge badge-green">✓ Submitted</span>
+                <% } else if (r.status === 'Overdue') { %>
+                  <span class="badge badge-red">⚠ Overdue</span>
+                <% } else { %>
+                  <span class="badge badge-orange">○ Pending</span>
+                <% } %>
+              </td>
+              <td>
+                <% if (r.filename) { %>
+                  <a href="#" style="font-size:0.75rem; color:var(--accent); display:flex; align-items:center; gap:4px">
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                      <polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/>
+                    </svg>
+                    Download
+                  </a>
+                <% } else { %>
+                  <span style="font-size:0.75rem; color:var(--text3)">—</span>
+                <% } %>
+              </td>
+              <td>
+                <div style="display:flex; gap:6px">
+                  <% if (r.status !== 'Submitted') { %>
+                  <a href="/reports/new" class="btn btn-secondary btn-sm">Submit</a>
+                  <% } %>
+                  <button class="btn btn-secondary btn-sm btn-icon">
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/><circle cx="5" cy="12" r="1"/>
+                    </svg>
+                  </button>
+                </div>
+              </td>
+            </tr>
+            <% }) %>
+          </tbody>
+        </table>
+        <% } %>
+      </div>
+    </div>
+  </div>
+</div>
+
+<%- include('../partials/footer') %>

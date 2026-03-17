@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Login - ConneCCS</title>
+  <link rel="stylesheet" href="/css/style.css" />
+  <link rel="icon" href="/images/logo.png" type="image/png">
+</head>
+<body class="auth-page">
+  <div class="auth-container">
+    <div class="auth-card">
+      <div class="auth-header">
+        <div class="auth-logo">
+          <img src="/images/logo.png" alt="ConneCCS Logo" style="width: 48px; height: 48px; object-fit: contain;">
+          <div>
+            <h1>ConneCCS</h1>
+            <p>CCS Faculty Portal</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="auth-body">
+        <h2>Welcome Back</h2>
+        <p class="auth-subtitle">Sign in to your account</p>
+
+        <% if (typeof error !== 'undefined' && error) { %>
+          <div class="alert alert-error">
+            <%= error %>
+          </div>
+        <% } %>
+
+        <form method="POST" action="/auth/login" class="auth-form">
+          <div class="form-group">
+            <label for="email">Email Address</label>
+            <input type="email" id="email" name="email" placeholder="your.email@university.edu" required autofocus>
+          </div>
+
+          <div class="form-group">
+            <label for="password">Password</label>
+            <input type="password" id="password" name="password" placeholder="Enter your password" required>
+          </div>
+
+          <div class="form-group-row">
+            <label class="checkbox-label">
+              <input type="checkbox" name="remember">
+              <span>Remember me</span>
+            </label>
+            <a href="/auth/forgot-password" class="link-primary">Forgot password?</a>
+          </div>
+
+          <button type="submit" class="btn btn-primary btn-block">Sign In</button>
+        </form>
+
+        <div class="auth-footer">
+          <p>Don't have an account? <a href="/auth/register" class="link-primary">Register here</a></p>
+        </div>
+
+        <div class="auth-divider">
+          <span>Quick Login (Demo)</span>
+        </div>
+
+        <div class="demo-accounts">
+          <button onclick="quickLogin('dean')" class="demo-btn">
+            <span class="demo-role">Dean</span>
+            <span class="demo-email">dean@ccs.edu</span>
+          </button>
+          <button onclick="quickLogin('program_chair')" class="demo-btn">
+            <span class="demo-role">Program Chair</span>
+            <span class="demo-email">chair@ccs.edu</span>
+          </button>
+          <button onclick="quickLogin('faculty')" class="demo-btn">
+            <span class="demo-role">Faculty</span>
+            <span class="demo-email">faculty@ccs.edu</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Load saved theme on page load
+    (function() {
+      const savedTheme = localStorage.getItem('theme') || 'dark';
+      document.documentElement.setAttribute('data-theme', savedTheme);
+    })();
+
+    function quickLogin(role) {
+      const emails = {
+        dean: 'dean@ccs.edu',
+        program_chair: 'chair@ccs.edu',
+        faculty: 'faculty@ccs.edu'
+      };
+      
+      document.getElementById('email').value = emails[role];
+      document.getElementById('password').value = 'password123';
+      document.querySelector('.auth-form').submit();
+    }
+  </script>
+</body>
+</html>

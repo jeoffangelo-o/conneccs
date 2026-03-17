@@ -1,0 +1,26 @@
+[
+  {
+    "id": "dean",
+    "name": "Dean's Office",
+    "email": "dean@ccs.edu",
+    "password": "password123",
+    "role": "dean",
+    "createdAt": "2024-03-01T00:00:00.000Z"
+  },
+  {
+    "id": "chair_001",
+    "name": "Dr. Pedro Cruz",
+    "email": "chair@ccs.edu",
+    "password": "password123",
+    "role": "program_chair",
+    "createdAt": "2024-03-01T00:00:00.000Z"
+  },
+  {
+    "id": "faculty_001",
+    "name": "Dr. Maria Santos",
+    "email": "faculty@ccs.edu",
+    "password": "password123",
+    "role": "faculty",
+    "createdAt": "2024-03-01T00:00:00.000Z"
+  }
+]

@@ -1,0 +1,8 @@
+[
+  { "id": 1, "name": "Dr. Maria Santos", "role": "Faculty", "program": "BSCS", "email": "m.santos@ccs.edu", "avatar": "MS", "status": "Active", "teachingLoad": 18, "researchLoad": 6, "extensionLoad": 4 },
+  { "id": 2, "name": "Prof. Juan Dela Cruz", "role": "Program Chair", "program": "BSIT", "email": "j.delacruz@ccs.edu", "avatar": "JD", "status": "Active", "teachingLoad": 12, "researchLoad": 8, "extensionLoad": 6 },
+  { "id": 3, "name": "Dr. Ana Reyes", "role": "Research Coordinator", "program": "BSCS", "email": "a.reyes@ccs.edu", "avatar": "AR", "status": "Active", "teachingLoad": 9, "researchLoad": 14, "extensionLoad": 3 },
+  { "id": 4, "name": "Prof. Carlos Mendoza", "role": "Faculty", "program": "BSIS", "email": "c.mendoza@ccs.edu", "avatar": "CM", "status": "Active", "teachingLoad": 21, "researchLoad": 2, "extensionLoad": 5 },
+  { "id": 5, "name": "Dr. Lisa Tan", "role": "Faculty", "program": "BSIT", "email": "l.tan@ccs.edu", "avatar": "LT", "status": "On Leave", "teachingLoad": 0, "researchLoad": 0, "extensionLoad": 0 },
+  { "id": 6, "name": "Prof. Ramon Garcia", "role": "Program Chair", "program": "BSIS", "email": "r.garcia@ccs.edu", "avatar": "RG", "status": "Active", "teachingLoad": 15, "researchLoad": 5, "extensionLoad": 8 }
+]

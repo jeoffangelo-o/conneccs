@@ -1,0 +1,6 @@
+[
+  { "id": 1, "title": "Q1 2025 Report Submission Deadline", "message": "All faculty members are reminded to submit their Q1 2025 Accomplishment Reports and Extension Outputs on or before April 15, 2025. Late submissions will be noted.", "author": "Dean's Office", "targetRole": "All", "priority": "High", "date": "2025-04-01", "pinned": true },
+  { "id": 2, "title": "IPCR Rating Period Now Open", "message": "Faculty IPCR entries for the 1st Semester 2025 are now open for submission. Program Chairs are requested to complete scoring by April 30, 2025.", "author": "Dr. Maria Santos", "targetRole": "Program Chair", "priority": "Medium", "date": "2025-04-03", "pinned": false },
+  { "id": 3, "title": "Research Colloquium – April 25", "message": "Research Coordinators and Faculty with ongoing research projects are required to present updates at the Research Colloquium on April 25. Register via the Research Office.", "author": "Dr. Ana Reyes", "targetRole": "Faculty", "priority": "Medium", "date": "2025-04-05", "pinned": false },
+  { "id": 4, "title": "System Maintenance Notice", "message": "ConneCCS will undergo scheduled maintenance on April 8, 2025 from 10PM–2AM. Please ensure all pending submissions are completed before this window.", "author": "IT Administrator", "targetRole": "All", "priority": "Low", "date": "2025-04-06", "pinned": false }
+]

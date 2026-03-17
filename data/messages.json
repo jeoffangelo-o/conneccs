@@ -1,0 +1,198 @@
+{
+  "channels": [
+    {
+      "id": "general",
+      "name": "general",
+      "description": "General announcements and discussions",
+      "allowedRoles": [
+        "dean",
+        "program_chair",
+        "research_coordinator",
+        "faculty"
+      ],
+      "type": "text"
+    },
+    {
+      "id": "ipcr-updates",
+      "name": "ipcr-updates",
+      "description": "IPCR submissions and updates",
+      "allowedRoles": [
+        "dean",
+        "program_chair",
+        "faculty"
+      ],
+      "type": "text"
+    },
+    {
+      "id": "research",
+      "name": "research",
+      "description": "Research coordination and updates",
+      "allowedRoles": [
+        "dean",
+        "research_coordinator",
+        "faculty"
+      ],
+      "type": "text"
+    },
+    {
+      "id": "admin-only",
+      "name": "admin-only",
+      "description": "Administrative discussions",
+      "allowedRoles": [
+        "dean",
+        "program_chair",
+        "research_coordinator"
+      ],
+      "type": "text"
+    }
+  ],
+  "messages": [
+    {
+      "id": 1,
+      "channelId": "general",
+      "userId": "dean",
+      "userName": "Dean's Office",
+      "userRole": "dean",
+      "message": "Welcome to ConneCCS messaging system!",
+      "timestamp": "2024-03-15T09:00:00",
+      "mentions": [],
+      "attachments": []
+    },
+    {
+      "id": 2,
+      "channelId": "ipcr-updates",
+      "userId": "dean",
+      "userName": "Dean's Office",
+      "userRole": "dean",
+      "message": "@faculty Please submit your IPCR by end of week.",
+      "timestamp": "2024-03-15T10:30:00",
+      "mentions": [
+        "faculty"
+      ],
+      "attachments": []
+    },
+    {
+      "id": 3,
+      "channelId": "general",
+      "userId": "dean",
+      "userName": "Dean's Office",
+      "userRole": "dean",
+      "message": "hello",
+      "timestamp": "2026-03-17T00:05:39.103Z",
+      "mentions": [],
+      "attachments": []
+    },
+    {
+      "id": 4,
+      "channelId": "admin-only",
+      "userId": "dean",
+      "userName": "Dean's Office",
+      "userRole": "dean",
+      "message": "gege",
+      "timestamp": "2026-03-17T00:05:54.413Z",
+      "mentions": [],
+      "attachments": []
+    },
+    {
+      "id": 5,
+      "channelId": "research",
+      "userId": "dean",
+      "userName": "Dean's Office",
+      "userRole": "dean",
+      "message": "Shared a file from Google Drive",
+      "timestamp": "2026-03-17T00:07:28.253Z",
+      "mentions": [],
+      "attachments": [
+        {
+          "id": "file_1",
+          "name": "IPCR_Template_2024.docx",
+          "url": "https://drive.google.com/file/d/mock1"
+        }
+      ]
+    },
+    {
+      "id": 6,
+      "channelId": "general",
+      "userId": "chair_001",
+      "userName": "Dr. Pedro Cruz",
+      "userRole": "program_chair",
+      "message": "hi po",
+      "timestamp": "2026-03-17T00:17:56.210Z",
+      "mentions": [],
+      "attachments": []
+    },
+    {
+      "id": 7,
+      "channelId": "general",
+      "userId": "faculty_001",
+      "userName": "Dr. Maria Santos",
+      "userRole": "faculty",
+      "message": "hellooo",
+      "timestamp": "2026-03-17T00:20:37.421Z",
+      "mentions": [],
+      "attachments": []
+    },
+    {
+      "id": 8,
+      "channelId": "general",
+      "userId": "faculty_001",
+      "userName": "Dr. Maria Santos",
+      "userRole": "faculty",
+      "message": "@dean hello",
+      "timestamp": "2026-03-17T00:22:07.474Z",
+      "mentions": [
+        "dean"
+      ],
+      "attachments": []
+    },
+    {
+      "id": 9,
+      "channelId": "general",
+      "userId": "faculty_001",
+      "userName": "Dr. Maria Santos",
+      "userRole": "faculty",
+      "message": "@de",
+      "timestamp": "2026-03-17T00:27:20.680Z",
+      "mentions": [
+        "de"
+      ],
+      "attachments": []
+    },
+    {
+      "id": 10,
+      "channelId": "general",
+      "userId": "faculty_001",
+      "userName": "Dr. Maria Santos",
+      "userRole": "faculty",
+      "message": "@dean @program_chair hello",
+      "timestamp": "2026-03-17T00:27:47.064Z",
+      "mentions": [
+        "dean",
+        "program_chair"
+      ],
+      "attachments": []
+    },
+    {
+      "id": 11,
+      "channelId": "general",
+      "userId": "dean",
+      "userName": "Dean's Office",
+      "userRole": "dean",
+      "message": "hkaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaawwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwww jeoff",
+      "timestamp": "2026-03-17T00:33:44.502Z",
+      "mentions": [],
+      "attachments": []
+    },
+    {
+      "id": 12,
+      "channelId": "research",
+      "userId": "dean",
+      "userName": "Dean's Office",
+      "userRole": "dean",
+      "message": "hello",
+      "timestamp": "2026-03-17T00:47:57.571Z",
+      "mentions": [],
+      "attachments": []
+    }
+  ]
+}

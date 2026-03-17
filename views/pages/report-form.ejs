@@ -1,0 +1,98 @@
+<%- include('../partials/header') %>
+<%- include('../partials/sidebar') %>
+
+<div class="main-content">
+  <% const actionLabel = null; const actionHref = ''; %>
+  <%- include('../partials/topbar') %>
+
+  <div class="page-body">
+    <div style="max-width: 680px; margin: 0 auto">
+      <div style="margin-bottom: 20px">
+        <a href="/reports" class="btn btn-secondary btn-sm">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <polyline points="15 18 9 12 15 6"/>
+          </svg>
+          Back to Reports
+        </a>
+      </div>
+
+      <div class="panel fade-in">
+        <div class="panel-header">
+          <div class="panel-title"><span class="dot"></span> Submit Report</div>
+          <span class="badge badge-blue">New Submission</span>
+        </div>
+        <div class="panel-body">
+          <form action="/reports/new" method="POST">
+            <div class="form-row">
+              <div class="form-group">
+                <label class="form-label">Faculty Member</label>
+                <select name="facultyId" class="form-select" required>
+                  <option value="">— Select Faculty —</option>
+                  <% faculty.forEach(f => { %>
+                  <option value="<%= f.id %>"><%= f.name %> (<%= f.role %>)</option>
+                  <% }) %>
+                </select>
+              </div>
+              <div class="form-group">
+                <label class="form-label">Report Type</label>
+                <select name="reportType" class="form-select" required>
+                  <option value="">— Select Type —</option>
+                  <option value="Accomplishment Report">Accomplishment Report</option>
+                  <option value="Extension Output">Extension Output</option>
+                  <option value="Research Output">Research Output</option>
+                  <option value="Teaching Load Summary">Teaching Load Summary</option>
+                  <option value="IPCR Supporting Document">IPCR Supporting Document</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="form-row">
+              <div class="form-group">
+                <label class="form-label">Reporting Period</label>
+                <select name="period" class="form-select" required>
+                  <option value="">— Select Period —</option>
+                  <option value="Q1 2025">Q1 2025</option>
+                  <option value="Q2 2025">Q2 2025</option>
+                  <option value="Q3 2025">Q3 2025</option>
+                  <option value="Q4 2025">Q4 2025</option>
+                  <option value="1st Semester 2025">1st Semester 2025</option>
+                  <option value="2nd Semester 2025">2nd Semester 2025</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label class="form-label">Due Date</label>
+                <input type="date" name="dueDate" class="form-input" required />
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">Remarks / Notes (Optional)</label>
+              <textarea name="remarks" class="form-textarea" placeholder="Add any relevant remarks about this submission..."></textarea>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">Upload File (Simulated)</label>
+              <div style="border: 2px dashed var(--border); border-radius: var(--radius); padding: 28px; text-align:center; background: var(--bg3); cursor:pointer; transition: border-color 0.2s" onmouseover="this.style.borderColor='var(--accent)'" onmouseout="this.style.borderColor='var(--border)'">
+                <div style="font-size: 1.8rem; margin-bottom: 8px">📎</div>
+                <div style="font-size:0.85rem; color:var(--text2); font-weight:500">Click to upload or drag & drop</div>
+                <div style="font-size:0.72rem; color:var(--text3); margin-top:4px">PDF, DOCX up to 25MB · Google Drive integration via API</div>
+              </div>
+            </div>
+
+            <div style="display:flex; gap:10px; justify-content:flex-end; padding-top: 8px; border-top: 1px solid var(--border); margin-top: 8px">
+              <a href="/reports" class="btn btn-secondary">Cancel</a>
+              <button type="submit" class="btn btn-primary">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                  <polyline points="20 6 9 17 4 12"/>
+                </svg>
+                Submit Report
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<%- include('../partials/footer') %>

@@ -1,0 +1,143 @@
+<%- include('../partials/header') %>
+<%- include('../partials/sidebar') %>
+
+<div class="main-content">
+  <% const actionLabel = 'New IPCR Entry'; const actionHref = '/ipcr/new'; %>
+  <%- include('../partials/topbar') %>
+
+  <div class="page-body">
+    <% if (typeof req !== 'undefined' && req && req.query && req.query.saved) { %>
+    <div class="alert alert-success fade-in">✅ IPCR entry saved successfully.</div>
+    <% } %>
+
+    <!-- Summary Cards -->
+    <div class="stat-grid fade-in" style="grid-template-columns: repeat(4, 1fr); margin-bottom: 24px">
+      <% const approved = ipcr.filter(i => i.status === 'Approved').length %>
+      <% const forReview = ipcr.filter(i => i.status === 'For Review').length %>
+      <% const pending = ipcr.filter(i => i.status === 'Pending Entry').length %>
+      <% const avgScore = (ipcr.reduce((s, i) => s + i.finalScore, 0) / ipcr.length).toFixed(2) %>
+      <div class="stat-card green">
+        <div class="stat-icon">✅</div>
+        <div class="stat-label">Approved</div>
+        <div class="stat-value"><%= approved %></div>
+      </div>
+      <div class="stat-card yellow delay-1">
+        <div class="stat-icon">🔍</div>
+        <div class="stat-label">For Review</div>
+        <div class="stat-value"><%= forReview %></div>
+      </div>
+      <div class="stat-card red delay-2">
+        <div class="stat-icon">📝</div>
+        <div class="stat-label">Pending Entry</div>
+        <div class="stat-value"><%= pending %></div>
+      </div>
+      <div class="stat-card blue delay-3">
+        <div class="stat-icon">⭐</div>
+        <div class="stat-label">Avg. Score</div>
+        <div class="stat-value" style="font-size: 1.7rem"><%= avgScore %></div>
+      </div>
+    </div>
+
+    <!-- IPCR Table -->
+    <div class="panel fade-in delay-2">
+      <div class="panel-header">
+        <div class="panel-title"><span class="dot" style="background:var(--accent2)"></span> IPCR Records</div>
+        <div class="panel-actions">
+          <span style="font-size:0.75rem; color:var(--text3)"><%= ipcr.length %> entries</span>
+        </div>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Faculty Member</th>
+              <th>Period</th>
+              <th>Teaching</th>
+              <th>Research</th>
+              <th>Extension</th>
+              <th>Admin</th>
+              <th>Final Score</th>
+              <th>Rating</th>
+              <th>Status</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            <% ipcr.forEach((i, idx) => { %>
+            <tr class="fade-in" style="animation-delay:<%= idx * 0.04 %>s">
+              <td>
+                <div class="faculty-cell">
+                  <div class="avatar avatar-sm" style="background: linear-gradient(135deg, var(--accent2), #3b82f6)">
+                    <%= i.facultyName.split(' ').map(w => w[0]).slice(0,2).join('') %>
+                  </div>
+                  <div class="faculty-cell-info">
+                    <div class="name"><a href="/ipcr/<%= i.id %>" style="color:var(--text)"><%= i.facultyName %></a></div>
+                    <div class="sub"><%= i.period %></div>
+                  </div>
+                </div>
+              </td>
+              <td style="font-size:0.8rem; color:var(--text3)"><%= i.period %></td>
+              <td>
+                <div style="display:flex; flex-direction:column; gap:3px">
+                  <span style="font-weight:600; font-size:0.85rem"><%= i.teachingScore %></span>
+                  <div class="progress-bar" style="width:60px"><div class="progress-fill progress-blue" style="width:<%= i.teachingScore / 5 * 100 %>%"></div></div>
+                </div>
+              </td>
+              <td>
+                <div style="display:flex; flex-direction:column; gap:3px">
+                  <span style="font-weight:600; font-size:0.85rem"><%= i.researchScore %></span>
+                  <div class="progress-bar" style="width:60px"><div class="progress-fill" style="width:<%= i.researchScore / 5 * 100 %>%; background:var(--teal)"></div></div>
+                </div>
+              </td>
+              <td>
+                <div style="display:flex; flex-direction:column; gap:3px">
+                  <span style="font-weight:600; font-size:0.85rem"><%= i.extensionScore %></span>
+                  <div class="progress-bar" style="width:60px"><div class="progress-fill" style="width:<%= i.extensionScore / 5 * 100 %>%; background:var(--accent2)"></div></div>
+                </div>
+              </td>
+              <td>
+                <div style="display:flex; flex-direction:column; gap:3px">
+                  <span style="font-weight:600; font-size:0.85rem"><%= i.adminScore %></span>
+                  <div class="progress-bar" style="width:60px"><div class="progress-fill" style="width:<%= i.adminScore / 5 * 100 %>%; background:var(--orange)"></div></div>
+                </div>
+              </td>
+              <td>
+                <div style="text-align:center; background:var(--bg3); border-radius:8px; padding:6px 10px; display:inline-block; min-width:56px">
+                  <div style="font-family:var(--font-display); font-size:1.1rem; font-weight:800; color:var(--text)"><%= i.finalScore.toFixed(2) %></div>
+                  <div style="font-size:0.6rem; color:var(--text3)">/ 5.00</div>
+                </div>
+              </td>
+              <td>
+                <% if (i.rating === 'Outstanding') { %>
+                  <span class="badge badge-green">⭐ Outstanding</span>
+                <% } else { %>
+                  <span class="badge badge-blue">✔ Very Satisfactory</span>
+                <% } %>
+              </td>
+              <td>
+                <% if (i.status === 'Approved') { %>
+                  <span class="badge badge-green">Approved</span>
+                <% } else if (i.status === 'For Review') { %>
+                  <span class="badge badge-yellow">For Review</span>
+                <% } else { %>
+                  <span class="badge badge-gray">Pending</span>
+                <% } %>
+              </td>
+              <td>
+                <div style="display:flex; gap:6px">
+                  <a href="/ipcr/<%= i.id %>" class="btn btn-secondary btn-sm">View</a>
+                  <% if (i.status === 'For Review') { %>
+                  <button class="btn btn-primary btn-sm">Approve</button>
+                  <% } %>
+                </div>
+              </td>
+            </tr>
+            <% }) %>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+<%- include('../partials/footer') %>

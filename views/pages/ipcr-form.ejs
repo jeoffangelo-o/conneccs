@@ -1,0 +1,100 @@
+<%- include('../partials/header') %>
+<%- include('../partials/sidebar') %>
+
+<div class="main-content">
+  <% const actionLabel = null; const actionHref = ''; %>
+  <%- include('../partials/topbar') %>
+
+  <div class="page-body">
+    <div style="max-width: 680px; margin: 0 auto">
+      <div style="margin-bottom: 20px">
+        <a href="/ipcr" class="btn btn-secondary btn-sm">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"/></svg>
+          Back to IPCR
+        </a>
+      </div>
+
+      <div class="panel fade-in">
+        <div class="panel-header">
+          <div class="panel-title"><span class="dot" style="background:var(--accent2)"></span> New IPCR Entry</div>
+          <span class="badge badge-purple">Scoring</span>
+        </div>
+        <div class="panel-body">
+          <form action="/ipcr/new" method="POST">
+            <div class="form-row">
+              <div class="form-group">
+                <label class="form-label">Faculty Member</label>
+                <select name="facultyId" class="form-select" required>
+                  <option value="">— Select Faculty —</option>
+                  <% faculty.forEach(f => { %>
+                  <option value="<%= f.id %>"><%= f.name %></option>
+                  <% }) %>
+                </select>
+              </div>
+              <div class="form-group">
+                <label class="form-label">Period</label>
+                <select name="period" class="form-select" required>
+                  <option value="">— Select Period —</option>
+                  <option>2025-1st Semester</option>
+                  <option>2025-2nd Semester</option>
+                  <option>2024-1st Semester</option>
+                  <option>2024-2nd Semester</option>
+                </select>
+              </div>
+            </div>
+
+            <div style="background:var(--bg3); border:1px solid var(--border); border-radius:var(--radius); padding:16px; margin-bottom:18px">
+              <div style="font-size:0.8rem; font-weight:600; color:var(--text2); margin-bottom:14px">📊 Score Inputs <span style="color:var(--text3); font-weight:400">(1.0 – 5.0)</span></div>
+              <div class="form-row">
+                <div class="form-group" style="margin-bottom:10px">
+                  <label class="form-label">Teaching Score <span style="color:var(--text3)">(weight: 40%)</span></label>
+                  <input type="number" name="teachingScore" class="form-input" min="1" max="5" step="0.1" placeholder="e.g. 4.5" required />
+                </div>
+                <div class="form-group" style="margin-bottom:10px">
+                  <label class="form-label">Research Score <span style="color:var(--text3)">(weight: 25%)</span></label>
+                  <input type="number" name="researchScore" class="form-input" min="1" max="5" step="0.1" placeholder="e.g. 4.0" required />
+                </div>
+                <div class="form-group" style="margin-bottom:10px">
+                  <label class="form-label">Extension Score <span style="color:var(--text3)">(weight: 20%)</span></label>
+                  <input type="number" name="extensionScore" class="form-input" min="1" max="5" step="0.1" placeholder="e.g. 4.2" required />
+                </div>
+                <div class="form-group" style="margin-bottom:10px">
+                  <label class="form-label">Admin Score <span style="color:var(--text3)">(weight: 15%)</span></label>
+                  <input type="number" name="adminScore" class="form-input" min="1" max="5" step="0.1" placeholder="e.g. 3.8" required />
+                </div>
+              </div>
+              <div id="score-preview" style="display:none; background:rgba(79,124,255,0.08); border:1px solid rgba(79,124,255,0.2); border-radius:var(--radius-sm); padding:12px; margin-top:6px; text-align:center">
+                <div style="font-size:0.75rem; color:var(--text3)">Computed Final Score</div>
+                <div id="final-score" style="font-family:var(--font-display); font-size:2rem; font-weight:800; color:var(--accent)">—</div>
+              </div>
+            </div>
+
+            <div style="display:flex; gap:10px; justify-content:flex-end; padding-top:8px; border-top:1px solid var(--border)">
+              <a href="/ipcr" class="btn btn-secondary">Cancel</a>
+              <button type="submit" class="btn btn-primary">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+                Save IPCR Entry
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  const fields = ['teachingScore','researchScore','extensionScore','adminScore'];
+  const weights = [0.40, 0.25, 0.20, 0.15];
+  function computeScore() {
+    const vals = fields.map(f => parseFloat(document.querySelector(`[name="${f}"]`).value) || 0);
+    if (vals.some(v => v > 0)) {
+      const total = vals.reduce((s, v, i) => s + v * weights[i], 0);
+      document.getElementById('final-score').textContent = total.toFixed(4);
+      document.getElementById('score-preview').style.display = 'block';
+    }
+  }
+  fields.forEach(f => document.querySelector(`[name="${f}"]`).addEventListener('input', computeScore));
+</script>
+
+<%- include('../partials/footer') %>

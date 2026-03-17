@@ -1,0 +1,23 @@
+{
+  "name": "conneccs",
+  "version": "1.0.0",
+  "description": "ConneCCS: Web-Based Faculty Reporting, IPCR Monitoring, and Workload Management System",
+  "main": "app.js",
+  "scripts": {
+    "start": "node app.js",
+    "dev": "nodemon app.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": ["faculty", "ipcr", "workload", "reporting", "education"],
+  "author": "Team Epperoni",
+  "license": "ISC",
+  "dependencies": {
+    "ejs": "^5.0.1",
+    "express": "^5.2.1",
+    "googleapis": "^140.0.0",
+    "multer": "^1.4.5-lts.1"
+  },
+  "devDependencies": {
+    "nodemon": "^3.0.1"
+  }
+}

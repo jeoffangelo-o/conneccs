@@ -1,0 +1,669 @@
+<%- include('../partials/header') %>
+
+<main class="main-content messages-fullscreen">
+  <div class="discord-layout">
+    <!-- Channel Sidebar -->
+    <aside class="channel-sidebar">
+      <div class="channel-header">
+        <a href="/" style="display: flex; align-items: center; gap: 8px; color: var(--text); text-decoration: none;">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <line x1="19" y1="12" x2="5" y2="12"/>
+            <polyline points="12 19 5 12 12 5"/>
+          </svg>
+          <span style="font-weight: 600;">Back to Dashboard</span>
+        </a>
+      </div>
+      
+      <div class="channel-header" style="border-top: 1px solid var(--border); margin-top: 8px; padding-top: 16px;">
+        <h3>CCS Channels</h3>
+      </div>
+      
+      <div class="channel-list">
+        <div class="channel-section">
+          <div class="channel-section-label">TEXT CHANNELS</div>
+          <% channels.forEach(channel => { %>
+            <% if (channel.allowedRoles.includes(userRole)) { %>
+              <a href="#" class="channel-item <%= activeChannel === channel.id ? 'active' : '' %>" 
+                 data-channel-id="<%= channel.id %>"
+                 onclick="switchChannel('<%= channel.id %>'); return false;">
+                <svg class="channel-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+                </svg>
+                <span class="channel-name"><%= channel.name %></span>
+              </a>
+            <% } %>
+          <% }); %>
+        </div>
+
+        <div class="channel-section">
+          <div class="channel-section-label">DIRECT MESSAGES</div>
+          <a href="#" class="channel-item">
+            <div class="dm-avatar">D</div>
+            <span class="channel-name">Dean's Office</span>
+          </a>
+        </div>
+      </div>
+
+      <div class="user-panel">
+        <div class="user-panel-avatar"><%= userName.charAt(0) %></div>
+        <div class="user-panel-info">
+          <div class="user-panel-name"><%= userName %></div>
+          <div class="user-panel-status">
+            <span class="status-indicator online"></span>
+            Online
+          </div>
+        </div>
+      </div>
+    </aside>
+
+    <!-- Chat Area -->
+    <div class="chat-container">
+      <div class="chat-header">
+        <div class="chat-header-left">
+          <svg class="channel-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+          </svg>
+          <span class="chat-channel-name" id="currentChannelName"><%= activeChannelName %></span>
+        </div>
+        <div class="chat-header-right">
+          <button class="icon-btn" onclick="toggleMemberList()" title="Members">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+              <circle cx="9" cy="7" r="4"/>
+              <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
+              <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+            </svg>
+          </button>
+          <button class="icon-btn" onclick="openGoogleDrive()" title="Google Drive">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M13 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"/>
+              <polyline points="13 2 13 9 20 9"/>
+            </svg>
+          </button>
+        </div>
+      </div>
+
+      <div class="chat-messages" id="chatMessages">
+        <div class="loading-messages" style="text-align: center; padding: 3rem; color: var(--text3);">
+          <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="animation: spin 1s linear infinite; margin: 0 auto 1rem;">
+            <circle cx="12" cy="12" r="10" opacity="0.25"/>
+            <path d="M12 2a10 10 0 0 1 10 10" opacity="0.75"/>
+          </svg>
+          <p>Loading messages...</p>
+        </div>
+      </div>
+
+      <div class="chat-input-container">
+        <form id="messageForm" onsubmit="sendMessage(event)">
+          <div class="chat-input-wrapper">
+            <input type="file" id="fileInput" style="display: none;" onchange="handleFileSelect(event)" multiple>
+            <button type="button" class="attach-btn" onclick="attachFile()" title="Attach file">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"/>
+              </svg>
+            </button>
+            <input type="text" 
+                   id="messageInput" 
+                   placeholder="Message #<%= activeChannelName %> (use @ to mention roles)" 
+                   autocomplete="off"
+                   onkeyup="handleMentions(event)"
+                   onkeydown="handleMentionKeydown(event)">
+            <button type="submit" class="send-btn" title="Send message">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <line x1="22" y1="2" x2="11" y2="13"/>
+                <polygon points="22 2 15 22 11 13 2 9 22 2"/>
+              </svg>
+            </button>
+          </div>
+          <div id="attachedFiles" class="attached-files"></div>
+          <div id="mentionSuggestions" class="mention-suggestions"></div>
+        </form>
+      </div>
+    </div>
+
+    <!-- Member List Sidebar -->
+    <aside class="member-sidebar" id="memberSidebar">
+      <div class="member-section">
+        <div class="member-section-label">DEAN — 1</div>
+        <div class="member-item">
+          <div class="member-avatar">D</div>
+          <span class="member-name">Dean's Office</span>
+          <span class="status-indicator online"></span>
+        </div>
+      </div>
+
+      <div class="member-section">
+        <div class="member-section-label">PROGRAM CHAIRS — 2</div>
+        <div class="member-item">
+          <div class="member-avatar">P</div>
+          <span class="member-name">Dr. Pedro Cruz</span>
+          <span class="status-indicator online"></span>
+        </div>
+        <div class="member-item">
+          <div class="member-avatar">M</div>
+          <span class="member-name">Dr. Maria Santos</span>
+          <span class="status-indicator offline"></span>
+        </div>
+      </div>
+
+      <div class="member-section">
+        <div class="member-section-label">FACULTY — <%= faculty.length %></div>
+        <% faculty.slice(0, 10).forEach(f => { %>
+          <div class="member-item">
+            <div class="member-avatar"><%= f.name.charAt(0) %></div>
+            <span class="member-name"><%= f.name %></span>
+            <span class="status-indicator <%= Math.random() > 0.5 ? 'online' : 'offline' %>"></span>
+          </div>
+        <% }); %>
+      </div>
+    </aside>
+  </div>
+</main>
+
+<!-- Google Drive Modal -->
+<div id="driveModal" class="modal" style="display: none;">
+  <div class="modal-content drive-modal">
+    <div class="modal-header">
+      <h3>Google Drive - CCS Documents</h3>
+      <button onclick="closeGoogleDrive()" class="modal-close">&times;</button>
+    </div>
+    <div class="modal-body">
+      <div id="driveContent">
+        <div class="drive-toolbar">
+          <button onclick="uploadToDrive()" class="btn btn-primary btn-sm">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+              <polyline points="17 8 12 3 7 8"/>
+              <line x1="12" y1="3" x2="12" y2="15"/>
+            </svg>
+            Upload File
+          </button>
+          <input type="text" placeholder="Search files..." class="drive-search">
+        </div>
+        <div id="driveFileList" class="drive-file-list">
+          <!-- Files will be loaded here -->
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+let currentChannel = '<%= activeChannel %>';
+let currentUser = {
+  id: '<%= userId %>',
+  name: '<%= userName %>',
+  role: '<%= userRole %>'
+};
+let lastMessageId = 0;
+
+// Load messages for current channel
+function loadMessages() {
+  console.log('Loading messages for channel:', currentChannel);
+  fetch(`/messages/api/channel/${currentChannel}`)
+    .then(res => {
+      console.log('Response status:', res.status);
+      return res.json();
+    })
+    .then(data => {
+      console.log('Received messages:', data);
+      const container = document.getElementById('chatMessages');
+      container.innerHTML = '';
+      
+      if (!data.messages || data.messages.length === 0) {
+        container.innerHTML = '<div style="text-align: center; padding: 3rem; color: var(--text3);">No messages yet. Start the conversation!</div>';
+        return;
+      }
+      
+      data.messages.forEach(msg => {
+        appendMessage(msg);
+        lastMessageId = Math.max(lastMessageId, msg.id);
+      });
+      
+      scrollToBottom();
+    })
+    .catch(err => {
+      console.error('Error loading messages:', err);
+      const container = document.getElementById('chatMessages');
+      container.innerHTML = '<div style="text-align: center; padding: 3rem; color: var(--red);">Error loading messages. Please refresh the page.</div>';
+    });
+}
+
+// Append message to chat
+function appendMessage(msg) {
+  const container = document.getElementById('chatMessages');
+  const isOwnMessage = msg.userId === currentUser.id;
+  const isMentioned = msg.mentions.includes(currentUser.role) || msg.mentions.includes('@' + currentUser.id);
+  
+  // IMPORTANT: Only show message if:
+  // 1. No mentions (public message), OR
+  // 2. Current user is mentioned, OR
+  // 3. Current user is the sender
+  const canSeeMessage = msg.mentions.length === 0 || isMentioned || isOwnMessage;
+  
+  if (!canSeeMessage) {
+    return; // Don't display this message
+  }
+  
+  const messageEl = document.createElement('div');
+  messageEl.className = `chat-message ${isOwnMessage ? 'own-message' : ''} ${isMentioned ? 'mentioned' : ''}`;
+  messageEl.innerHTML = `
+    <div class="message-avatar">${msg.userName.charAt(0)}</div>
+    <div class="message-content">
+      <div class="message-header">
+        <span class="message-author">${msg.userName}</span>
+        <span class="message-role role-${msg.userRole}">${msg.userRole.replace('_', ' ')}</span>
+        <span class="message-time">${formatTime(msg.timestamp)}</span>
+        ${msg.mentions.length > 0 ? `
+          <svg class="message-lock-icon" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" title="Only visible to ${msg.mentions.map(m => '@' + m).join(', ')}">
+            <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+            <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+          </svg>
+        ` : `
+          <svg class="message-public-icon" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" title="Visible to everyone in this channel">
+            <circle cx="12" cy="12" r="10"/>
+            <line x1="2" y1="12" x2="22" y2="12"/>
+            <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/>
+          </svg>
+        `}
+      </div>
+      <div class="message-text">${formatMessage(msg.message)}</div>
+      ${msg.attachments.length > 0 ? `
+        <div class="message-attachments">
+          ${msg.attachments.map(att => `
+            <a href="${att.url}" target="_blank" class="attachment-item">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M13 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"/>
+                <polyline points="13 2 13 9 20 9"/>
+              </svg>
+              ${att.name}
+            </a>
+          `).join('')}
+        </div>
+      ` : ''}
+    </div>
+  `;
+  
+  container.appendChild(messageEl);
+}
+
+// Send message
+function sendMessage(e) {
+  e.preventDefault();
+  const input = document.getElementById('messageInput');
+  const message = input.value.trim();
+  
+  if (!message && attachedFiles.length === 0) return;
+  
+  console.log('Sending message:', message);
+  
+  // Prepare attachments data
+  const attachments = attachedFiles.map(file => ({
+    name: file.name,
+    size: formatFileSize(file.size),
+    type: file.type,
+    url: '#' // In real implementation, upload to server/cloud storage
+  }));
+  
+  fetch('/messages/api/send', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      channelId: currentChannel,
+      message: message || '📎 Shared files',
+      attachments: attachments
+    })
+  })
+  .then(res => res.json())
+  .then(data => {
+    console.log('Message sent:', data);
+    if (data.success) {
+      input.value = '';
+      attachedFiles = [];
+      displayAttachedFiles();
+      appendMessage(data.message);
+      lastMessageId = Math.max(lastMessageId, data.message.id);
+      scrollToBottom();
+    }
+  })
+  .catch(err => {
+    console.error('Error sending message:', err);
+    alert('Failed to send message. Please try again.');
+  });
+}
+
+function formatFileSize(bytes) {
+  if (bytes === 0) return '0 Bytes';
+  const k = 1024;
+  const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+  const i = Math.floor(Math.log(bytes) / Math.log(k));
+  return Math.round(bytes / Math.pow(k, i) * 100) / 100 + ' ' + sizes[i];
+}
+
+// Switch channel
+function switchChannel(channelId) {
+  currentChannel = channelId;
+  document.querySelectorAll('.channel-item').forEach(el => el.classList.remove('active'));
+  document.querySelector(`[data-channel-id="${channelId}"]`).classList.add('active');
+  
+  fetch(`/messages/api/channel-info/${channelId}`)
+    .then(res => res.json())
+    .then(data => {
+      document.getElementById('currentChannelName').textContent = data.name;
+      document.getElementById('messageInput').placeholder = `Message #${data.name}`;
+    });
+  
+  loadMessages();
+}
+
+// Poll for new messages (real-time simulation)
+function pollMessages() {
+  if (!currentChannel) return;
+  
+  fetch(`/messages/api/channel/${currentChannel}/new?after=${lastMessageId}`)
+    .then(res => res.json())
+    .then(data => {
+      if (data.messages && data.messages.length > 0) {
+        data.messages.forEach(msg => {
+          appendMessage(msg);
+          lastMessageId = Math.max(lastMessageId, msg.id);
+        });
+        scrollToBottom();
+      }
+    })
+    .catch(err => {
+      console.error('Error polling messages:', err);
+    });
+}
+
+// Format message with mentions
+function formatMessage(text) {
+  return text
+    .replace(/@(\w+)/g, '<span class="mention">@$1</span>')
+    .replace(/\n/g, '<br>');
+}
+
+// Format timestamp
+function formatTime(timestamp) {
+  const date = new Date(timestamp);
+  const now = new Date();
+  const diff = now - date;
+  
+  if (diff < 60000) return 'Just now';
+  if (diff < 3600000) return Math.floor(diff / 60000) + 'm ago';
+  if (diff < 86400000) return date.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
+  return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+}
+
+// Scroll to bottom
+function scrollToBottom() {
+  const container = document.getElementById('chatMessages');
+  container.scrollTop = container.scrollHeight;
+}
+
+// Toggle member list
+function toggleMemberList() {
+  const sidebar = document.getElementById('memberSidebar');
+  sidebar.classList.toggle('hidden');
+}
+
+// File attachment
+let attachedFiles = [];
+
+function attachFile() {
+  document.getElementById('fileInput').click();
+}
+
+function handleFileSelect(event) {
+  const files = Array.from(event.target.files);
+  
+  files.forEach(file => {
+    // Check file size (max 10MB)
+    if (file.size > 10 * 1024 * 1024) {
+      alert(`File "${file.name}" is too large. Maximum size is 10MB.`);
+      return;
+    }
+    
+    attachedFiles.push(file);
+  });
+  
+  displayAttachedFiles();
+  event.target.value = ''; // Reset input
+}
+
+function displayAttachedFiles() {
+  const container = document.getElementById('attachedFiles');
+  
+  if (attachedFiles.length === 0) {
+    container.innerHTML = '';
+    container.style.display = 'none';
+    return;
+  }
+  
+  container.style.display = 'flex';
+  container.innerHTML = attachedFiles.map((file, index) => `
+    <div class="attached-file-item">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M13 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"/>
+        <polyline points="13 2 13 9 20 9"/>
+      </svg>
+      <span class="file-name">${file.name}</span>
+      <button type="button" onclick="removeAttachment(${index})" class="remove-file-btn" title="Remove">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <line x1="18" y1="6" x2="6" y2="18"/>
+          <line x1="6" y1="6" x2="18" y2="18"/>
+        </svg>
+      </button>
+    </div>
+  `).join('');
+}
+
+function removeAttachment(index) {
+  attachedFiles.splice(index, 1);
+  displayAttachedFiles();
+}
+
+// Google Drive functions
+function openGoogleDrive() {
+  document.getElementById('driveModal').style.display = 'flex';
+  loadDriveFiles();
+}
+
+function closeGoogleDrive() {
+  document.getElementById('driveModal').style.display = 'none';
+}
+
+function loadDriveFiles() {
+  fetch('/messages/api/drive/files')
+    .then(res => res.json())
+    .then(data => {
+      const container = document.getElementById('driveFileList');
+      container.innerHTML = data.files.map(file => `
+        <div class="drive-file-item">
+          <div class="drive-file-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M13 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"/>
+              <polyline points="13 2 13 9 20 9"/>
+            </svg>
+          </div>
+          <div class="drive-file-info">
+            <div class="drive-file-name">${file.name}</div>
+            <div class="drive-file-meta">${file.size} • ${file.modified}</div>
+          </div>
+          <div class="drive-file-actions">
+            <button onclick="shareFile('${file.id}')" class="btn-icon-sm" title="Share to channel">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/>
+                <line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/>
+                <line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/>
+              </svg>
+            </button>
+            <a href="${file.url}" target="_blank" class="btn-icon-sm" title="Open">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/>
+                <polyline points="15 3 21 3 21 9"/>
+                <line x1="10" y1="14" x2="21" y2="3"/>
+              </svg>
+            </a>
+          </div>
+        </div>
+      `).join('');
+    });
+}
+
+function uploadToDrive() {
+  alert('Google Drive upload will be implemented with OAuth2 authentication');
+}
+
+function shareFile(fileId) {
+  // Share file to current channel
+  fetch('/messages/api/share-file', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      channelId: currentChannel,
+      fileId: fileId
+    })
+  })
+  .then(res => res.json())
+  .then(data => {
+    if (data.success) {
+      closeGoogleDrive();
+      appendMessage(data.message);
+      scrollToBottom();
+    }
+  });
+}
+
+// Handle keyboard navigation in mention suggestions
+let selectedMentionIndex = -1;
+
+function handleMentionKeydown(e) {
+  const container = document.getElementById('mentionSuggestions');
+  if (container.style.display !== 'block') return;
+  
+  const items = container.querySelectorAll('.mention-item');
+  if (items.length === 0) return;
+  
+  if (e.key === 'ArrowDown') {
+    e.preventDefault();
+    selectedMentionIndex = Math.min(selectedMentionIndex + 1, items.length - 1);
+    updateMentionSelection(items);
+  } else if (e.key === 'ArrowUp') {
+    e.preventDefault();
+    selectedMentionIndex = Math.max(selectedMentionIndex - 1, 0);
+    updateMentionSelection(items);
+  } else if (e.key === 'Enter' && selectedMentionIndex >= 0) {
+    e.preventDefault();
+    items[selectedMentionIndex].click();
+    selectedMentionIndex = -1;
+  } else if (e.key === 'Escape') {
+    hideMentionSuggestions();
+    selectedMentionIndex = -1;
+  }
+}
+
+function updateMentionSelection(items) {
+  items.forEach((item, index) => {
+    if (index === selectedMentionIndex) {
+      item.classList.add('selected');
+    } else {
+      item.classList.remove('selected');
+    }
+  });
+}
+
+// Handle mentions autocomplete
+function handleMentions(e) {
+  const input = e.target;
+  const value = input.value;
+  const cursorPos = input.selectionStart;
+  const textBeforeCursor = value.substring(0, cursorPos);
+  const words = textBeforeCursor.split(/\s/);
+  const currentWord = words[words.length - 1];
+  
+  if (currentWord.startsWith('@')) {
+    const search = currentWord.substring(1).toLowerCase();
+    const allRoles = ['dean', 'faculty', 'program_chair', 'research_coordinator'];
+    const suggestions = allRoles.filter(role => role.includes(search));
+    
+    if (suggestions.length > 0) {
+      showMentionSuggestions(suggestions, input);
+    } else {
+      hideMentionSuggestions();
+    }
+  } else {
+    hideMentionSuggestions();
+  }
+}
+
+function showMentionSuggestions(suggestions, inputElement) {
+  const container = document.getElementById('mentionSuggestions');
+  const roleLabels = {
+    'dean': 'Dean',
+    'faculty': 'Faculty',
+    'program_chair': 'Program Chair',
+    'research_coordinator': 'Research Coordinator'
+  };
+  
+  selectedMentionIndex = -1; // Reset selection
+  
+  container.innerHTML = suggestions.map(role => 
+    `<div class="mention-item" onclick="insertMention('${role}', event)">
+      <span class="mention-role-icon">${roleLabels[role].charAt(0)}</span>
+      <span class="mention-role-name">@${role}</span>
+      <span class="mention-role-label">${roleLabels[role]}</span>
+    </div>`
+  ).join('');
+  container.style.display = 'block';
+  
+  // Position the dropdown
+  const inputRect = inputElement.getBoundingClientRect();
+  const containerRect = inputElement.closest('.chat-input-container').getBoundingClientRect();
+  container.style.bottom = (containerRect.bottom - inputRect.top + 5) + 'px';
+}
+
+function hideMentionSuggestions() {
+  const container = document.getElementById('mentionSuggestions');
+  if (container) {
+    container.style.display = 'none';
+  }
+}
+
+function insertMention(role, event) {
+  event.stopPropagation();
+  const input = document.getElementById('messageInput');
+  const value = input.value;
+  const cursorPos = input.selectionStart;
+  const textBeforeCursor = value.substring(0, cursorPos);
+  const textAfterCursor = value.substring(cursorPos);
+  
+  // Find the @ symbol position
+  const lastAtIndex = textBeforeCursor.lastIndexOf('@');
+  
+  // Replace from @ to cursor with the selected role
+  const newValue = textBeforeCursor.substring(0, lastAtIndex) + '@' + role + ' ' + textAfterCursor;
+  input.value = newValue;
+  
+  // Set cursor position after the inserted mention
+  const newCursorPos = lastAtIndex + role.length + 2; // +2 for @ and space
+  input.setSelectionRange(newCursorPos, newCursorPos);
+  
+  hideMentionSuggestions();
+  input.focus();
+}
+
+// Load saved theme on page load
+(function() {
+  const savedTheme = localStorage.getItem('theme') || 'dark';
+  document.documentElement.setAttribute('data-theme', savedTheme);
+})();
+
+// Initialize
+document.addEventListener('DOMContentLoaded', () => {
+  loadMessages();
+  setInterval(pollMessages, 3000); // Poll every 3 seconds
+});
+</script>
+
+<%- include('../partials/footer') %>

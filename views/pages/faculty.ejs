@@ -1,0 +1,88 @@
+<%- include('../partials/header') %>
+<%- include('../partials/sidebar') %>
+
+<div class="main-content">
+  <% const actionLabel = null; const actionHref = ''; %>
+  <%- include('../partials/topbar') %>
+
+  <div class="page-body">
+
+    <!-- Role filter bar -->
+    <div style="display:flex; gap:8px; margin-bottom:20px; flex-wrap:wrap" class="fade-in">
+      <button class="btn btn-secondary btn-sm role-filter active" data-role="All">All (<%= faculty.length %>)</button>
+      <% ['Dean','Program Chair','Research Coordinator','Faculty'].forEach(role => { %>
+      <% const count = faculty.filter(f => f.role === role).length %>
+      <% if (count > 0) { %>
+      <button class="btn btn-secondary btn-sm role-filter" data-role="<%= role %>"><%= role %> (<%= count %>)</button>
+      <% } %>
+      <% }) %>
+    </div>
+
+    <div class="faculty-cards fade-in delay-1" id="facultyGrid">
+      <% faculty.forEach((f, idx) => { %>
+      <div class="faculty-card" data-role="<%= f.role %>">
+        <div class="faculty-card-top">
+          <div class="avatar avatar-lg" style="<%= f.status === 'On Leave' ? 'opacity:0.4' : '' %>; border-radius:12px">
+            <%= f.avatar %>
+          </div>
+          <div style="flex:1; min-width:0">
+            <a href="/faculty/<%= f.id %>" style="text-decoration:none">
+              <div class="faculty-card-name"><%= f.name %></div>
+            </a>
+            <div class="faculty-card-meta"><%= f.email %></div>
+            <div style="display:flex; gap:6px; margin-top:6px; flex-wrap:wrap">
+              <span class="badge badge-blue" style="font-size:0.65rem"><%= f.role %></span>
+              <span class="badge badge-gray" style="font-size:0.65rem"><%= f.program %></span>
+              <% if (f.status === 'On Leave') { %>
+              <span class="badge badge-orange" style="font-size:0.65rem">On Leave</span>
+              <% } %>
+            </div>
+          </div>
+        </div>
+
+        <% if (f.status !== 'On Leave') { %>
+        <div style="display:flex; height:5px; border-radius:99px; overflow:hidden; margin-bottom:12px; gap:1px">
+          <div style="width:<%= f.teachingLoad / 30 * 100 %>%; background:var(--accent)"></div>
+          <div style="width:<%= f.researchLoad / 30 * 100 %>%; background:var(--teal)"></div>
+          <div style="width:<%= f.extensionLoad / 30 * 100 %>%; background:var(--accent2)"></div>
+        </div>
+        <% } %>
+
+        <div class="faculty-card-stats">
+          <div class="fc-stat">
+            <div class="val" style="color:var(--accent)"><%= f.status !== 'On Leave' ? f.teachingLoad : '—' %></div>
+            <div class="key">Teaching</div>
+          </div>
+          <div class="fc-stat">
+            <div class="val" style="color:var(--teal)"><%= f.status !== 'On Leave' ? f.researchLoad : '—' %></div>
+            <div class="key">Research</div>
+          </div>
+          <div class="fc-stat">
+            <div class="val" style="color:var(--accent2)"><%= f.status !== 'On Leave' ? f.extensionLoad : '—' %></div>
+            <div class="key">Extension</div>
+          </div>
+        </div>
+
+        <div style="margin-top:14px">
+          <a href="/faculty/<%= f.id %>" class="btn btn-secondary btn-sm" style="width:100%; justify-content:center">View Profile →</a>
+        </div>
+      </div>
+      <% }) %>
+    </div>
+  </div>
+</div>
+
+<script>
+  document.querySelectorAll('.role-filter').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.role-filter').forEach(b => b.classList.remove('active', 'btn-primary'));
+      btn.classList.add('active');
+      const role = btn.dataset.role;
+      document.querySelectorAll('.faculty-card').forEach(card => {
+        card.style.display = (role === 'All' || card.dataset.role === role) ? '' : 'none';
+      });
+    });
+  });
+</script>
+
+<%- include('../partials/footer') %>

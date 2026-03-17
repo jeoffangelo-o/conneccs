@@ -1,0 +1,52 @@
+<%- include('../partials/header') %>
+<%- include('../partials/sidebar') %>
+
+<div class="main-content">
+  <% const actionLabel = 'Post Announcement'; const actionHref = '/announcements/new'; %>
+  <%- include('../partials/topbar') %>
+
+  <div class="page-body">
+    <% if (typeof req !== 'undefined' && req && req.query && req.query.posted) { %>
+    <div class="alert alert-success fade-in">✅ Announcement posted successfully.</div>
+    <% } %>
+
+    <div style="max-width: 780px">
+      <% announcements.forEach((a, idx) => { %>
+      <div class="announcement-card fade-in <%= a.pinned ? 'pinned' : '' %>" style="animation-delay:<%= idx * 0.05 %>s">
+        <div style="display:flex; align-items:flex-start; justify-content:space-between; gap:12px">
+          <div style="flex:1">
+            <div style="display:flex; align-items:center; gap:8px; margin-bottom:5px">
+              <% if (a.pinned) { %>
+              <span style="font-size:0.75rem">📌</span>
+              <% } %>
+              <div class="ann-title"><%= a.title %></div>
+            </div>
+            <div class="ann-meta">
+              <span>👤 <%= a.author %></span>
+              <span>🗓 <%= a.date %></span>
+              <span>👥 <%= a.targetRole %></span>
+            </div>
+            <div class="ann-body"><%= a.message %></div>
+          </div>
+          <div style="display:flex; flex-direction:column; gap:6px; align-items:flex-end; flex-shrink:0">
+            <% if (a.priority === 'High') { %>
+              <span class="badge badge-red">High Priority</span>
+            <% } else if (a.priority === 'Medium') { %>
+              <span class="badge badge-yellow">Medium</span>
+            <% } else { %>
+              <span class="badge badge-gray">Low</span>
+            <% } %>
+            <% if (a.targetRole !== 'All') { %>
+              <span class="badge badge-blue" style="font-size:0.65rem"><%= a.targetRole %> only</span>
+            <% } else { %>
+              <span class="badge badge-gray" style="font-size:0.65rem">All Roles</span>
+            <% } %>
+          </div>
+        </div>
+      </div>
+      <% }) %>
+    </div>
+  </div>
+</div>
+
+<%- include('../partials/footer') %>

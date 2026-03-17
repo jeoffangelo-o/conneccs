@@ -1,0 +1,7 @@
+[
+  { "id": 1, "facultyId": 1, "facultyName": "Dr. Maria Santos", "period": "2025-1st Semester", "teachingScore": 4.5, "researchScore": 3.8, "extensionScore": 4.2, "adminScore": 3.5, "finalScore": 4.1, "rating": "Outstanding", "status": "Approved", "reviewedBy": "Prof. Juan Dela Cruz", "reviewDate": "2025-03-15" },
+  { "id": 2, "facultyId": 2, "facultyName": "Prof. Juan Dela Cruz", "period": "2025-1st Semester", "teachingScore": 4.2, "researchScore": 4.5, "extensionScore": 4.0, "adminScore": 4.3, "finalScore": 4.25, "rating": "Outstanding", "status": "Approved", "reviewedBy": "Dean", "reviewDate": "2025-03-18" },
+  { "id": 3, "facultyId": 3, "facultyName": "Dr. Ana Reyes", "period": "2025-1st Semester", "teachingScore": 3.8, "researchScore": 4.7, "extensionScore": 3.5, "adminScore": 4.0, "finalScore": 4.0, "rating": "Very Satisfactory", "status": "For Review", "reviewedBy": null, "reviewDate": null },
+  { "id": 4, "facultyId": 4, "facultyName": "Prof. Carlos Mendoza", "period": "2025-1st Semester", "teachingScore": 4.8, "researchScore": 3.2, "extensionScore": 4.1, "adminScore": 3.8, "finalScore": 3.975, "rating": "Very Satisfactory", "status": "Pending Entry", "reviewedBy": null, "reviewDate": null },
+  { "id": 5, "facultyId": 6, "facultyName": "Prof. Ramon Garcia", "period": "2025-1st Semester", "teachingScore": 4.0, "researchScore": 3.9, "extensionScore": 4.6, "adminScore": 4.1, "finalScore": 4.15, "rating": "Outstanding", "status": "For Review", "reviewedBy": null, "reviewDate": null }
+]

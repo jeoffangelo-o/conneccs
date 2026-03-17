@@ -1,0 +1,215 @@
+<%- include('../partials/header') %>
+<%- include('../partials/sidebar') %>
+
+<div class="main-content">
+  <% const actionLabel = 'New Report'; const actionHref = '/reports/new'; %>
+  <%- include('../partials/topbar') %>
+
+  <div class="page-body">
+
+    <!-- Stat Cards -->
+    <div class="stat-grid fade-in">
+      <div class="stat-card blue">
+        <div class="stat-icon">📋</div>
+        <div class="stat-label">Total Reports</div>
+        <div class="stat-value"><%= stats.totalReports %></div>
+        <div class="stat-sub">Across all faculty</div>
+      </div>
+      <div class="stat-card green delay-1">
+        <div class="stat-icon">✅</div>
+        <div class="stat-label">Submitted</div>
+        <div class="stat-value"><%= stats.submitted %></div>
+        <div class="stat-sub">On time</div>
+      </div>
+      <div class="stat-card red delay-2">
+        <div class="stat-icon">⚠️</div>
+        <div class="stat-label">Overdue</div>
+        <div class="stat-value"><%= stats.overdue %></div>
+        <div class="stat-sub">Requires follow-up</div>
+      </div>
+      <div class="stat-card purple delay-3">
+        <div class="stat-icon">📊</div>
+        <div class="stat-label">IPCR Pending</div>
+        <div class="stat-value"><%= stats.pendingIpcr %></div>
+        <div class="stat-sub">Awaiting review</div>
+      </div>
+      <div class="stat-card teal delay-4">
+        <div class="stat-icon">👤</div>
+        <div class="stat-label">Active Faculty</div>
+        <div class="stat-value"><%= stats.activeFaculty %></div>
+        <div class="stat-sub">Currently on-duty</div>
+      </div>
+    </div>
+
+    <div class="grid-main-side">
+
+      <!-- Recent Reports -->
+      <div>
+        <div class="panel fade-in delay-2">
+          <div class="panel-header">
+            <div class="panel-title"><span class="dot"></span> Recent Report Activity</div>
+            <a href="/reports" class="btn btn-secondary btn-sm">View All</a>
+          </div>
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>Faculty</th>
+                  <th>Report Type</th>
+                  <th>Period</th>
+                  <th>Due Date</th>
+                  <th>Status</th>
+                </tr>
+              </thead>
+              <tbody>
+                <% recentReports.forEach(r => { %>
+                <tr>
+                  <td>
+                    <div class="faculty-cell">
+                      <div class="avatar avatar-sm">
+                        <%= r.facultyName.split(' ').map(w => w[0]).slice(0,2).join('') %>
+                      </div>
+                      <span><%= r.facultyName %></span>
+                    </div>
+                  </td>
+                  <td><%= r.reportType %></td>
+                  <td><%= r.period %></td>
+                  <td style="color: var(--text3); font-size:0.8rem"><%= r.dueDate %></td>
+                  <td>
+                    <% if(r.status === 'Submitted') { %>
+                      <span class="badge badge-green">✓ Submitted</span>
+                    <% } else if(r.status === 'Overdue') { %>
+                      <span class="badge badge-red">⚠ Overdue</span>
+                    <% } else { %>
+                      <span class="badge badge-orange">○ Pending</span>
+                    <% } %>
+                  </td>
+                </tr>
+                <% }) %>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- IPCR Summary -->
+        <div class="panel fade-in delay-3">
+          <div class="panel-header">
+            <div class="panel-title"><span class="dot" style="background:var(--accent2)"></span> IPCR Summary</div>
+            <a href="/ipcr" class="btn btn-secondary btn-sm">Manage</a>
+          </div>
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>Faculty</th>
+                  <th>Period</th>
+                  <th>Final Score</th>
+                  <th>Rating</th>
+                  <th>Status</th>
+                </tr>
+              </thead>
+              <tbody>
+                <% ipcr.forEach(i => { %>
+                <tr>
+                  <td>
+                    <div class="faculty-cell">
+                      <div class="avatar avatar-sm" style="background: linear-gradient(135deg, var(--accent2), var(--teal))">
+                        <%= i.facultyName.split(' ').map(w=>w[0]).slice(0,2).join('') %>
+                      </div>
+                      <span><%= i.facultyName %></span>
+                    </div>
+                  </td>
+                  <td style="font-size:0.8rem; color:var(--text3)"><%= i.period %></td>
+                  <td>
+                    <strong style="font-family:var(--font-display); font-size:0.9rem"><%= i.finalScore.toFixed(2) %></strong>
+                  </td>
+                  <td>
+                    <% if(i.rating === 'Outstanding') { %>
+                      <span class="badge badge-green"><%= i.rating %></span>
+                    <% } else { %>
+                      <span class="badge badge-blue"><%= i.rating %></span>
+                    <% } %>
+                  </td>
+                  <td>
+                    <% if(i.status === 'Approved') { %>
+                      <span class="badge badge-green">Approved</span>
+                    <% } else if(i.status === 'For Review') { %>
+                      <span class="badge badge-yellow">For Review</span>
+                    <% } else { %>
+                      <span class="badge badge-gray">Pending Entry</span>
+                    <% } %>
+                  </td>
+                </tr>
+                <% }) %>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- Right Sidebar Panel -->
+      <div>
+        <!-- Submission Overview -->
+        <div class="panel fade-in delay-1">
+          <div class="panel-header">
+            <div class="panel-title"><span class="dot" style="background:var(--green)"></span> Submission Overview</div>
+          </div>
+          <div class="panel-body">
+            <% const total = stats.submitted + stats.notSubmitted + stats.overdue; %>
+            <% const submittedPct = Math.round(stats.submitted / total * 100); %>
+            <div style="text-align:center; margin-bottom:16px">
+              <div style="font-family:var(--font-display); font-size:3rem; font-weight:800; color:var(--text); letter-spacing:-0.05em"><%= submittedPct %>%</div>
+              <div style="font-size:0.75rem; color:var(--text3)">Compliance Rate</div>
+            </div>
+            <div style="display:flex; flex-direction:column; gap:10px">
+              <div>
+                <div style="display:flex; justify-content:space-between; font-size:0.78rem; margin-bottom:5px">
+                  <span style="color:var(--text2)">Submitted</span>
+                  <span style="color:var(--green); font-weight:600"><%= stats.submitted %></span>
+                </div>
+                <div class="progress-bar"><div class="progress-fill progress-green" style="width:<%= submittedPct %>%"></div></div>
+              </div>
+              <div>
+                <div style="display:flex; justify-content:space-between; font-size:0.78rem; margin-bottom:5px">
+                  <span style="color:var(--text2)">Not Submitted</span>
+                  <span style="color:var(--orange); font-weight:600"><%= stats.notSubmitted %></span>
+                </div>
+                <div class="progress-bar"><div class="progress-fill progress-orange" style="width:<%= Math.round(stats.notSubmitted/total*100) %>%"></div></div>
+              </div>
+              <div>
+                <div style="display:flex; justify-content:space-between; font-size:0.78rem; margin-bottom:5px">
+                  <span style="color:var(--text2)">Overdue</span>
+                  <span style="color:var(--red); font-weight:600"><%= stats.overdue %></span>
+                </div>
+                <div class="progress-bar"><div class="progress-fill progress-red" style="width:<%= Math.round(stats.overdue/total*100) %>%"></div></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Pinned Announcements -->
+        <div class="panel fade-in delay-3">
+          <div class="panel-header">
+            <div class="panel-title"><span class="dot" style="background:var(--red)"></span> Pinned Announcements</div>
+            <a href="/announcements" class="btn btn-secondary btn-sm">All</a>
+          </div>
+          <div class="panel-body" style="padding:12px">
+            <% pinned.forEach(a => { %>
+            <div class="announcement-card pinned" style="margin-bottom:10px">
+              <div class="ann-title"><%= a.title %></div>
+              <div class="ann-meta">
+                <span>📌 <%= a.author %></span>
+                <span><%= a.date %></span>
+              </div>
+              <div class="ann-body" style="display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden"><%= a.message %></div>
+            </div>
+            <% }) %>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<%- include('../partials/footer') %>
