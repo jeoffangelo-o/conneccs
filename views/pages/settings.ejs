@@ -1,0 +1,458 @@
+<%- include('../partials/header') %>
+<%- include('../partials/sidebar') %>
+
+<div class="main-content">
+  <%- include('../partials/topbar') %>
+
+  <div class="page-body">
+    <div class="page-header">
+      <div class="page-title">
+        <h1><%- icons.settings %> Settings</h1>
+        <p>Customize your ConneCCS experience</p>
+      </div>
+    </div>
+
+  <div class="settings-container">
+    <!-- User Preferences -->
+    <div class="settings-section">
+      <div class="settings-section-header">
+        <h2><%- icons.user %> User Preferences</h2>
+        <p>Personalize your account settings</p>
+      </div>
+      
+      <div class="settings-grid">
+        <div class="setting-item">
+          <div class="setting-info">
+            <h3>Theme</h3>
+            <p>Choose between light and dark mode</p>
+          </div>
+          <div class="setting-control">
+            <div class="theme-toggle">
+              <input type="radio" id="theme-light" name="theme" value="light">
+              <label for="theme-light"><%- icons.sun %> Light</label>
+              <input type="radio" id="theme-dark" name="theme" value="dark">
+              <label for="theme-dark"><%- icons.moon %> Dark</label>
+            </div>
+          </div>
+        </div>
+
+        <div class="setting-item">
+          <div class="setting-info">
+            <h3>Language</h3>
+            <p>Select your preferred language</p>
+          </div>
+          <div class="setting-control">
+            <select id="language-select" class="form-select">
+              <option value="en">English</option>
+              <option value="fil">Filipino</option>
+              <option value="es">Español</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="setting-item">
+          <div class="setting-info">
+            <h3>Timezone</h3>
+            <p>Set your local timezone</p>
+          </div>
+          <div class="setting-control">
+            <select id="timezone-select" class="form-select">
+              <option value="Asia/Manila">Asia/Manila (GMT+8)</option>
+              <option value="UTC">UTC (GMT+0)</option>
+              <option value="America/New_York">America/New_York (GMT-5)</option>
+            </select>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Notification Settings -->
+    <div class="settings-section">
+      <div class="settings-section-header">
+        <h2><%- icons.bell %> Notifications</h2>
+        <p>Control how you receive notifications</p>
+      </div>
+      
+      <div class="settings-grid">
+        <div class="setting-item">
+          <div class="setting-info">
+            <h3>Message Notifications</h3>
+            <p>Get notified when you receive new messages</p>
+          </div>
+          <div class="setting-control">
+            <label class="toggle-switch">
+              <input type="checkbox" id="message-notifications" checked>
+              <span class="toggle-slider"></span>
+            </label>
+          </div>
+        </div>
+
+        <div class="setting-item">
+          <div class="setting-info">
+            <h3>IPCR Reminders</h3>
+            <p>Receive reminders for IPCR deadlines</p>
+          </div>
+          <div class="setting-control">
+            <label class="toggle-switch">
+              <input type="checkbox" id="ipcr-reminders" checked>
+              <span class="toggle-slider"></span>
+            </label>
+          </div>
+        </div>
+
+        <div class="setting-item">
+          <div class="setting-info">
+            <h3>Email Notifications</h3>
+            <p>Send notifications to your email address</p>
+          </div>
+          <div class="setting-control">
+            <label class="toggle-switch">
+              <input type="checkbox" id="email-notifications">
+              <span class="toggle-slider"></span>
+            </label>
+          </div>
+        </div>
+
+        <div class="setting-item">
+          <div class="setting-info">
+            <h3>Sound Notifications</h3>
+            <p>Play sound when receiving notifications</p>
+          </div>
+          <div class="setting-control">
+            <label class="toggle-switch">
+              <input type="checkbox" id="sound-notifications" checked>
+              <span class="toggle-slider"></span>
+            </label>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Privacy & Security -->
+    <div class="settings-section">
+      <div class="settings-section-header">
+        <h2><%- icons.lock %> Privacy & Security</h2>
+        <p>Manage your privacy and security settings</p>
+      </div>
+      
+      <div class="settings-grid">
+        <div class="setting-item">
+          <div class="setting-info">
+            <h3>Profile Visibility</h3>
+            <p>Control who can see your profile information</p>
+          </div>
+          <div class="setting-control">
+            <select id="profile-visibility" class="form-select">
+              <option value="public">Everyone</option>
+              <option value="faculty">Faculty Only</option>
+              <option value="private">Private</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="setting-item">
+          <div class="setting-info">
+            <h3>Online Status</h3>
+            <p>Show when you're online to other users</p>
+          </div>
+          <div class="setting-control">
+            <label class="toggle-switch">
+              <input type="checkbox" id="online-status" checked>
+              <span class="toggle-slider"></span>
+            </label>
+          </div>
+        </div>
+
+        <div class="setting-item">
+          <div class="setting-info">
+            <h3>Two-Factor Authentication</h3>
+            <p>Add an extra layer of security to your account</p>
+          </div>
+          <div class="setting-control">
+            <button class="btn btn-secondary btn-sm" onclick="setup2FA()">
+              <%- icons.shield %> Enable 2FA
+            </button>
+          </div>
+        </div>
+
+        <div class="setting-item">
+          <div class="setting-info">
+            <h3>Change Password</h3>
+            <p>Update your account password</p>
+          </div>
+          <div class="setting-control">
+            <button class="btn btn-secondary btn-sm" onclick="changePassword()">
+              <%- icons.key %> Change Password
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- System Settings (Admin Only) -->
+    <% if (userRole === 'dean' || userRole === 'program_chair') { %>
+    <div class="settings-section">
+      <div class="settings-section-header">
+        <h2><%- icons.settings %> System Settings</h2>
+        <p>Administrative settings for the system</p>
+      </div>
+      
+      <div class="settings-grid">
+        <div class="setting-item">
+          <div class="setting-info">
+            <h3>File Storage</h3>
+            <p>Configure file storage location</p>
+          </div>
+          <div class="setting-control">
+            <select id="storage-type" class="form-select">
+              <option value="local">Local Storage</option>
+              <option value="gdrive">Google Drive</option>
+              <option value="cloud">Cloud Storage</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="setting-item">
+          <div class="setting-info">
+            <h3>User Registration</h3>
+            <p>Allow new users to register</p>
+          </div>
+          <div class="setting-control">
+            <label class="toggle-switch">
+              <input type="checkbox" id="allow-registration" checked>
+              <span class="toggle-slider"></span>
+            </label>
+          </div>
+        </div>
+
+        <div class="setting-item">
+          <div class="setting-info">
+            <h3>System Maintenance</h3>
+            <p>Enable maintenance mode</p>
+          </div>
+          <div class="setting-control">
+            <label class="toggle-switch">
+              <input type="checkbox" id="maintenance-mode">
+              <span class="toggle-slider"></span>
+            </label>
+          </div>
+        </div>
+
+        <div class="setting-item">
+          <div class="setting-info">
+            <h3>Data Export</h3>
+            <p>Export system data for backup</p>
+          </div>
+          <div class="setting-control">
+            <button class="btn btn-secondary btn-sm" onclick="exportData()">
+              <%- icons.download %> Export Data
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+    <% } %>
+
+    <!-- About Section -->
+    <div class="settings-section">
+      <div class="settings-section-header">
+        <h2><%- icons.info %> About ConneCCS</h2>
+        <p>System information and support</p>
+      </div>
+      
+      <div class="settings-grid">
+        <div class="setting-item">
+          <div class="setting-info">
+            <h3>Version</h3>
+            <p>ConneCCS v1.0.0</p>
+          </div>
+          <div class="setting-control">
+            <span class="version-badge">Latest</span>
+          </div>
+        </div>
+
+        <div class="setting-item">
+          <div class="setting-info">
+            <h3>Support</h3>
+            <p>Get help and report issues</p>
+          </div>
+          <div class="setting-control">
+            <button class="btn btn-secondary btn-sm" onclick="contactSupport()">
+              <%- icons.help %> Contact Support
+            </button>
+          </div>
+        </div>
+
+        <div class="setting-item">
+          <div class="setting-info">
+            <h3>Privacy Policy</h3>
+            <p>Read our privacy policy</p>
+          </div>
+          <div class="setting-control">
+            <a href="/privacy" class="btn btn-secondary btn-sm">
+              <%- icons.document %> View Policy
+            </a>
+          </div>
+        </div>
+
+        <div class="setting-item">
+          <div class="setting-info">
+            <h3>Terms of Service</h3>
+            <p>Read our terms of service</p>
+          </div>
+          <div class="setting-control">
+            <a href="/terms" class="btn btn-secondary btn-sm">
+              <%- icons.document %> View Terms
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Save Button -->
+    <div class="settings-actions">
+      <button class="btn btn-primary" onclick="saveSettings()">
+        <%- icons.check %> Save Settings
+      </button>
+      <button class="btn btn-secondary" onclick="resetSettings()">
+        <%- icons.refresh %> Reset to Defaults
+      </button>
+    </div>
+    </div>
+  </div>
+</div>
+
+<script>
+// Load saved settings
+document.addEventListener('DOMContentLoaded', function() {
+  loadSettings();
+});
+
+function loadSettings() {
+  // Load theme
+  const savedTheme = localStorage.getItem('theme') || 'dark';
+  document.querySelector(`input[name="theme"][value="${savedTheme}"]`).checked = true;
+  
+  // Load other settings from localStorage
+  const settings = JSON.parse(localStorage.getItem('conneccs-settings') || '{}');
+  
+  // Apply saved settings
+  Object.keys(settings).forEach(key => {
+    const element = document.getElementById(key);
+    if (element) {
+      if (element.type === 'checkbox') {
+        element.checked = settings[key];
+      } else {
+        element.value = settings[key];
+      }
+    }
+  });
+}
+
+function saveSettings() {
+  const settings = {};
+  
+  // Get theme
+  const selectedTheme = document.querySelector('input[name="theme"]:checked').value;
+  localStorage.setItem('theme', selectedTheme);
+  document.documentElement.setAttribute('data-theme', selectedTheme);
+  
+  // Get all other settings
+  const settingElements = document.querySelectorAll('input, select');
+  settingElements.forEach(element => {
+    if (element.id && element.name !== 'theme') {
+      if (element.type === 'checkbox') {
+        settings[element.id] = element.checked;
+      } else {
+        settings[element.id] = element.value;
+      }
+    }
+  });
+  
+  // Save to localStorage
+  localStorage.setItem('conneccs-settings', JSON.stringify(settings));
+  
+  // Show success message
+  showNotification('Settings saved successfully!', 'success');
+}
+
+function resetSettings() {
+  if (confirm('Are you sure you want to reset all settings to defaults?')) {
+    localStorage.removeItem('conneccs-settings');
+    localStorage.setItem('theme', 'dark');
+    location.reload();
+  }
+}
+
+function setup2FA() {
+  alert('Two-Factor Authentication setup will be implemented in a future update.');
+}
+
+function changePassword() {
+  const newPassword = prompt('Enter your new password:');
+  if (newPassword) {
+    // In a real app, this would make an API call
+    alert('Password change functionality will be implemented in a future update.');
+  }
+}
+
+function exportData() {
+  if (confirm('This will export all system data. Continue?')) {
+    // In a real app, this would trigger a data export
+    alert('Data export functionality will be implemented in a future update.');
+  }
+}
+
+function contactSupport() {
+  alert('Support contact: admin@cspc.edu.ph\nOr visit the IT Help Desk.');
+}
+
+function showNotification(message, type = 'info') {
+  // Create notification element
+  const notification = document.createElement('div');
+  notification.className = `notification notification-${type}`;
+  notification.textContent = message;
+  
+  // Style the notification
+  notification.style.cssText = `
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    background: var(--accent);
+    color: var(--bg);
+    padding: 12px 20px;
+    border-radius: 8px;
+    font-weight: 500;
+    z-index: 1000;
+    animation: slideIn 0.3s ease;
+  `;
+  
+  document.body.appendChild(notification);
+  
+  // Remove after 3 seconds
+  setTimeout(() => {
+    notification.style.animation = 'slideOut 0.3s ease';
+    setTimeout(() => {
+      document.body.removeChild(notification);
+    }, 300);
+  }, 3000);
+}
+
+// Add CSS animations
+const style = document.createElement('style');
+style.textContent = `
+  @keyframes slideIn {
+    from { transform: translateX(100%); opacity: 0; }
+    to { transform: translateX(0); opacity: 1; }
+  }
+  @keyframes slideOut {
+    from { transform: translateX(0); opacity: 1; }
+    to { transform: translateX(100%); opacity: 0; }
+  }
+`;
+document.head.appendChild(style);
+</script>
+
+<%- include('../partials/footer') %>
+
+<%- include('../partials/footer') %>

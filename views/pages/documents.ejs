@@ -1,0 +1,87 @@
+<%- include('../partials/header') %>
+<%- include('../partials/sidebar') %>
+
+<div class="main-content">
+  <% const actionLabel = 'New Folder'; const actionHref = '/documents/new'; %>
+  <%- include('../partials/topbar') %>
+
+  <div class="page-body">
+    
+    <!-- Stats -->
+    <div class="stat-grid fade-in" style="grid-template-columns: repeat(4, 1fr);">
+      <div class="stat-card blue">
+        <div class="stat-icon"><%- icons.folder %></div>
+        <div class="stat-label">Active Folders</div>
+        <div class="stat-value"><%= stats.pendingFolders %></div>
+        <div class="stat-sub">With deadlines</div>
+      </div>
+      <div class="stat-card green delay-1">
+        <div class="stat-icon"><%- icons.file %></div>
+        <div class="stat-label">Total Files</div>
+        <div class="stat-value"><%= stats.totalFiles %></div>
+        <div class="stat-sub">Uploaded</div>
+      </div>
+      <div class="stat-card yellow delay-2">
+        <div class="stat-icon"><%- icons.clock %></div>
+        <div class="stat-label">Submitted</div>
+        <div class="stat-value"><%= stats.submittedFiles %></div>
+        <div class="stat-sub">Awaiting review</div>
+      </div>
+      <div class="stat-card teal delay-3">
+        <div class="stat-icon"><%- icons.check %></div>
+        <div class="stat-label">Approved</div>
+        <div class="stat-value"><%= stats.approvedFiles %></div>
+        <div class="stat-sub">Completed</div>
+      </div>
+    </div>
+
+    <!-- Folders Grid -->
+    <div class="panel fade-in delay-1">
+      <div class="panel-header">
+        <div class="panel-title"><span class="dot" style="background:var(--accent)"></span> Document Folders</div>
+      </div>
+      <div class="panel-body">
+        <div class="folders-grid">
+          <% folders.forEach((folder, idx) => { %>
+            <% 
+              const deadline = new Date(folder.deadline);
+              const today = new Date();
+              const daysLeft = Math.ceil((deadline - today) / (1000 * 60 * 60 * 24));
+              const isUrgent = daysLeft <= 7 && daysLeft > 0;
+              const isPast = daysLeft < 0;
+            %>
+            <a href="/documents/folder/<%= folder.id %>" class="folder-card fade-in" style="animation-delay:<%= idx * 0.05 %>s">
+              <div class="folder-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/>
+                </svg>
+              </div>
+              <div class="folder-content">
+                <div class="folder-name"><%= folder.name %></div>
+                <div class="folder-desc"><%= folder.description %></div>
+                <div class="folder-meta">
+                  <span><%- icons.calendar %> <%= folder.createdAt %></span>
+                  <span><%- icons.user %> <%= folder.createdBy %></span>
+                </div>
+                <div class="folder-footer">
+                  <div class="folder-deadline">
+                    <% if (isPast) { %>
+                      <span class="badge badge-red">Overdue</span>
+                    <% } else if (isUrgent) { %>
+                      <span class="badge badge-orange"><%= daysLeft %> days left</span>
+                    <% } else { %>
+                      <span class="badge badge-green">Due <%= folder.deadline %></span>
+                    <% } %>
+                  </div>
+                </div>
+              </div>
+            </a>
+          <% }) %>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<%- include('../partials/footer') %>

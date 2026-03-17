@@ -38,7 +38,8 @@
 
           <div class="form-group">
             <label for="email">Email Address</label>
-            <input type="email" id="email" name="email" placeholder="your.email@university.edu" required>
+            <input type="email" id="email" name="email" placeholder="your.name@cspc.edu.ph" required pattern=".*@cspc\.edu\.ph$" title="Email must end with @cspc.edu.ph">
+            <small style="color: var(--text3); font-size: 0.75rem; margin-top: 4px; display: block;">Must be a valid CSPC email address (@cspc.edu.ph)</small>
           </div>
 
           <div class="form-group">
@@ -80,12 +81,22 @@
 
   <script>
     document.querySelector('.auth-form').addEventListener('submit', function(e) {
+      const email = document.getElementById('email').value;
       const password = document.getElementById('password').value;
       const confirmPassword = document.getElementById('confirmPassword').value;
       
+      // Check email domain
+      if (!email.endsWith('@cspc.edu.ph')) {
+        e.preventDefault();
+        alert('Email must be a valid CSPC email address ending with @cspc.edu.ph');
+        return;
+      }
+      
+      // Check password match
       if (password !== confirmPassword) {
         e.preventDefault();
         alert('Passwords do not match!');
+        return;
       }
     });
   </script>

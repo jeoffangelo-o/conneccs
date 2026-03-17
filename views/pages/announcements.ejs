@@ -7,7 +7,7 @@
 
   <div class="page-body">
     <% if (typeof req !== 'undefined' && req && req.query && req.query.posted) { %>
-    <div class="alert alert-success fade-in">✅ Announcement posted successfully.</div>
+    <div class="alert alert-success fade-in">Announcement posted successfully.</div>
     <% } %>
 
     <div style="max-width: 100%;">
@@ -17,14 +17,14 @@
           <div style="flex:1">
             <div style="display:flex; align-items:center; gap:8px; margin-bottom:5px">
               <% if (a.pinned) { %>
-              <span style="font-size:0.75rem">📌</span>
+              <%- icons.pin %>
               <% } %>
               <div class="ann-title"><%= a.title %></div>
             </div>
             <div class="ann-meta">
-              <span>👤 <%= a.author %></span>
-              <span>🗓 <%= a.date %></span>
-              <span>👥 <%= a.targetRole %></span>
+              <span><%- icons.user %> <%= a.author %></span>
+              <span><%- icons.calendar %> <%= a.date %></span>
+              <span><%- icons.users %> <%= a.targetRole %></span>
             </div>
             <div class="ann-body"><%= a.message %></div>
           </div>

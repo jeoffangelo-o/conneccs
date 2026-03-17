@@ -12,24 +12,24 @@
       <% const overloaded = workload.filter(w => w.overloaded && w.status === 'Active') %>
       <% const avgLoad = (workload.filter(w=>w.status==='Active').reduce((s,w) => s + w.totalLoad, 0) / workload.filter(w=>w.status==='Active').length).toFixed(1) %>
       <div class="stat-card blue">
-        <div class="stat-icon">👥</div>
+        <div class="stat-icon"><%- icons.users %></div>
         <div class="stat-label">Active Faculty</div>
         <div class="stat-value"><%= workload.filter(w=>w.status==='Active').length %></div>
       </div>
       <div class="stat-card red delay-1">
-        <div class="stat-icon">⚡</div>
+        <div class="stat-icon"><%- icons.zap %></div>
         <div class="stat-label">Overloaded</div>
         <div class="stat-value"><%= overloaded.length %></div>
         <div class="stat-sub">> 24 units total</div>
       </div>
       <div class="stat-card teal delay-2">
-        <div class="stat-icon">⚖️</div>
+        <div class="stat-icon"><%- icons.scale %></div>
         <div class="stat-label">Avg. Load</div>
         <div class="stat-value" style="font-size:1.6rem"><%= avgLoad %></div>
         <div class="stat-sub">units per faculty</div>
       </div>
       <div class="stat-card green delay-3">
-        <div class="stat-icon">✅</div>
+        <div class="stat-icon"><%- icons.check %></div>
         <div class="stat-label">Balanced</div>
         <div class="stat-value"><%= workload.filter(w=>!w.overloaded && w.status==='Active').length %></div>
       </div>
@@ -133,9 +133,9 @@
               </td>
               <td>
                 <% if (w.overloaded && w.status === 'Active') { %>
-                  <span class="badge badge-red" style="font-size:0.6rem;" title="Overloaded">⚡</span>
+                  <span class="badge badge-red" style="font-size:0.6rem;" title="Overloaded">Over</span>
                 <% } else if (w.status === 'Active') { %>
-                  <span class="badge badge-green" style="font-size:0.6rem;">✓</span>
+                  <span class="badge badge-green" style="font-size:0.6rem;">OK</span>
                 <% } else { %>
                   <span style="color:var(--text3)">—</span>
                 <% } %>
@@ -155,7 +155,7 @@
       <div class="panel-body">
         <% workload.filter(w => w.overloaded && w.status === 'Active').forEach(w => { %>
         <div style="display:flex; align-items:flex-start; gap:12px; padding:12px; background:rgba(244,63,94,0.06); border:1px solid rgba(244,63,94,0.15); border-radius:var(--radius-sm); margin-bottom:10px">
-          <div style="font-size:1.2rem; flex-shrink:0">⚡</div>
+          <div style="flex-shrink:0"><%- icons.zap %></div>
           <div>
             <div style="font-size:0.85rem; font-weight:600; color:var(--text)"><%= w.name %> is overloaded (<%= w.totalLoad %> units)</div>
             <div style="font-size:0.78rem; color:var(--text3); margin-top:3px">
@@ -166,7 +166,7 @@
         <% }) %>
         <% if (workload.filter(w => w.overloaded && w.status === 'Active').length === 0) { %>
         <div style="text-align:center; padding:24px; color:var(--text3); font-size:0.875rem">
-          ✅ All active faculty workloads are within recommended limits.
+          All active faculty workloads are within recommended limits.
         </div>
         <% } %>
       </div>

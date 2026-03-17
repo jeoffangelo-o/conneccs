@@ -72,6 +72,13 @@ router.get('/register', (req, res) => {
 router.post('/register', (req, res) => {
   const { name, email, role, password, confirmPassword } = req.body;
   
+  // Validate email domain
+  if (!email.endsWith('@cspc.edu.ph')) {
+    return res.render('pages/register', {
+      error: 'Email must be a valid CSPC email address (@cspc.edu.ph)'
+    });
+  }
+  
   // Validation
   if (password !== confirmPassword) {
     return res.render('pages/register', {

@@ -6,6 +6,9 @@
   "scripts": {
     "start": "node app.js",
     "dev": "nodemon app.js",
+    "setup": "node setup-production.js",
+    "setup-gdrive": "node setup-google-drive.js",
+    "test-gdrive": "node test-gdrive.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": ["faculty", "ipcr", "workload", "reporting", "education"],

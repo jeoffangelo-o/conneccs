@@ -10,31 +10,31 @@
     <!-- Stat Cards -->
     <div class="stat-grid fade-in">
       <div class="stat-card blue">
-        <div class="stat-icon">📋</div>
+        <div class="stat-icon"><%- icons.clipboard %></div>
         <div class="stat-label">Total Reports</div>
         <div class="stat-value"><%= stats.totalReports %></div>
         <div class="stat-sub">Across all faculty</div>
       </div>
       <div class="stat-card green delay-1">
-        <div class="stat-icon">✅</div>
+        <div class="stat-icon"><%- icons.check %></div>
         <div class="stat-label">Submitted</div>
         <div class="stat-value"><%= stats.submitted %></div>
         <div class="stat-sub">On time</div>
       </div>
       <div class="stat-card red delay-2">
-        <div class="stat-icon">⚠️</div>
+        <div class="stat-icon"><%- icons.alert %></div>
         <div class="stat-label">Overdue</div>
         <div class="stat-value"><%= stats.overdue %></div>
         <div class="stat-sub">Requires follow-up</div>
       </div>
       <div class="stat-card purple delay-3">
-        <div class="stat-icon">📊</div>
+        <div class="stat-icon"><%- icons.chart %></div>
         <div class="stat-label">IPCR Pending</div>
         <div class="stat-value"><%= stats.pendingIpcr %></div>
         <div class="stat-sub">Awaiting review</div>
       </div>
       <div class="stat-card teal delay-4">
-        <div class="stat-icon">👤</div>
+        <div class="stat-icon"><%- icons.user %></div>
         <div class="stat-label">Active Faculty</div>
         <div class="stat-value"><%= stats.activeFaculty %></div>
         <div class="stat-sub">Currently on-duty</div>
@@ -77,11 +77,11 @@
                   <td style="color: var(--text3); font-size:0.8rem"><%= r.dueDate %></td>
                   <td>
                     <% if(r.status === 'Submitted') { %>
-                      <span class="badge badge-green">✓ Submitted</span>
+                      <span class="badge badge-green">Submitted</span>
                     <% } else if(r.status === 'Overdue') { %>
-                      <span class="badge badge-red">⚠ Overdue</span>
+                      <span class="badge badge-red">Overdue</span>
                     <% } else { %>
-                      <span class="badge badge-orange">○ Pending</span>
+                      <span class="badge badge-orange">Pending</span>
                     <% } %>
                   </td>
                 </tr>
@@ -113,7 +113,7 @@
                 <tr>
                   <td>
                     <div class="faculty-cell">
-                      <div class="avatar avatar-sm" style="background: linear-gradient(135deg, var(--accent2), var(--teal))">
+                      <div class="avatar avatar-sm">
                         <%= i.facultyName.split(' ').map(w=>w[0]).slice(0,2).join('') %>
                       </div>
                       <span><%= i.facultyName %></span>
@@ -198,7 +198,7 @@
             <div class="announcement-card pinned" style="margin-bottom:10px">
               <div class="ann-title"><%= a.title %></div>
               <div class="ann-meta">
-                <span>📌 <%= a.author %></span>
+                <span><%- icons.pin %> <%= a.author %></span>
                 <span><%= a.date %></span>
               </div>
               <div class="ann-body" style="display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden"><%= a.message %></div>

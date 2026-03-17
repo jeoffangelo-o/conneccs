@@ -7,7 +7,7 @@
 
   <div class="page-body">
     <% if (typeof req !== 'undefined' && req && req.query && req.query.submitted) { %>
-    <div class="alert alert-success fade-in">✅ Report submitted successfully and logged with timestamp.</div>
+    <div class="alert alert-success fade-in">Report submitted successfully and logged with timestamp.</div>
     <% } %>
 
     <div class="panel fade-in">
@@ -80,11 +80,11 @@
               </td>
               <td>
                 <% if (r.status === 'Submitted') { %>
-                  <span class="badge badge-green">✓ Submitted</span>
+                  <span class="badge badge-green">Submitted</span>
                 <% } else if (r.status === 'Overdue') { %>
-                  <span class="badge badge-red">⚠ Overdue</span>
+                  <span class="badge badge-red">Overdue</span>
                 <% } else { %>
-                  <span class="badge badge-orange">○ Pending</span>
+                  <span class="badge badge-orange">Pending</span>
                 <% } %>
               </td>
               <td>

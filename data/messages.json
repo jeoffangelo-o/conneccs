@@ -215,6 +215,194 @@
       "timestamp": "2026-03-17T01:55:28.489Z",
       "mentions": [],
       "attachments": []
+    },
+    {
+      "id": 15,
+      "channelId": "general",
+      "userId": "dean",
+      "userName": "Dean's Office",
+      "userRole": "dean",
+      "message": "hi everyone",
+      "timestamp": "2026-03-17T03:43:59.487Z",
+      "mentions": [],
+      "attachments": []
+    },
+    {
+      "id": 16,
+      "channelId": "general",
+      "userId": "dean",
+      "userName": "Dean's Office",
+      "userRole": "dean",
+      "message": "",
+      "timestamp": "2026-03-17T03:44:05.304Z",
+      "mentions": [],
+      "attachments": [
+        {
+          "id": "1773719045304-uu9l61i0s",
+          "name": "Gemini_Generated_Image_6vy5936vy5936vy5-removebg-preview.png",
+          "url": "/uploads/messages/1773719045298-294359928-Gemini_Generated_Image_6vy5936vy5936vy5-removebg-preview.png",
+          "size": "317.09 KB",
+          "type": "image/png"
+        }
+      ]
+    },
+    {
+      "id": 17,
+      "channelId": "general",
+      "userId": "dean",
+      "userName": "Dean's Office",
+      "userRole": "dean",
+      "message": "",
+      "timestamp": "2026-03-17T03:44:17.738Z",
+      "mentions": [],
+      "attachments": [
+        {
+          "id": "1773719057738-g5lmm026m",
+          "name": "updated-d1.pdf",
+          "url": "/uploads/messages/1773719057736-943959282-updated-d1.pdf",
+          "size": "175.02 KB",
+          "type": "application/pdf"
+        }
+      ],
+      "reactions": []
+    },
+    {
+      "id": 18,
+      "channelId": "general",
+      "userId": "dean",
+      "userName": "Dean's Office",
+      "userRole": "dean",
+      "message": "hello",
+      "timestamp": "2026-03-17T03:44:39.491Z",
+      "mentions": [],
+      "attachments": [
+        {
+          "id": "1773719079491-8x1fp4v2d",
+          "name": "Gemini_Generated_Image_6vy5936vy5936vy5-removebg-preview.png",
+          "url": "/uploads/messages/1773719079488-428220383-Gemini_Generated_Image_6vy5936vy5936vy5-removebg-preview.png",
+          "size": "317.09 KB",
+          "type": "image/png"
+        }
+      ]
+    },
+    {
+      "id": 19,
+      "channelId": "general",
+      "userId": "dean",
+      "userName": "Dean's Office",
+      "userRole": "dean",
+      "message": "",
+      "timestamp": "2026-03-17T03:49:08.518Z",
+      "mentions": [],
+      "attachments": [
+        {
+          "id": "1773719348518-x5qbj5grq",
+          "name": "rock_types_v2.docx",
+          "url": "/uploads/messages/1773719348509-906224401-rock_types_v2.docx",
+          "size": "1.49 MB",
+          "type": "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+        }
+      ]
+    },
+    {
+      "id": 20,
+      "channelId": "general",
+      "userId": "dean",
+      "userName": "Dean's Office",
+      "userRole": "dean",
+      "message": "",
+      "timestamp": "2026-03-17T03:58:05.332Z",
+      "mentions": [],
+      "attachments": [
+        {
+          "id": "1773719885331-x6eob7wd3",
+          "name": "1773719057736-943959282-updated-d1.pdf",
+          "url": "/messages/file/1773719882831-253544471-1773719057736-943959282-updated-d1.pdf",
+          "size": "175.02 KB",
+          "type": "application/pdf",
+          "isCloudStored": false,
+          "localPath": "1773719882831-253544471-1773719057736-943959282-updated-d1.pdf"
+        }
+      ]
+    },
+    {
+      "id": 21,
+      "channelId": "general",
+      "userId": "dean",
+      "userName": "Dean's Office",
+      "userRole": "dean",
+      "message": "",
+      "timestamp": "2026-03-17T03:58:05.351Z",
+      "mentions": [],
+      "attachments": [
+        {
+          "id": "1773719885350-1r8u7sbhx",
+          "name": "1773719057736-943959282-updated-d1.pdf",
+          "url": "/messages/file/1773719885340-188439667-1773719057736-943959282-updated-d1.pdf",
+          "size": "175.02 KB",
+          "type": "application/pdf",
+          "isCloudStored": false,
+          "localPath": "1773719885340-188439667-1773719057736-943959282-updated-d1.pdf"
+        }
+      ]
+    },
+    {
+      "id": 22,
+      "channelId": "general",
+      "userId": "dean",
+      "userName": "Dean's Office",
+      "userRole": "dean",
+      "message": "",
+      "timestamp": "2026-03-17T08:02:05.777Z",
+      "mentions": [],
+      "attachments": [
+        {
+          "id": "1773734525776-50kio45lj",
+          "name": "Midterm Project Specs.pdf",
+          "url": "/messages/file/1773734520971-518247125-Midterm Project Specs.pdf",
+          "size": "85.52 KB",
+          "type": "application/pdf",
+          "isCloudStored": false,
+          "localPath": "1773734520971-518247125-Midterm Project Specs.pdf"
+        }
+      ]
+    },
+    {
+      "id": 23,
+      "channelId": "general",
+      "userId": "dean",
+      "userName": "Dean's Office",
+      "userRole": "dean",
+      "message": "",
+      "timestamp": "2026-03-17T08:02:05.827Z",
+      "mentions": [],
+      "attachments": [
+        {
+          "id": "1773734525826-twgy4v2z0",
+          "name": "Midterm Project Specs.pdf",
+          "url": "/messages/file/1773734525788-834992760-Midterm Project Specs.pdf",
+          "size": "85.52 KB",
+          "type": "application/pdf",
+          "isCloudStored": false,
+          "localPath": "1773734525788-834992760-Midterm Project Specs.pdf"
+        }
+      ],
+      "deleted": true,
+      "deletedAt": "2026-03-17T09:23:23.275Z",
+      "deletedBy": "dean"
+    },
+    {
+      "id": 24,
+      "channelId": "general",
+      "userId": "dean",
+      "userName": "Dean's Office",
+      "userRole": "dean",
+      "message": "@faculty hello",
+      "timestamp": "2026-03-17T08:05:52.861Z",
+      "mentions": [
+        "faculty"
+      ],
+      "attachments": []
     }
   ]
 }

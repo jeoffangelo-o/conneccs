@@ -7,7 +7,7 @@
 
   <div class="page-body">
     <% if (typeof req !== 'undefined' && req && req.query && req.query.saved) { %>
-    <div class="alert alert-success fade-in">✅ IPCR entry saved successfully.</div>
+    <div class="alert alert-success fade-in">IPCR entry saved successfully.</div>
     <% } %>
 
     <!-- Summary Cards -->
@@ -17,22 +17,22 @@
       <% const pending = ipcr.filter(i => i.status === 'Pending Entry').length %>
       <% const avgScore = (ipcr.reduce((s, i) => s + i.finalScore, 0) / ipcr.length).toFixed(2) %>
       <div class="stat-card green">
-        <div class="stat-icon">✅</div>
+        <div class="stat-icon"><%- icons.check %></div>
         <div class="stat-label">Approved</div>
         <div class="stat-value"><%= approved %></div>
       </div>
       <div class="stat-card yellow delay-1">
-        <div class="stat-icon">🔍</div>
+        <div class="stat-icon"><%- icons.search %></div>
         <div class="stat-label">For Review</div>
         <div class="stat-value"><%= forReview %></div>
       </div>
       <div class="stat-card red delay-2">
-        <div class="stat-icon">📝</div>
+        <div class="stat-icon"><%- icons.edit %></div>
         <div class="stat-label">Pending Entry</div>
         <div class="stat-value"><%= pending %></div>
       </div>
       <div class="stat-card blue delay-3">
-        <div class="stat-icon">⭐</div>
+        <div class="stat-icon"><%- icons.star %></div>
         <div class="stat-label">Avg. Score</div>
         <div class="stat-value" style="font-size: 1.7rem"><%= avgScore %></div>
       </div>
@@ -67,7 +67,7 @@
             <tr class="fade-in" style="animation-delay:<%= idx * 0.04 %>s">
               <td>
                 <div class="faculty-cell">
-                  <div class="avatar avatar-sm" style="background: linear-gradient(135deg, var(--accent2), #3b82f6)">
+                  <div class="avatar avatar-sm">
                     <%= i.facultyName.split(' ').map(w => w[0]).slice(0,2).join('') %>
                   </div>
                   <div class="faculty-cell-info">
@@ -109,9 +109,9 @@
               </td>
               <td>
                 <% if (i.rating === 'Outstanding') { %>
-                  <span class="badge badge-green">⭐ Outstanding</span>
+                  <span class="badge badge-green">Outstanding</span>
                 <% } else { %>
-                  <span class="badge badge-blue">✔ Very Satisfactory</span>
+                  <span class="badge badge-blue">Very Satisfactory</span>
                 <% } %>
               </td>
               <td>

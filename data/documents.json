@@ -1,0 +1,110 @@
+{
+  "folders": [
+    {
+      "id": 1,
+      "name": "Q1 2025 Reports",
+      "description": "First quarter accomplishment reports and outputs",
+      "deadline": "2025-04-15",
+      "createdBy": "Dean's Office",
+      "createdAt": "2025-01-05",
+      "allowedRoles": ["dean", "program_chair", "faculty"],
+      "status": "active"
+    },
+    {
+      "id": 2,
+      "name": "IPCR Documents",
+      "description": "Individual Performance Commitment and Review forms",
+      "deadline": "2025-04-30",
+      "createdBy": "Dean's Office",
+      "createdAt": "2025-01-10",
+      "allowedRoles": ["dean", "program_chair", "faculty"],
+      "status": "active"
+    },
+    {
+      "id": 3,
+      "name": "Research Outputs",
+      "description": "Published papers, conference proceedings, and research materials",
+      "deadline": "2025-06-30",
+      "createdBy": "Research Coordinator",
+      "createdAt": "2025-01-15",
+      "allowedRoles": ["dean", "research_coordinator", "faculty"],
+      "status": "active"
+    },
+    {
+      "id": 4,
+      "name": "Extension Activities",
+      "description": "Community extension documentation and reports",
+      "deadline": "2025-05-20",
+      "createdBy": "Dean's Office",
+      "createdAt": "2025-01-20",
+      "allowedRoles": ["dean", "faculty"],
+      "status": "active"
+    }
+  ],
+  "files": [
+    {
+      "id": 1,
+      "folderId": 1,
+      "name": "Accomplishment_Report_Q1_MSantos.pdf",
+      "uploadedBy": "Dr. Maria Santos",
+      "uploadedById": 1,
+      "uploadedAt": "2025-03-10T14:30:00",
+      "size": "2.4 MB",
+      "type": "application/pdf",
+      "status": "submitted",
+      "metadata": {
+        "period": "Q1 2025",
+        "category": "Accomplishment Report",
+        "version": "1.0"
+      }
+    },
+    {
+      "id": 2,
+      "folderId": 1,
+      "name": "Extension_Output_Q1_JDelaCruz.pdf",
+      "uploadedBy": "Prof. Juan Dela Cruz",
+      "uploadedById": 2,
+      "uploadedAt": "2025-03-12T09:15:00",
+      "size": "1.8 MB",
+      "type": "application/pdf",
+      "status": "submitted",
+      "metadata": {
+        "period": "Q1 2025",
+        "category": "Extension Output",
+        "version": "1.0"
+      }
+    },
+    {
+      "id": 3,
+      "folderId": 2,
+      "name": "IPCR_2025_1st_Semester_AReyes.xlsx",
+      "uploadedBy": "Dr. Ana Reyes",
+      "uploadedById": 3,
+      "uploadedAt": "2025-03-05T16:45:00",
+      "size": "856 KB",
+      "type": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+      "status": "submitted",
+      "metadata": {
+        "period": "1st Semester 2025",
+        "category": "IPCR",
+        "version": "2.0"
+      }
+    },
+    {
+      "id": 4,
+      "folderId": 3,
+      "name": "Research_Paper_AI_Education.pdf",
+      "uploadedBy": "Dr. Ana Reyes",
+      "uploadedById": 3,
+      "uploadedAt": "2025-02-28T11:20:00",
+      "size": "3.2 MB",
+      "type": "application/pdf",
+      "status": "approved",
+      "metadata": {
+        "period": "2025",
+        "category": "Research Paper",
+        "version": "Final"
+      }
+    }
+  ]
+}
