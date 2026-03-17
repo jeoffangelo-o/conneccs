@@ -1019,7 +1019,9 @@ table .btn-sm {
   background: var(--bg3);
 }
 
-/* ─── Discord-Style Messaging Layout ────────────────────────────────────────── */
+/* ─── CLEAN MODERN DISCORD DESIGN ───────────────────────────────────────────── */
+/* Professional, minimal Discord aesthetic with subtle own-message distinction */
+
 .messages-fullscreen {
   margin-left: 0 !important;
   width: 100vw;
@@ -1260,96 +1262,108 @@ table .btn-sm {
   height: 18px;
 }
 
-/* ─── Discord-Heavy + Messenger Hybrid Design ──────────────────────────────── */
+/* ─── CLEAN DISCORD MESSAGES ────────────────────────────────────────────────── */
 
-/* Chat Messages Container - Discord structure */
 .chat-messages {
   flex: 1;
   overflow-y: auto;
   overflow-x: hidden;
-  padding: 8px 16px 16px;
+  padding: 16px;
   display: flex;
   flex-direction: column;
-  gap: 2px; /* Tight Discord-like spacing */
   background: var(--bg);
 }
 
-/* Base Message - Discord structure with Messenger bubbles */
+/* Base Message - Clean Discord Style */
 .chat-message {
   display: flex;
-  gap: 12px;
-  padding: 2px 0;
-  transition: all var(--transition);
+  gap: 16px;
+  padding: 2px 48px 2px 16px;
+  margin-top: 17px;
   position: relative;
-  margin-bottom: 1px;
+  transition: background 0.05s;
 }
 
 .chat-message:hover {
-  background: rgba(255, 255, 255, 0.03);
-  border-radius: 8px;
-  padding: 2px 8px;
-  margin: 0 -8px 1px;
+  background: rgba(4, 4, 5, 0.07);
 }
 
-/* Message grouping - Discord style */
-.chat-message + .chat-message {
-  margin-top: 0;
+[data-theme="light"] .chat-message:hover {
+  background: rgba(6, 6, 7, 0.02);
 }
 
+/* Grouped messages (same user within 5 minutes) */
 .chat-message.grouped {
-  margin-top: -2px;
+  margin-top: 0 !important;
+  padding-top: 2px !important;
+  padding-bottom: 2px !important;
 }
 
-.chat-message.grouped .message-avatar {
-  opacity: 0;
-  width: 40px; /* Keep space but hide avatar */
+.chat-message.grouped > .message-avatar {
+  visibility: hidden !important;
+  width: 40px !important;
+  height: 40px !important;
 }
 
-.chat-message.grouped .message-header {
-  display: none; /* Hide header for grouped messages */
+.chat-message.grouped > .message-content > .message-header > .message-header-left {
+  display: none !important;
 }
 
-/* Avatar - Discord size and positioning */
+.chat-message.grouped > .message-content > .message-header {
+  margin-bottom: 0 !important;
+  justify-content: flex-end !important;
+}
+
+.chat-message.grouped > .message-content > .message-header > .message-header-right {
+  opacity: 0.5 !important;
+  transition: opacity 0.1s !important;
+  margin-left: 0 !important;
+  font-size: 0.7rem !important;
+}
+
+.chat-message.grouped:hover > .message-content > .message-header > .message-header-right {
+  opacity: 1 !important;
+}
+
+/* Avatar - Discord Standard */
 .message-avatar {
   width: 40px;
   height: 40px;
   border-radius: 50%;
-  background: linear-gradient(135deg, var(--accent), var(--accent2));
+  background: linear-gradient(135deg, #5865F2, #7289DA);
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 0.9rem;
-  font-weight: 700;
+  font-size: 0.95rem;
+  font-weight: 600;
   color: #fff;
   flex-shrink: 0;
-  margin-top: 2px;
   cursor: pointer;
-  transition: transform var(--transition);
+  transition: border-radius 0.2s;
 }
 
 .message-avatar:hover {
-  transform: scale(1.05);
+  border-radius: 40%;
 }
 
-/* Message Content - Full width utilization */
+/* Message Content */
 .message-content {
   flex: 1;
   min-width: 0;
-  max-width: 100%; /* Use full available width */
 }
 
-/* Message Header - Discord style */
+/* Message Header - Discord Style */
 .message-header {
   display: flex;
-  align-items: center;
+  align-items: baseline;
   gap: 8px;
-  margin-bottom: 4px;
-  height: 20px;
+  margin-bottom: 2px;
+  line-height: 1.375rem;
 }
 
 .message-header-left {
   display: flex;
-  align-items: center;
+  align-items: baseline;
   gap: 8px;
 }
 
@@ -1361,72 +1375,72 @@ table .btn-sm {
 }
 
 .message-author {
-  font-weight: 600;
-  font-size: 0.9rem;
+  font-weight: 500;
+  font-size: 1rem;
   color: var(--text);
   cursor: pointer;
-  transition: color var(--transition);
+  line-height: 1.375rem;
 }
 
 .message-author:hover {
-  color: var(--accent);
   text-decoration: underline;
 }
 
-/* Role badges - Discord style but smaller */
+/* Role Badges - Subtle Discord Style */
 .message-role {
-  font-size: 0.6rem;
-  padding: 2px 5px;
+  font-size: 0.625rem;
+  padding: 2px 4px;
   border-radius: 3px;
-  font-weight: 700;
+  font-weight: 600;
   text-transform: uppercase;
-  letter-spacing: 0.05em;
+  letter-spacing: 0.02em;
   line-height: 1;
   display: inline-flex;
   align-items: center;
+  vertical-align: middle;
 }
 
 .message-role.role-dean {
-  background: rgba(244, 63, 94, 0.15);
-  color: var(--red);
+  background: rgba(237, 66, 69, 0.1);
+  color: #ED4245;
 }
 
 .message-role.role-program_chair {
-  background: rgba(79, 124, 255, 0.15);
-  color: var(--accent);
+  background: rgba(88, 101, 242, 0.1);
+  color: #5865F2;
 }
 
 .message-role.role-research_coordinator {
-  background: rgba(6, 182, 212, 0.15);
-  color: var(--teal);
+  background: rgba(87, 242, 135, 0.1);
+  color: #57F287;
 }
 
 .message-role.role-faculty {
-  background: rgba(34, 197, 94, 0.15);
-  color: var(--green);
+  background: rgba(254, 231, 92, 0.1);
+  color: #FEE75C;
 }
 
 .message-time {
-  font-size: 0.65rem;
+  font-size: 0.75rem;
   color: var(--text3);
   font-weight: 500;
+  line-height: 1.375rem;
 }
 
-/* Message Text Bubble - Full width */
+/* Message Text - Consistent Bubble Style for ALL messages */
 .message-text {
+  font-size: 1rem;
+  color: var(--text2);
+  line-height: 1.375rem;
+  word-wrap: break-word;
+  margin: 0;
+  padding: 10px 14px;
   background: var(--bg3);
   border: 1px solid var(--border);
-  border-radius: 18px;
-  padding: 10px 14px;
-  font-size: 0.9rem;
-  color: var(--text2);
-  line-height: 1.4;
-  word-wrap: break-word;
-  display: block; /* Changed from inline-block to block for full width */
-  width: 100%; /* Use full width */
-  position: relative;
-  transition: all var(--transition);
-  box-sizing: border-box;
+  border-radius: 12px;
+  display: block;
+  width: fit-content;
+  max-width: 100%;
 }
 
 .message-text:hover {
@@ -1434,52 +1448,38 @@ table .btn-sm {
   border-color: var(--border2);
 }
 
-/* Empty message text (only attachments) */
-.message-text:empty {
-  display: none;
+/* Mentions */
+.mention {
+  background: rgba(88, 101, 242, 0.3);
+  color: #DEE0FC;
+  padding: 0 2px;
+  border-radius: 3px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.1s;
 }
 
-/* Own Messages - Messenger-style right alignment with Discord features */
-.own-message {
-  flex-direction: row-reverse;
-  align-items: flex-start;
+.mention:hover {
+  background: rgba(88, 101, 242, 0.5);
+  color: #fff;
 }
 
-.own-message .message-content {
-  max-width: 100%; /* Use full available width */
-  display: flex;
-  flex-direction: column;
-  align-items: flex-end;
-}
-
-.own-message .message-header {
-  justify-content: flex-end;
-  flex-direction: row-reverse;
-}
-
-.own-message .message-header-left {
-  flex-direction: row-reverse;
-}
-
-.own-message .message-header-right {
-  margin-left: 0;
-  margin-right: auto;
-}
+/* ─── OWN MESSAGES - CONSISTENT LEFT ALIGNMENT ──────────────────────────────── */
+/* Own messages stay on the left like all others, just with yellow bubble */
 
 .own-message .message-avatar {
-  background: var(--accent);
-  margin-left: 12px;
-  margin-right: 0;
+  background: linear-gradient(135deg, var(--accent), var(--accent2));
+}
+
+.own-message .message-author {
+  color: var(--accent);
+  font-weight: 600;
 }
 
 .own-message .message-text {
   background: var(--accent);
-  color: #000; /* Changed to black for better contrast */
+  color: #000;
   border: 1px solid var(--accent);
-  border-radius: 18px 18px 4px 18px;
-  text-align: left;
-  width: 100%; /* Use full width */
-  max-width: 100%;
 }
 
 .own-message .message-text:hover {
@@ -1487,316 +1487,37 @@ table .btn-sm {
   border-color: var(--accent2);
 }
 
-.own-message .message-author {
-  color: rgba(0,0,0,0.8); /* Changed to dark for better contrast */
-  font-size: 0.85rem;
-}
+/* ─── MESSAGE INTERACTIONS ──────────────────────────────────────────────────── */
 
-.own-message .message-role {
-  background: rgba(0,0,0,0.15); /* Changed to dark background */
-  color: rgba(0,0,0,0.8); /* Changed to dark text */
-}
-
-.own-message .message-time {
-  color: rgba(0,0,0,0.6); /* Changed to dark for better contrast */
-}
-
-/* Mentioned Messages - Discord style */
-.chat-message.mentioned {
-  background: rgba(79, 124, 255, 0.05);
-  border-left: 3px solid var(--accent);
-  border-radius: 0 8px 8px 0;
-  padding: 4px 8px 4px 12px;
-  margin: 2px -8px 2px -16px;
-}
-
-.chat-message.mentioned:hover {
-  background: rgba(79, 124, 255, 0.08);
-}
-
-/* Message reactions area - Discord style */
-.message-reactions {
-  display: flex;
-  gap: 4px;
-  margin-top: 4px;
-  flex-wrap: wrap;
-}
-
-.message-reaction {
-  background: var(--bg3);
-  border: 1px solid var(--border);
-  border-radius: 12px;
-  padding: 2px 6px;
-  font-size: 0.75rem;
-  display: flex;
-  align-items: center;
-  gap: 3px;
-  cursor: pointer;
-  transition: all var(--transition);
-}
-
-.message-reaction:hover {
-  background: var(--border2);
-  border-color: var(--accent);
-}
-
-.message-reaction.reacted {
-  background: rgba(79, 124, 255, 0.1);
-  border-color: var(--accent);
-  color: var(--accent);
-}
-
-/* Mention styling */
-.mention {
-  background: rgba(79, 124, 255, 0.15);
-  color: var(--accent);
-  padding: 1px 3px;
-  border-radius: 3px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: background var(--transition);
-}
-
-.mention:hover {
-  background: rgba(79, 124, 255, 0.25);
-}
-
-/* Message attachments - Discord style with Messenger polish */
-.message-attachments {
-  margin-top: 6px;
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-}
-
-/* Typing indicator - Discord style */
-.typing-indicator {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  padding: 8px 16px;
-  color: var(--text3);
-  font-size: 0.85rem;
-  font-style: italic;
-}
-
-.typing-indicator .typing-avatar {
-  width: 24px;
-  height: 24px;
-  border-radius: 50%;
-  background: var(--bg3);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 0.7rem;
-  color: var(--text3);
-}
-
-.typing-dots {
-  display: flex;
-  gap: 3px;
-}
-
-.typing-dot {
-  width: 4px;
-  height: 4px;
-  border-radius: 50%;
-  background: var(--text3);
-  animation: typingBounce 1.4s infinite ease-in-out;
-}
-
-.typing-dot:nth-child(1) { animation-delay: -0.32s; }
-.typing-dot:nth-child(2) { animation-delay: -0.16s; }
-
-@keyframes typingBounce {
-  0%, 80%, 100% { transform: scale(0.8); opacity: 0.5; }
-  40% { transform: scale(1); opacity: 1; }
-}
-
-/* Message dividers - Discord style */
-.message-divider {
-  display: flex;
-  align-items: center;
-  margin: 16px 0;
-  color: var(--text3);
-  font-size: 0.75rem;
-  font-weight: 600;
-}
-
-.message-divider::before,
-.message-divider::after {
-  content: '';
-  flex: 1;
-  height: 1px;
-  background: var(--border);
-}
-
-.message-divider::before {
-  margin-right: 16px;
-}
-
-.message-divider::after {
-  margin-left: 16px;
-}
-
-/* System messages - Discord style */
-.system-message {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 8px 16px;
-  margin: 8px 0;
-  color: var(--text3);
-  font-size: 0.8rem;
-  font-style: italic;
-  background: rgba(255,255,255,0.02);
-  border-radius: 4px;
-}
-
-/* Message editing state */
-.message-editing .message-text {
-  background: var(--bg2);
-  border: 2px solid var(--accent);
-  padding: 8px 12px;
-}
-
-.message-edit-form {
-  display: flex;
-  gap: 8px;
-  align-items: flex-end;
-  margin-top: 8px;
-}
-
-.message-edit-input {
-  flex: 1;
-  background: var(--bg3);
-  border: 1px solid var(--border);
-  border-radius: 8px;
-  padding: 8px 12px;
-  color: var(--text);
-  font-size: 0.9rem;
-  font-family: var(--font-body);
-  resize: none;
-  min-height: 36px;
-  max-height: 120px;
-  outline: none;
-}
-
-.message-edit-input:focus {
-  border-color: var(--accent);
-}
-
-.message-edit-actions {
-  display: flex;
-  gap: 4px;
-}
-
-.message-edit-btn {
-  padding: 6px 12px;
-  border: none;
-  border-radius: 4px;
-  font-size: 0.8rem;
-  font-weight: 500;
-  cursor: pointer;
-  transition: all var(--transition);
-}
-
-.message-edit-save {
-  background: var(--accent);
-  color: #fff;
-}
-
-.message-edit-save:hover {
-  background: var(--accent2);
-}
-
-.message-edit-cancel {
-  background: var(--bg3);
-  color: var(--text2);
-  border: 1px solid var(--border);
-}
-
-.message-edit-cancel:hover {
-  background: var(--border2);
-  color: var(--text);
-}
-
-/* Message reply preview */
-.message-reply-preview {
-  background: var(--bg2);
-  border-left: 3px solid var(--accent);
-  border-radius: 0 6px 6px 0;
-  padding: 8px 12px;
-  margin-bottom: 6px;
-  font-size: 0.8rem;
-}
-
-.message-reply-author {
-  font-weight: 600;
-  color: var(--accent);
-  margin-bottom: 2px;
-}
-
-.message-reply-text {
-  color: var(--text3);
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-/* Deleted message styling */
-.message-deleted .message-text {
-  background: var(--bg2);
-  color: var(--text3);
-  font-style: italic;
-  border: 1px dashed var(--border);
-}
-
-.message-deleted .message-text::before {
-  content: "🗑️ ";
-}
-
-/* Message edited indicator */
-.message-edited::after {
-  content: " (edited)";
-  font-size: 0.7rem;
-  color: var(--text3);
-  font-style: italic;
-}
+/* Message Actions - Discord Style */
 .message-actions {
-  position: absolute;
-  top: -12px;
-  right: 16px;
-  background: var(--bg2);
-  border: 1px solid var(--border);
-  border-radius: 8px;
-  padding: 4px;
-  display: none;
+  display: flex;
   gap: 2px;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-  z-index: 10;
+  margin-top: 4px;
+  opacity: 0;
+  transition: opacity 0.1s;
 }
 
 .chat-message:hover .message-actions {
-  display: flex;
+  opacity: 1;
 }
 
 .message-action-btn {
-  width: 32px;
-  height: 32px;
+  width: 28px;
+  height: 28px;
   border: none;
-  background: transparent;
+  background: var(--bg3);
   color: var(--text3);
   border-radius: 4px;
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: all var(--transition);
+  transition: all 0.1s;
 }
 
 .message-action-btn:hover {
-  background: var(--bg3);
+  background: var(--border2);
   color: var(--text);
 }
 
@@ -1805,11 +1526,176 @@ table .btn-sm {
   height: 16px;
 }
 
+/* Reactions - Discord Style */
+.message-reactions {
+  display: flex;
+  gap: 4px;
+  margin-top: 4px;
+  flex-wrap: wrap;
+}
+
+.message-reaction {
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 3px 6px;
+  font-size: 0.875rem;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  cursor: pointer;
+  transition: all 0.1s;
+  line-height: 1;
+}
+
+.message-reaction:hover {
+  background: var(--bg3);
+  border-color: var(--border2);
+}
+
+.message-reaction.reacted {
+  background: rgba(88, 101, 242, 0.1);
+  border-color: rgba(88, 101, 242, 0.3);
+}
+
+/* Reply Preview - Discord Style */
+.message-reply-preview {
+  background: transparent;
+  border-left: 4px solid var(--border2);
+  padding: 4px 0 4px 12px;
+  margin-bottom: 4px;
+  font-size: 0.875rem;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.message-reply-author {
+  font-weight: 500;
+  color: var(--text);
+  font-size: 0.875rem;
+}
+
+.message-reply-text {
+  color: var(--text3);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  flex: 1;
+}
+
+/* Mentioned Messages - Subtle Indicator */
+.chat-message.mentioned {
+  position: relative;
+}
+
+.chat-message.mentioned::before {
+  content: '';
+  position: absolute;
+  left: -16px;
+  top: 0;
+  bottom: 0;
+  width: 3px;
+  background: #FAA61A;
+  border-radius: 0 2px 2px 0;
+}
+
+.chat-message.mentioned:hover {
+  background: rgba(250, 166, 26, 0.03);
+}
+
+/* Message Editing */
+.message-editing .message-text {
+  background: var(--bg2);
+  border: 2px solid var(--accent);
+  border-radius: 8px;
+  padding: 8px 12px;
+}
+
+.message-edit-form {
+  margin-top: 8px;
+}
+
+.message-edit-input {
+  width: 100%;
+  background: var(--bg3);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 11px;
+  color: var(--text);
+  font-size: 1rem;
+  font-family: var(--font-body);
+  resize: none;
+  min-height: 44px;
+  max-height: 200px;
+  outline: none;
+  line-height: 1.375rem;
+}
+
+.message-edit-input:focus {
+  border-color: var(--accent);
+}
+
+.message-edit-actions {
+  display: flex;
+  gap: 8px;
+  margin-top: 8px;
+  font-size: 0.75rem;
+}
+
+.message-edit-btn {
+  padding: 0;
+  border: none;
+  background: transparent;
+  color: var(--accent);
+  font-size: 0.75rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.1s;
+}
+
+.message-edit-btn:hover {
+  text-decoration: underline;
+}
+
+.message-edit-cancel {
+  color: var(--text3);
+}
+
+/* Deleted Messages */
+.message-deleted .message-text {
+  color: var(--text3);
+  font-style: italic;
+  opacity: 0.6;
+}
+
+.message-deleted .message-text::before {
+  content: "[message deleted] ";
+}
+
+/* Edited Indicator */
+.message-edited::after {
+  content: " (edited)";
+  font-size: 0.625rem;
+  color: var(--text3);
+  margin-left: 4px;
+}
+
+/* Message Attachments */
 .message-attachments {
   margin-top: 8px;
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 8px;
+}
+
+/* Lock/Public Icons */
+.message-lock-icon,
+.message-public-icon {
+  width: 12px;
+  height: 12px;
+  color: var(--text3);
+  opacity: 0.6;
 }
 
 /* Document preview card styling - Subtle and clean */
@@ -1881,11 +1767,17 @@ table .btn-sm {
 
 /* Image attachment styling */
 .attachment-image {
-  max-width: 400px;
+  min-width: 192px;
+  max-width: 192px;
+  min-height: 192px;
+  max-height: 192px;
   margin: 4px 0;
 }
 
 .attachment-image img {
+  width: 192px;
+  height: 192px;
+  object-fit: cover;
   border-radius: 8px;
   box-shadow: 0 2px 8px rgba(0,0,0,0.1);
   transition: transform var(--transition);
@@ -2547,11 +2439,13 @@ table .btn-sm {
   background: var(--bg);
   border: 1px solid var(--border);
   border-radius: 8px;
-  max-width: 95vw;
-  max-height: 95vh;
-  width: 95vw;
-  height: 95vh;
+  max-width: 90vw !important;
+  max-height: 90vh !important;
+  width: 90vw !important;
+  height: 90vh !important;
   box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+  display: flex !important;
+  flex-direction: column !important;
 }
 
 .document-preview-modal .modal-header {
@@ -2559,6 +2453,7 @@ table .btn-sm {
   border-bottom: 1px solid var(--border);
   background: var(--bg2);
   border-radius: 8px 8px 0 0;
+  flex-shrink: 0 !important;
 }
 
 .document-preview-modal .modal-header h3 {
@@ -2616,6 +2511,8 @@ table .btn-sm {
   border-radius: 0 0 8px 8px;
   position: relative;
   overflow: hidden;
+  flex: 1 !important;
+  min-height: 0 !important;
 }
 
 .document-preview-modal #documentLoadingIndicator {
@@ -3936,194 +3833,6 @@ input:checked + .toggle-slider:before {
   gap: 6px;
 }
 
-/* ─── Modern Self Message Design ────────────────────────────────────────────── */
-.own-message {
-  flex-direction: row-reverse;
-  align-items: flex-end;
-  margin-left: 60px; /* Create more space on the left */
-  margin-bottom: 8px;
-}
-
-.own-message .message-avatar {
-  background: var(--accent);
-  width: 32px;
-  height: 32px;
-  font-size: 0.75rem;
-  margin-left: 8px;
-  margin-bottom: 4px;
-}
-
-.own-message .message-content {
-  background: var(--accent);
-  color: #fff;
-  border-radius: 18px 18px 4px 18px;
-  padding: 12px 16px;
-  margin-right: 0;
-  max-width: 70%;
-  position: relative;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.15);
-}
-
-.own-message .message-header {
-  margin-bottom: 2px;
-  justify-content: flex-end;
-}
-
-.own-message .message-author {
-  color: rgba(0,0,0,0.8) !important; /* Dark text for better contrast */
-  font-size: 0.75rem;
-  font-weight: 500;
-}
-
-.own-message .message-role {
-  background: rgba(0,0,0,0.15) !important; /* Dark background for better contrast */
-  color: rgba(0,0,0,0.8) !important; /* Dark text for better contrast */
-  font-size: 0.6rem;
-  padding: 1px 4px;
-}
-
-.own-message .message-time {
-  color: rgba(0,0,0,0.6) !important; /* Dark text for better contrast */
-  font-size: 0.65rem;
-}
-
-.own-message .message-text {
-  color: #000 !important; /* Force black text for better contrast on yellow background */
-  font-size: 0.875rem;
-  line-height: 1.4;
-}
-
-.own-message .message-lock-icon,
-.own-message .message-public-icon {
-  color: rgba(0,0,0,0.6); /* Changed to dark for better contrast */
-}
-
-/* Own message attachments styling */
-.own-message .message-attachments {
-  margin-top: 8px;
-}
-
-.own-message .attachment-item {
-  background: rgba(255,255,255,0.15);
-  border: 1px solid rgba(255,255,255,0.2);
-  color: #fff;
-}
-
-.own-message .attachment-item:hover {
-  background: rgba(255,255,255,0.25);
-  border-color: rgba(255,255,255,0.4);
-}
-
-/* Own message document preview styling - More subtle */
-.own-message .document-preview-card {
-  background: rgba(255,255,255,0.1);
-  border: 1px solid rgba(255,255,255,0.15);
-  border-radius: 6px;
-  padding: 10px 12px;
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  transition: all var(--transition);
-  max-width: 280px;
-}
-
-.own-message .document-preview-card:hover {
-  background: rgba(255,255,255,0.15);
-  border-color: rgba(255,255,255,0.25);
-}
-
-.own-message .document-icon {
-  background: rgba(255,255,255,0.15);
-  width: 32px;
-  height: 32px;
-}
-
-.own-message .document-icon svg {
-  stroke: rgba(255,255,255,0.9);
-  fill: none;
-}
-
-.own-message .document-name {
-  color: rgba(255,255,255,0.95);
-  font-weight: 500;
-  font-size: 0.8rem;
-  margin-bottom: 2px;
-}
-
-.own-message .document-size {
-  color: rgba(255,255,255,0.7);
-  font-size: 0.7rem;
-}
-
-.own-message .document-preview-btn {
-  color: rgba(255,255,255,0.7);
-  font-size: 0.7rem;
-  display: flex;
-  align-items: center;
-  gap: 3px;
-  opacity: 0.8;
-}
-
-.own-message .document-preview-card:hover .document-preview-btn {
-  opacity: 1;
-  color: rgba(255,255,255,0.9);
-}
-
-/* Own message image styling */
-.own-message .attachment-image img {
-  border-radius: 12px;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.2);
-}
-
-.own-message .image-caption {
-  color: rgba(255,255,255,0.8);
-  font-size: 0.7rem;
-  margin-top: 4px;
-  text-align: center;
-}
-
-/* Consecutive own messages - remove avatar and reduce spacing */
-.own-message + .own-message {
-  margin-top: -4px;
-}
-
-.own-message + .own-message .message-avatar {
-  opacity: 0;
-  pointer-events: none;
-}
-
-.own-message + .own-message .message-content {
-  margin-bottom: 2px;
-}
-
-/* Other users' messages - keep original styling but improve spacing */
-.chat-message:not(.own-message) {
-  margin-right: 60px; /* Create space on the right for balance */
-  margin-bottom: 8px;
-}
-
-.chat-message:not(.own-message) .message-content {
-  background: var(--bg3);
-  border-radius: 18px 18px 18px 4px;
-  padding: 12px 16px;
-  border: 1px solid var(--border);
-  max-width: 70%;
-}
-
-.chat-message:not(.own-message) .message-content:hover {
-  background: var(--border2);
-  border-color: var(--border2);
-}
-
-/* Consecutive messages from same user - reduce spacing */
-.chat-message:not(.own-message) + .chat-message:not(.own-message) {
-  margin-top: -4px;
-}
-
-.chat-message:not(.own-message) + .chat-message:not(.own-message) .message-avatar {
-  opacity: 0.3;
-}
-
 /* Message grouping improvements */
 .chat-message {
   transition: all var(--transition);
@@ -4143,8 +3852,10 @@ input:checked + .toggle-slider:before {
 }
 
 .attachment-image {
-  max-width: 400px;
-  max-height: 300px;
+  min-width: 192px;
+  max-width: 192px;
+  min-height: 192px;
+  max-height: 192px;
   border-radius: var(--radius-sm);
   cursor: pointer;
   transition: transform var(--transition);

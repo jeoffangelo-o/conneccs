@@ -170,7 +170,8 @@
         "dean",
         "program_chair"
       ],
-      "attachments": []
+      "attachments": [],
+      "reactions": []
     },
     {
       "id": 11,
@@ -244,7 +245,10 @@
           "size": "317.09 KB",
           "type": "image/png"
         }
-      ]
+      ],
+      "deleted": true,
+      "deletedAt": "2026-03-17T11:38:12.692Z",
+      "deletedBy": "dean"
     },
     {
       "id": 17,
@@ -344,7 +348,8 @@
           "isCloudStored": false,
           "localPath": "1773719885340-188439667-1773719057736-943959282-updated-d1.pdf"
         }
-      ]
+      ],
+      "reactions": []
     },
     {
       "id": 22,
@@ -365,7 +370,10 @@
           "isCloudStored": false,
           "localPath": "1773734520971-518247125-Midterm Project Specs.pdf"
         }
-      ]
+      ],
+      "deleted": true,
+      "deletedAt": "2026-03-17T11:47:49.641Z",
+      "deletedBy": "dean"
     },
     {
       "id": 23,
@@ -403,6 +411,29 @@
         "faculty"
       ],
       "attachments": []
+    },
+    {
+      "id": 25,
+      "channelId": "general",
+      "userId": "dean",
+      "userName": "Dean's Office",
+      "userRole": "dean",
+      "message": "hi",
+      "timestamp": "2026-03-17T11:44:03.160Z",
+      "mentions": [],
+      "attachments": []
+    },
+    {
+      "id": 26,
+      "channelId": "general",
+      "userId": "dean",
+      "userName": "Dean's Office",
+      "userRole": "dean",
+      "message": "hi",
+      "timestamp": "2026-03-17T11:58:25.235Z",
+      "mentions": [],
+      "attachments": [],
+      "reactions": []
     }
   ]
 }
