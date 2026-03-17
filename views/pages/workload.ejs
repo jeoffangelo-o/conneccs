@@ -46,19 +46,19 @@
         </div>
       </div>
       <div class="table-wrap">
-        <table>
+        <table style="table-layout: fixed;">
           <thead>
             <tr>
-              <th>Faculty Member</th>
-              <th>Role</th>
-              <th>Program</th>
-              <th>Teaching</th>
-              <th>Research</th>
-              <th>Extension</th>
-              <th>Total Load</th>
-              <th>Distribution</th>
-              <th>Status</th>
-              <th>Flag</th>
+              <th style="width: 200px;">Faculty</th>
+              <th style="width: 90px;">Role</th>
+              <th style="width: 60px;">Prog</th>
+              <th style="width: 60px;">Teach</th>
+              <th style="width: 60px;">Res</th>
+              <th style="width: 60px;">Ext</th>
+              <th style="width: 70px;">Total</th>
+              <th style="width: 110px;">Distribution</th>
+              <th style="width: 70px;">Status</th>
+              <th style="width: 70px;">Flag</th>
             </tr>
           </thead>
           <tbody>
@@ -71,77 +71,71 @@
                     <%= w.avatar %>
                   </div>
                   <div class="faculty-cell-info">
-                    <a href="/faculty/<%= w.id %>" style="text-decoration:none">
-                      <div class="name"><%= w.name %></div>
-                    </a>
-                    <div class="sub"><%= w.email %></div>
+                    <div class="name" style="font-size: 0.8rem;"><%= w.name %></div>
+                    <div class="sub" style="font-size: 0.65rem;"><%= w.email.split('@')[0] %></div>
                   </div>
                 </div>
               </td>
-              <td><span class="badge badge-gray" style="font-size:0.68rem"><%= w.role %></span></td>
-              <td style="font-size:0.8rem; color:var(--text3)"><%= w.program %></td>
-              <td>
+              <td><span class="badge badge-gray" style="font-size:0.6rem; padding: 2px 5px;"><%= w.role.split(' ')[0] %></span></td>
+              <td style="font-size:0.7rem; color:var(--text3)"><%= w.program %></td>
+              <td style="text-align: center;">
                 <% if (w.status === 'On Leave') { %>
                   <span style="color:var(--text3)">—</span>
                 <% } else { %>
-                  <strong style="font-family:var(--font-display); font-size:0.95rem"><%= w.teachingLoad %></strong>
-                  <span style="color:var(--text3); font-size:0.72rem"> units</span>
+                  <strong style="font-family:var(--font-display); font-size:0.85rem"><%= w.teachingLoad %></strong>
                 <% } %>
               </td>
-              <td>
+              <td style="text-align: center;">
                 <% if (w.status === 'On Leave') { %>
                   <span style="color:var(--text3)">—</span>
                 <% } else { %>
-                  <strong style="font-family:var(--font-display); font-size:0.95rem"><%= w.researchLoad %></strong>
-                  <span style="color:var(--text3); font-size:0.72rem"> units</span>
+                  <strong style="font-family:var(--font-display); font-size:0.85rem"><%= w.researchLoad %></strong>
                 <% } %>
               </td>
-              <td>
+              <td style="text-align: center;">
                 <% if (w.status === 'On Leave') { %>
                   <span style="color:var(--text3)">—</span>
                 <% } else { %>
-                  <strong style="font-family:var(--font-display); font-size:0.95rem"><%= w.extensionLoad %></strong>
-                  <span style="color:var(--text3); font-size:0.72rem"> units</span>
+                  <strong style="font-family:var(--font-display); font-size:0.85rem"><%= w.extensionLoad %></strong>
                 <% } %>
               </td>
-              <td>
+              <td style="text-align: center;">
                 <% if (w.status === 'On Leave') { %>
                   <span style="color:var(--text3)">—</span>
                 <% } else { %>
-                  <div style="font-family:var(--font-display); font-size:1.1rem; font-weight:800; color: <%= w.overloaded ? 'var(--red)' : 'var(--text)' %>">
+                  <div style="font-family:var(--font-display); font-size:0.95rem; font-weight:800; color: <%= w.overloaded ? 'var(--red)' : 'var(--text)' %>">
                     <%= w.totalLoad %>
                   </div>
-                  <div style="font-size:0.65rem; color:var(--text3)">/ 30 max</div>
                 <% } %>
               </td>
               <td>
                 <% if (w.status !== 'On Leave') { %>
-                <div style="display:flex; flex-direction:column; gap:3px; width:130px">
-                  <div style="display:flex; height:8px; border-radius:99px; overflow:hidden; gap:1px">
-                    <div style="width:<%= w.teachingLoad / maxLoad * 100 %>%; background:var(--accent); border-radius:99px 0 0 99px"></div>
+                <div style="display:flex; flex-direction:column; gap:2px;">
+                  <div style="display:flex; height:6px; border-radius:99px; overflow:hidden; gap:1px">
+                    <div style="width:<%= w.teachingLoad / maxLoad * 100 %>%; background:var(--accent);"></div>
                     <div style="width:<%= w.researchLoad / maxLoad * 100 %>%; background:var(--teal)"></div>
-                    <div style="width:<%= w.extensionLoad / maxLoad * 100 %>%; background:var(--accent2); border-radius:0 99px 99px 0"></div>
+                    <div style="width:<%= w.extensionLoad / maxLoad * 100 %>%; background:var(--accent2);"></div>
                   </div>
-                  <div style="font-size:0.62rem; color:var(--text3)">
-                    <%= Math.round(w.teachingLoad/maxLoad*100) %>% · <%= Math.round(w.researchLoad/maxLoad*100) %>% · <%= Math.round(w.extensionLoad/maxLoad*100) %>%
+                  <div style="font-size:0.58rem; color:var(--text3); white-space: nowrap;">
+                    <%= Math.round(w.teachingLoad/maxLoad*100) %>%·<%= Math.round(w.researchLoad/maxLoad*100) %>%·<%= Math.round(w.extensionLoad/maxLoad*100) %>%
                   </div>
                 </div>
                 <% } else { %>
-                  <span style="color:var(--text3); font-size:0.8rem">—</span>
+                  <span style="color:var(--text3); font-size:0.75rem">—</span>
                 <% } %>
               </td>
               <td>
                 <% if (w.status === 'On Leave') { %>
-                  <span class="badge badge-gray">On Leave</span>
+                  <span class="badge badge-gray" style="font-size:0.6rem;">Leave</span>
                 <% } else { %>
-                  <span class="badge badge-green">Active</span>
+                  <span class="badge badge-green" style="font-size:0.6rem;">Active</span>
                 <% } %>
               </td>
               <td>
                 <% if (w.overloaded && w.status === 'Active') { %>
-                  <span class="badge badge-red" title="Total load exceeds recommended 24 units">⚡ Overloaded</span>
+                  <span class="badge badge-red" style="font-size:0.6rem;" title="Overloaded">⚡</span>
                 <% } else if (w.status === 'Active') { %>
-                  <span class="badge badge-green">✓ OK</span>
+                  <span class="badge badge-green" style="font-size:0.6rem;">✓</span>
                 <% } else { %>
                   <span style="color:var(--text3)">—</span>
                 <% } %>
