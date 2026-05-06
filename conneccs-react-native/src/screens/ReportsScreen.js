@@ -23,9 +23,10 @@ export default function ReportsScreen({ navigation }) {
         </TouchableOpacity>
         <View style={styles.topbarCenter}>
           <Text style={styles.topbarTitle}>Reports</Text>
+          <Text style={styles.topbarBreadcrumb}>CCS Faculty Portal › Reports</Text>
         </View>
         <TouchableOpacity onPress={() => navigation.navigate('ReportForm')}>
-          <SvgIcon name="add-circle" size={24} color={colors.accent} />
+          <SvgIcon name="plus" size={22} color={colors.text2} />
         </TouchableOpacity>
       </View>
 
@@ -59,6 +60,7 @@ const createStyles = (colors) => StyleSheet.create({
   topbar: { backgroundColor: colors.bg2, borderBottomWidth: 1, borderBottomColor: colors.border, paddingHorizontal: 16, paddingVertical: 12, paddingTop: 48, flexDirection: 'row', alignItems: 'center' },
   topbarCenter: { flex: 1, marginHorizontal: 16 },
   topbarTitle: { fontSize: 17, fontWeight: '700', color: colors.text },
+  topbarBreadcrumb: { fontSize: 11, color: colors.text3, marginTop: 2 },
   content: { flex: 1, padding: 16 },
   reportCard: { backgroundColor: colors.bg2, borderRadius: 12, borderWidth: 1, borderColor: colors.border, padding: 16, marginBottom: 12 },
   reportHeader: { flexDirection: 'row', alignItems: 'center' },

@@ -26,7 +26,7 @@ export default function AnnouncementsScreen({ navigation }) {
           <Text style={styles.topbarBreadcrumb}>CCS Faculty Portal › Announcements</Text>
         </View>
         <TouchableOpacity onPress={() => navigation.navigate('AnnouncementForm')}>
-          <SvgIcon name="add-circle" size={24} color={colors.accent} />
+          <SvgIcon name="plus" size={22} color={colors.text2} />
         </TouchableOpacity>
       </View>
 

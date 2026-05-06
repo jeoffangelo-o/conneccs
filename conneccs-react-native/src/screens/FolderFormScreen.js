@@ -30,7 +30,7 @@ export default function FolderFormScreen({ navigation }) {
       
       <View style={styles.topbar}>
         <TouchableOpacity onPress={() => navigation.goBack()}>
-          <SvgIcon name="arrow-back" size={24} color={colors.text} />
+          <SvgIcon name="arrowBack" size={24} color={colors.text} />
         </TouchableOpacity>
         <View style={styles.topbarCenter}>
           <Text style={styles.topbarTitle}>New Folder</Text>

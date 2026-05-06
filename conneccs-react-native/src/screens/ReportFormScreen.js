@@ -14,10 +14,11 @@ export default function ReportFormScreen({ navigation }) {
       <StatusBar style={isDark ? 'light' : 'dark'} />
       <View style={styles.topbar}>
         <TouchableOpacity onPress={() => navigation.goBack()}>
-          <SvgIcon name="arrow-back" size={24} color={colors.text} />
+          <SvgIcon name="arrowBack" size={24} color={colors.text} />
         </TouchableOpacity>
         <View style={styles.topbarCenter}>
           <Text style={styles.topbarTitle}>Submit Report</Text>
+          <Text style={styles.topbarBreadcrumb}>Create New Report</Text>
         </View>
         <View style={{ width: 24 }} />
       </View>
@@ -60,6 +61,7 @@ const createStyles = (colors) => StyleSheet.create({
   topbar: { backgroundColor: colors.bg2, borderBottomWidth: 1, borderBottomColor: colors.border, paddingHorizontal: 16, paddingVertical: 12, paddingTop: 48, flexDirection: 'row', alignItems: 'center' },
   topbarCenter: { flex: 1, marginHorizontal: 16 },
   topbarTitle: { fontSize: 17, fontWeight: '700', color: colors.text },
+  topbarBreadcrumb: { fontSize: 11, color: colors.text3, marginTop: 2 },
   content: { flex: 1, padding: 16 },
   panel: { backgroundColor: colors.bg2, borderRadius: 12, borderWidth: 1, borderColor: colors.border },
   panelHeader: { padding: 16, borderBottomWidth: 1, borderBottomColor: colors.border },

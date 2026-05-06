@@ -14,13 +14,14 @@ export default function FacultyDetailScreen({ navigation, route }) {
       <StatusBar style={isDark ? 'light' : 'dark'} />
       <View style={styles.topbar}>
         <TouchableOpacity onPress={() => navigation.goBack()}>
-          <SvgIcon name="arrow-back" size={24} color={colors.text} />
+          <SvgIcon name="arrowBack" size={24} color={colors.text} />
         </TouchableOpacity>
         <View style={styles.topbarCenter}>
           <Text style={styles.topbarTitle}>Faculty Profile</Text>
+          <Text style={styles.topbarBreadcrumb}>CCS Faculty Portal › Faculty › Profile</Text>
         </View>
         <TouchableOpacity>
-          <SvgIcon name="ellipsis-vertical" size={22} color={colors.text2} />
+          <SvgIcon name="moreVertical" size={22} color={colors.text2} />
         </TouchableOpacity>
       </View>
 
@@ -77,6 +78,7 @@ const createStyles = (colors) => StyleSheet.create({
   topbar: { backgroundColor: colors.bg2, borderBottomWidth: 1, borderBottomColor: colors.border, paddingHorizontal: 16, paddingVertical: 12, paddingTop: 48, flexDirection: 'row', alignItems: 'center' },
   topbarCenter: { flex: 1, marginHorizontal: 16 },
   topbarTitle: { fontSize: 17, fontWeight: '700', color: colors.text },
+  topbarBreadcrumb: { fontSize: 11, color: colors.text3, marginTop: 2 },
   content: { flex: 1, padding: 16 },
   profileCard: { backgroundColor: colors.bg2, borderRadius: 12, borderWidth: 1, borderColor: colors.border, padding: 24, alignItems: 'center', marginBottom: 16 },
   avatarLg: { width: 80, height: 80, borderRadius: 40, backgroundColor: colors.accent, alignItems: 'center', justifyContent: 'center', marginBottom: 16 },

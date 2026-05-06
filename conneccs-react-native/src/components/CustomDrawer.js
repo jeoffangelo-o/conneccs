@@ -31,7 +31,7 @@ export default function CustomDrawer(props) {
     { name: 'Reports', icon: 'document-text-outline', route: 'Reports', section: 'Main' },
     { name: 'IPCR Monitoring', icon: 'pulse-outline', route: 'IPCR', section: 'Main' },
     { name: 'Workload', icon: 'time-outline', route: 'Workload', section: 'Main' },
-    { name: 'Documents', icon: 'folder-outline', route: 'Documents', section: 'Main' },
+    { name: 'Reportorial Requirements', icon: 'folder-outline', route: 'Documents', section: 'Main' },
     { name: 'Faculty', icon: 'people-outline', route: 'Faculty', section: 'People' },
     { name: 'Announcements', icon: 'notifications-outline', route: 'Announcements', section: 'People', badge: 4 },
     { name: 'Messages', icon: 'chatbubble-outline', route: 'Messages', section: 'People' },
