@@ -11,22 +11,28 @@ import {
   Alert,
 } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
+import { useAuth } from '../../context/AuthContext';
 import { useTheme } from '../context/ThemeContext';
 
 export default function LoginScreen({ navigation }) {
+  const { login } = useAuth();
   const { colors } = useTheme();
   const styles = createStyles(colors);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [rememberMe, setRememberMe] = useState(false);
 
   const handleLogin = () => {
     if (!email || !password) {
       Alert.alert('Error', 'Please fill in all fields');
       return;
     }
-    // Navigate to main app
-    navigation.replace('Main');
+    
+    const success = login(email, password);
+    if (success) {
+      navigation.replace('Main');
+    } else {
+      Alert.alert('Error', 'Invalid email or password');
+    }
   };
 
   return (
@@ -46,7 +52,7 @@ export default function LoginScreen({ navigation }) {
               <Text style={styles.logoText}>C</Text>
             </View>
             <Text style={styles.brandName}>ConneCCS</Text>
-            <Text style={styles.brandTagline}>CCS Faculty Portal</Text>
+            <Text style={styles.brandTagline}>IPCR Management System</Text>
           </View>
 
           {/* Login Form */}
@@ -81,21 +87,6 @@ export default function LoginScreen({ navigation }) {
                 secureTextEntry
                 autoCapitalize="none"
               />
-            </View>
-
-            <View style={styles.formOptions}>
-              <TouchableOpacity
-                style={styles.checkboxContainer}
-                onPress={() => setRememberMe(!rememberMe)}
-              >
-                <View style={[styles.checkbox, rememberMe && styles.checkboxChecked]}>
-                  {rememberMe && <Text style={styles.checkmark}>✓</Text>}
-                </View>
-                <Text style={styles.checkboxLabel}>Remember me</Text>
-              </TouchableOpacity>
-              <TouchableOpacity>
-                <Text style={styles.linkText}>Forgot password?</Text>
-              </TouchableOpacity>
             </View>
 
             <TouchableOpacity style={styles.btnPrimary} onPress={handleLogin}>
@@ -195,39 +186,6 @@ const createStyles = (colors) => StyleSheet.create({
     fontSize: 14,
     color: colors.text,
   },
-  formOptions: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 24,
-  },
-  checkboxContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  checkbox: {
-    width: 18,
-    height: 18,
-    borderWidth: 2,
-    borderColor: colors.border,
-    borderRadius: 4,
-    marginRight: 8,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  checkboxChecked: {
-    backgroundColor: colors.accent,
-    borderColor: colors.accent,
-  },
-  checkmark: {
-    color: '#fff',
-    fontSize: 12,
-    fontWeight: '700',
-  },
-  checkboxLabel: {
-    fontSize: 14,
-    color: colors.text2,
-  },
   linkText: {
     fontSize: 14,
     color: colors.accent,
@@ -239,6 +197,7 @@ const createStyles = (colors) => StyleSheet.create({
     borderRadius: 8,
     alignItems: 'center',
     marginBottom: 16,
+    marginTop: 8,
   },
   btnPrimaryText: {
     color: '#fff',

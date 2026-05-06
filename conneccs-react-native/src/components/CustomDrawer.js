@@ -2,6 +2,8 @@ import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, Image, ScrollView } from 'react-native';
 import { DrawerContentScrollView } from '@react-navigation/drawer';
 import { useTheme } from '../context/ThemeContext';
+import { useAuth } from '../../context/AuthContext';
+import { useData } from '../../context/DataContext';
 import { SvgIcon } from './SvgIcon';
 
 // Simple icon component that works on web
@@ -9,7 +11,7 @@ const SimpleIcon = ({ name, size = 18, color }) => {
   const iconMap = {
     'grid-outline': 'grid',
     'document-text-outline': 'document',
-    'pulse-outline': 'pulse',
+    'pulse-outline': 'fileText',
     'time-outline': 'clock',
     'folder-outline': 'folder',
     'people-outline': 'users',
@@ -17,28 +19,70 @@ const SimpleIcon = ({ name, size = 18, color }) => {
     'chatbubble-outline': 'messageCircle',
     'sunny-outline': 'sun',
     'moon-outline': 'moon',
+    'user-outline': 'user',
+    'clipboard-outline': 'clipboard',
   };
   
-  return <SvgIcon name={iconMap[name] || 'grid'} size={size} color={color} />;
+  return <SvgIcon name={iconMap[name] || 'grid'} size={size} color={color} style={{}} />;
 };
 
 export default function CustomDrawer(props) {
   const { colors, isDark, toggleTheme } = useTheme();
+  const { user } = useAuth();
+  const { getUnreadCount } = useData();
   const styles = createStyles(colors);
 
+  const unreadCount = user ? getUnreadCount(user.id) : 0;
+
+  // Define menu items with role-based visibility
   const menuItems = [
-    { name: 'Dashboard', icon: 'grid-outline', route: 'Dashboard', section: 'Main' },
-    { name: 'Reports', icon: 'document-text-outline', route: 'Reports', section: 'Main' },
-    { name: 'IPCR Monitoring', icon: 'pulse-outline', route: 'IPCR', section: 'Main' },
-    { name: 'Workload', icon: 'time-outline', route: 'Workload', section: 'Main' },
-    { name: 'Reportorial Requirements', icon: 'folder-outline', route: 'Documents', section: 'Main' },
-    { name: 'Faculty', icon: 'people-outline', route: 'Faculty', section: 'People' },
-    { name: 'Announcements', icon: 'notifications-outline', route: 'Announcements', section: 'People', badge: 4 },
-    { name: 'Messages', icon: 'chatbubble-outline', route: 'Messages', section: 'People' },
+    { 
+      name: 'Dashboard', 
+      icon: 'grid-outline', 
+      route: 'Dashboard', 
+      section: 'Main',
+      roles: ['FACULTY', 'CHAIR', 'DEAN', 'ADMIN']
+    },
+    { 
+      name: 'OPCR', 
+      icon: 'document-text-outline', 
+      route: 'OPCR', 
+      section: 'Main',
+      roles: ['FACULTY', 'CHAIR', 'DEAN', 'ADMIN']
+    },
+    { 
+      name: 'Review Queue', 
+      icon: 'clipboard-outline', 
+      route: 'ReviewQueue', 
+      section: 'Main',
+      roles: ['CHAIR', 'DEAN', 'ADMIN']
+    },
+    { 
+      name: 'Notifications', 
+      icon: 'notifications-outline', 
+      route: 'Notifications', 
+      section: 'Account',
+      badge: unreadCount > 0 ? unreadCount : null,
+      roles: ['FACULTY', 'CHAIR', 'DEAN', 'ADMIN']
+    },
+    { 
+      name: 'Profile', 
+      icon: 'user-outline', 
+      route: 'Profile', 
+      section: 'Account',
+      roles: ['FACULTY', 'CHAIR', 'DEAN', 'ADMIN']
+    },
   ];
 
+  // Filter menu items based on user role
+  const visibleMenuItems = menuItems.filter(item => 
+    user && item.roles.includes(user.role)
+  );
+
   const renderSection = (section) => {
-    const items = menuItems.filter(item => item.section === section);
+    const items = visibleMenuItems.filter(item => item.section === section);
+    if (items.length === 0) return null;
+    
     return (
       <View key={section}>
         <Text style={styles.sectionLabel}>{section}</Text>
@@ -70,6 +114,15 @@ export default function CustomDrawer(props) {
     );
   };
 
+  const getUserInitials = (name) => {
+    if (!name) return '?';
+    const parts = name.split(' ');
+    if (parts.length >= 2) {
+      return parts[0][0] + parts[1][0];
+    }
+    return name[0];
+  };
+
   return (
     <View style={styles.container}>
       <View style={styles.header}>
@@ -80,24 +133,26 @@ export default function CustomDrawer(props) {
           />
           <View>
             <Text style={styles.brandName}>ConneCCS</Text>
-            <Text style={styles.brandTagline}>CCS Faculty Portal</Text>
+            <Text style={styles.brandTagline}>IPCR Management</Text>
           </View>
         </View>
       </View>
 
       <ScrollView style={styles.navContainer} showsVerticalScrollIndicator={false}>
         {renderSection('Main')}
-        {renderSection('People')}
+        {renderSection('Account')}
       </ScrollView>
 
       <View style={styles.footer}>
         <View style={styles.userInfo}>
           <View style={styles.userAvatar}>
-            <Text style={styles.userAvatarText}>D</Text>
+            <Text style={styles.userAvatarText}>
+              {user ? getUserInitials(user.name) : '?'}
+            </Text>
           </View>
           <View style={styles.userDetails}>
-            <Text style={styles.userName}>Dean's Office</Text>
-            <Text style={styles.userRole}>dean</Text>
+            <Text style={styles.userName}>{user?.name || 'Guest'}</Text>
+            <Text style={styles.userRole}>{user?.role.toLowerCase() || 'guest'}</Text>
           </View>
         </View>
         <TouchableOpacity style={styles.themeToggle} onPress={toggleTheme}>

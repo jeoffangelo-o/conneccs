@@ -1,0 +1,186 @@
+[
+  {
+    "id": "ipcr-1",
+    "year": 2026,
+    "period": "Jan-Jun 2025",
+    "facultyId": "u4",
+    "notedByChairId": "u3",
+    "verifiedByVpaa": "VPAA Name",
+    "approvedByDeanId": "u2",
+    "status": "COMPLETED",
+    "currentPhase": "TERMINAL_REVIEW",
+    "finalRating": 4.8,
+    "adjectivalRating": "Outstanding",
+    "majorFunctions": [
+      {
+        "id": "imf1",
+        "title": "1. Early Procurement and Utilization of Budget",
+        "category": "STRATEGIC",
+        "weight": 0.45,
+        "targets": [
+          {
+            "id": "it1",
+            "parentOpIndicatorId": "si1",
+            "description": "Assist in PPMP preparation for BSIT laboratory equipment",
+            "measures": "Complete PPMP forms with specs and cost estimates",
+            "q1Rating": 5,
+            "e2Rating": 5,
+            "t3Rating": 4,
+            "a4Rating": 4.67,
+            "actualAccomplishments": "Submitted PPMP for 15 laboratory equipment items on February 10, 2026.",
+            "remarks": "Submitted ahead of deadline. Complete specs.",
+            "movFileUrls": ["mov1.pdf", "mov2.jpg"]
+          }
+        ]
+      },
+      {
+        "id": "imf2",
+        "title": "2. Quality Assurance and Excellence Program",
+        "category": "CORE",
+        "weight": 0.45,
+        "targets": [
+          {
+            "id": "it2",
+            "parentOpIndicatorId": "si3",
+            "description": "Prepare BSIT accreditation documents for Level IV",
+            "measures": "Complete Area I-VII manuscripts and supporting documents",
+            "q1Rating": 5,
+            "e2Rating": 4,
+            "t3Rating": 5,
+            "a4Rating": 4.67,
+            "actualAccomplishments": "Completed all 7 areas of BSIT accreditation documents.",
+            "remarks": "High quality output.",
+            "movFileUrls": []
+          }
+        ]
+      },
+      {
+        "id": "imf3",
+        "title": "3. Support to Institutional Programs",
+        "category": "SUPPORT",
+        "weight": 0.10,
+        "targets": [
+          {
+            "id": "it3",
+            "parentOpIndicatorId": "si6",
+            "description": "Attend flag ceremonies and institutional activities",
+            "measures": "100% attendance",
+            "q1Rating": 5,
+            "e2Rating": 5,
+            "t3Rating": 5,
+            "a4Rating": 5.0,
+            "actualAccomplishments": "Perfect attendance in all flag ceremonies.",
+            "remarks": "",
+            "movFileUrls": []
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "ipcr-2",
+    "year": 2026,
+    "period": "Jan-Jun 2025",
+    "facultyId": "u5",
+    "notedByChairId": null,
+    "verifiedByVpaa": null,
+    "approvedByDeanId": null,
+    "status": "IN_PROGRESS",
+    "currentPhase": "TARGET_SETTING",
+    "finalRating": null,
+    "adjectivalRating": null,
+    "majorFunctions": [
+      {
+        "id": "imf4",
+        "title": "1. Early Procurement and Utilization of Budget",
+        "category": "STRATEGIC",
+        "weight": 0.45,
+        "targets": [
+          {
+            "id": "it4",
+            "parentOpIndicatorId": "si2",
+            "description": "Submit Purchase Requests for BSCS software licenses",
+            "measures": "3 PRs submitted on time with complete attachments",
+            "q1Rating": null,
+            "e2Rating": null,
+            "t3Rating": null,
+            "a4Rating": null,
+            "actualAccomplishments": "",
+            "remarks": "",
+            "movFileUrls": []
+          }
+        ]
+      },
+      {
+        "id": "imf5",
+        "title": "2. Quality Assurance and Excellence Program",
+        "category": "CORE",
+        "weight": 0.45,
+        "targets": [
+          {
+            "id": "it5",
+            "parentOpIndicatorId": "si4",
+            "description": "Submit monthly QO Performance Monitoring Graph",
+            "measures": "Graph submitted on or before 12th day of month",
+            "q1Rating": null,
+            "e2Rating": null,
+            "t3Rating": null,
+            "a4Rating": null,
+            "actualAccomplishments": "",
+            "remarks": "",
+            "movFileUrls": []
+          }
+        ]
+      },
+      {
+        "id": "imf6",
+        "title": "3. Support to Institutional Programs",
+        "category": "SUPPORT",
+        "weight": 0.10,
+        "targets": [
+          {
+            "id": "it6",
+            "parentOpIndicatorId": "si7",
+            "description": "Participate in wellness activities",
+            "measures": "Attendance to health activities",
+            "q1Rating": null,
+            "e2Rating": null,
+            "t3Rating": null,
+            "a4Rating": null,
+            "actualAccomplishments": "",
+            "remarks": "",
+            "movFileUrls": []
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "ipcr-3",
+    "year": 2026,
+    "period": "Jan-Jun 2025",
+    "facultyId": "u6",
+    "notedByChairId": "u3",
+    "verifiedByVpaa": "VPAA Name",
+    "approvedByDeanId": "u2",
+    "status": "COMPLETED",
+    "currentPhase": "TERMINAL_REVIEW",
+    "finalRating": 4.9,
+    "adjectivalRating": "Outstanding",
+    "majorFunctions": []
+  },
+  {
+    "id": "ipcr-4",
+    "year": 2026,
+    "period": "Jan-Jun 2025",
+    "facultyId": "u7",
+    "notedByChairId": "u3",
+    "verifiedByVpaa": "VPAA Name",
+    "approvedByDeanId": "u2",
+    "status": "COMPLETED",
+    "currentPhase": "TERMINAL_REVIEW",
+    "finalRating": 4.6,
+    "adjectivalRating": "Very Satisfactory",
+    "majorFunctions": []
+  }
+]

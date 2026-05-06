@@ -1,0 +1,112 @@
+{
+  "id": "opcr-2026",
+  "year": 2026,
+  "period": "Jan-Dec 2026",
+  "officeName": "College of Computer Studies",
+  "deanId": "u2",
+  "status": "COMPLETED",
+  "currentPhase": "TERMINAL_REVIEW",
+  "majorFunctions": [
+    {
+      "id": "mf1",
+      "title": "1. Early Procurement and Utilization of Budget",
+      "category": "STRATEGIC",
+      "weight": 0.45,
+      "successIndicators": [
+        {
+          "id": "si1",
+          "code": "1.1a",
+          "description": "Submitted PPMP as required on or before February 15 for FY 2027 Budget Proposal",
+          "measures": "Complete documentary requirements to Budget Unit with only 1 revision",
+          "timeline": "Jan-Jun",
+          "targetValue": 1,
+          "actualValue": 1,
+          "percentAccomplished": 100,
+          "accountableUnits": "Onesa, Gastilo, Otares"
+        },
+        {
+          "id": "si2",
+          "code": "1.1b",
+          "description": "Submitted Purchase Requests and relevant documents on or before February 20, May 15, and August 14",
+          "measures": "Complete documentary requirements to Procurement Unit",
+          "timeline": "Jan-Dec",
+          "targetValue": 3,
+          "actualValue": 3,
+          "percentAccomplished": 100,
+          "accountableUnits": "Onesa, Gastilo"
+        }
+      ]
+    },
+    {
+      "id": "mf2",
+      "title": "2. Quality Assurance and Excellence Program",
+      "category": "CORE",
+      "weight": 0.45,
+      "successIndicators": [
+        {
+          "id": "si3",
+          "code": "2.1a",
+          "description": "Ensured submission of QO 5 working days after the OPCR review of targets",
+          "measures": "Submitted to CQA with only 1 revision",
+          "timeline": "Jan-Jun",
+          "targetValue": 1,
+          "actualValue": 1,
+          "percentAccomplished": 100,
+          "accountableUnits": "Onesa, Gastilo"
+        },
+        {
+          "id": "si4",
+          "code": "2.1b",
+          "description": "Ensured 100% submission of QO Performance Monitoring Graph",
+          "measures": "On or before 12th day of ensuing month to CQA",
+          "timeline": "Jan-Dec",
+          "targetValue": 12,
+          "actualValue": 12,
+          "percentAccomplished": 100,
+          "accountableUnits": "Onesa, Gastilo"
+        },
+        {
+          "id": "si5",
+          "code": "2.1c",
+          "description": "100% of program offerings in CCS with accreditation",
+          "measures": "Undergraduate Programs - 100%",
+          "timeline": "Jan-Dec",
+          "targetValue": 100,
+          "actualValue": 100,
+          "percentAccomplished": 100,
+          "accountableUnits": "All Faculty"
+        }
+      ]
+    },
+    {
+      "id": "mf3",
+      "title": "3. Support to Institutional and College-wide Programs",
+      "category": "SUPPORT",
+      "weight": 0.10,
+      "successIndicators": [
+        {
+          "id": "si6",
+          "code": "3.1a",
+          "description": "100% attendance to Flag Ceremony every Monday",
+          "measures": "Attendance sheet",
+          "timeline": "Jan-Dec",
+          "targetValue": 100,
+          "actualValue": 95,
+          "percentAccomplished": 95,
+          "accountableUnits": "All Personnel"
+        },
+        {
+          "id": "si7",
+          "code": "3.1b",
+          "description": "100% attendance to health and wellness activities every last Friday",
+          "measures": "Attendance sheet",
+          "timeline": "Jan-Dec",
+          "targetValue": 100,
+          "actualValue": 100,
+          "percentAccomplished": 100,
+          "accountableUnits": "All Personnel"
+        }
+      ]
+    }
+  ]
+}
