@@ -421,7 +421,10 @@
       "message": "hi",
       "timestamp": "2026-03-17T11:44:03.160Z",
       "mentions": [],
-      "attachments": []
+      "attachments": [],
+      "deleted": true,
+      "deletedAt": "2026-03-19T00:36:59.246Z",
+      "deletedBy": "dean"
     },
     {
       "id": 26,
@@ -429,8 +432,53 @@
       "userId": "dean",
       "userName": "Dean's Office",
       "userRole": "dean",
-      "message": "hi",
+      "message": "hehe",
       "timestamp": "2026-03-17T11:58:25.235Z",
+      "mentions": [],
+      "attachments": [],
+      "reactions": [],
+      "edited": true,
+      "editedAt": "2026-03-17T22:43:24.803Z",
+      "deleted": true,
+      "deletedAt": "2026-03-17T22:43:48.973Z",
+      "deletedBy": "dean"
+    },
+    {
+      "id": 27,
+      "channelId": "ipcr-updates",
+      "userId": "dean",
+      "userName": "Dean's Office",
+      "userRole": "dean",
+      "message": "hello",
+      "timestamp": "2026-03-17T22:42:26.199Z",
+      "mentions": [],
+      "attachments": []
+    },
+    {
+      "id": 28,
+      "channelId": "general",
+      "userId": "chair_001",
+      "userName": "Dr. Pedro Cruz",
+      "userRole": "program_chair",
+      "message": "@dean hehe",
+      "timestamp": "2026-03-17T23:07:41.844Z",
+      "mentions": [
+        "dean"
+      ],
+      "attachments": [],
+      "reactions": [],
+      "deleted": true,
+      "deletedAt": "2026-03-17T23:08:48.556Z",
+      "deletedBy": "chair_001"
+    },
+    {
+      "id": 29,
+      "channelId": "general",
+      "userId": "chair_001",
+      "userName": "Dr. Pedro Cruz",
+      "userRole": "program_chair",
+      "message": "ha",
+      "timestamp": "2026-03-17T23:09:08.380Z",
       "mentions": [],
       "attachments": [],
       "reactions": []

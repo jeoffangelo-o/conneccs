@@ -1,0 +1,88 @@
+ConneCCS Static Design Mockup - Complete
+========================================
+
+Created: May 1, 2026
+Purpose: Static HTML mockup for design presentation
+
+WHAT WAS CREATED:
+-----------------
+✓ 11 HTML pages with identical design to original project
+✓ Complete CSS styling (copied from original)
+✓ Theme toggle functionality (dark/light mode)
+✓ All images and assets
+✓ Static data for demonstration
+✓ Fully navigable interface
+
+PAGES INCLUDED:
+---------------
+1. index.html - Login page with demo accounts
+2. register.html - Registration page
+3. dashboard.html - Main dashboard with stats, reports, and IPCR summary
+4. faculty.html - Faculty directory with 6 faculty cards
+5. announcements.html - 4 announcements with priority badges
+6. reports.html - Reports table with filters
+7. ipcr.html - IPCR monitoring with scores and ratings
+8. documents.html - Document folders with deadlines
+9. messages.html - Messages placeholder
+10. workload.html - Workload placeholder
+
+FEATURES:
+---------
+✓ Same design and color scheme as original
+✓ Dark/Light theme toggle (persists in localStorage)
+✓ Responsive layout
+✓ Animated elements (fade-in effects)
+✓ Interactive navigation
+✓ Static data for all pages
+✓ No backend required
+
+HOW TO USE:
+-----------
+1. Open conneccs-design/index.html in any web browser
+2. Click "Sign In" or any demo account button
+3. Navigate using the sidebar menu
+4. Toggle theme with sun/moon icon
+5. All links between pages work
+
+FOLDER STRUCTURE:
+-----------------
+conneccs-design/
+├── index.html (Login)
+├── register.html (Registration)
+├── dashboard.html (Main dashboard)
+├── faculty.html (Faculty directory)
+├── announcements.html (Announcements)
+├── reports.html (Reports)
+├── ipcr.html (IPCR monitoring)
+├── documents.html (Documents)
+├── messages.html (Messages)
+├── workload.html (Workload)
+├── README.md (Documentation)
+├── css/
+│   └── style.css (All styles)
+├── js/
+│   └── theme.js (Theme toggle)
+└── images/
+    ├── logo.png
+    ├── he.png
+    └── README.md
+
+NOTES:
+------
+- This is a MOCKUP ONLY - no backend functionality
+- Forms don't submit data
+- All data is hardcoded in HTML
+- Perfect for design reviews and presentations
+- Can be opened directly in browser (no server needed)
+
+DIFFERENCES FROM ORIGINAL:
+--------------------------
+- No Express.js backend
+- No database connections
+- No authentication
+- No form submissions
+- No dynamic data loading
+- Static data only
+
+This mockup preserves the exact design, layout, and styling
+of the original project for presentation purposes.

@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>IPCR Entry Form – ConneCCS</title>
+  <link rel="stylesheet" href="css/style.css" />
+  <link rel="icon" href="images/logo.png" type="image/png">
+</head>
+<body>
+<div class="app-shell">
+  <aside class="sidebar">
+    <div class="sidebar-brand">
+      <a href="dashboard.html" class="sidebar-logo">
+        <img src="images/logo.png" alt="ConneCCS Logo" class="logo-image">
+        <div><div>ConneCCS</div><div class="sidebar-tagline">CCS Faculty Portal</div></div>
+      </a>
+    </div>
+    <nav class="sidebar-nav">
+      <div class="nav-section-label">Main</div>
+      <a href="dashboard.html" class="nav-item"><svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>Dashboard</a>
+      <a href="reports.html" class="nav-item"><svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14,2 14,8 20,8"/></svg>Reports</a>
+      <a href="ipcr.html" class="nav-item active"><svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22,12 18,12 15,21 9,3 6,12 2,12"/></svg>IPCR Monitoring</a>
+      <a href="workload.html" class="nav-item"><svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12,6 12,12 16,14"/></svg>Workload</a>
+      <a href="documents.html" class="nav-item"><svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>Documents</a>
+      <div class="nav-section-label">People</div>
+      <a href="faculty.html" class="nav-item"><svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>Faculty</a>
+      <a href="announcements.html" class="nav-item"><svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/></svg>Announcements<span class="nav-badge">4</span></a>
+      <a href="messages.html" class="nav-item"><svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>Messages</a>
+    </nav>
+    <div class="sidebar-user">
+      <div class="user-avatar">D</div>
+      <div class="user-info"><div class="user-name">Dean's Office</div><div class="user-role">dean</div></div>
+      <button class="theme-toggle" onclick="toggleTheme()" title="Toggle theme"><svg class="theme-icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/></svg><svg class="theme-icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg></button>
+    </div>
+  </aside>
+  <div class="main-content">
+    <div class="topbar">
+      <div class="topbar-left"><span class="topbar-title">IPCR Entry Form</span><span class="topbar-breadcrumb">CCS Faculty Portal › IPCR › New Entry</span></div>
+      <div class="topbar-right"><a href="ipcr.html" class="topbar-btn"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>Back to IPCR</a></div>
+    </div>
+    <div class="page-body">
+      <div class="panel fade-in" style="max-width: 1000px; margin: 0 auto;">
+        <div class="panel-header"><div class="panel-title"><span class="dot" style="background:var(--accent2)"></span> Individual Performance Commitment and Review</div></div>
+        <div class="panel-body">
+          <form>
+            <div class="form-row">
+              <div class="form-group"><label class="form-label">Faculty Member *</label><select class="form-select" required><option value="">Select faculty</option><option value="1">Dr. Maria Santos</option><option value="2">Prof. Juan Dela Cruz</option><option value="3">Dr. Ana Reyes</option></select></div>
+              <div class="form-group"><label class="form-label">Rating Period *</label><select class="form-select" required><option value="">Select period</option><option value="jan-jun-2025">January - June 2025</option><option value="jul-dec-2025">July - December 2025</option></select></div>
+            </div>
+
+            <!-- Strategic Priority -->
+            <div style="background: var(--bg3); border: 1px solid var(--border); border-radius: var(--radius); padding: 20px; margin: 24px 0;">
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+                <h3 style="font-family: var(--font-display); font-size: 1.1rem; font-weight: 700; color: var(--text);">A. Strategic Priority (10%)</h3>
+                <span style="font-size: 0.75rem; color: var(--text3); background: var(--bg2); padding: 4px 10px; border-radius: 4px;">Weight: 10%</span>
+              </div>
+              <div class="form-group"><label class="form-label">Major Final Output / Target</label><textarea class="form-textarea" rows="2" placeholder="e.g., Submission of IPCR on time, Attendance to university events"></textarea></div>
+              <div class="form-group"><label class="form-label">Actual Accomplishment</label><textarea class="form-textarea" rows="2" placeholder="Describe actual accomplishment"></textarea></div>
+              <div class="form-row">
+                <div class="form-group"><label class="form-label">Quality Rating (1-5) *</label><select class="form-select" required><option value="">Select</option><option value="5">5 - Outstanding</option><option value="4">4 - Very Satisfactory</option><option value="3">3 - Satisfactory</option><option value="2">2 - Unsatisfactory</option><option value="1">1 - Poor</option></select></div>
+                <div class="form-group"><label class="form-label">Efficiency Rating (1-5) *</label><select class="form-select" required><option value="">Select</option><option value="5">5 - Outstanding</option><option value="4">4 - Very Satisfactory</option><option value="3">3 - Satisfactory</option><option value="2">2 - Unsatisfactory</option><option value="1">1 - Poor</option></select></div>
+                <div class="form-group"><label class="form-label">Timeliness Rating (1-5) *</label><select class="form-select" required><option value="">Select</option><option value="5">5 - Outstanding</option><option value="4">4 - Very Satisfactory</option><option value="3">3 - Satisfactory</option><option value="2">2 - Unsatisfactory</option><option value="1">1 - Poor</option></select></div>
+              </div>
+            </div>
+
+            <!-- Core Functions -->
+            <div style="background: var(--bg3); border: 1px solid var(--border); border-radius: var(--radius); padding: 20px; margin: 24px 0;">
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+                <h3 style="font-family: var(--font-display); font-size: 1.1rem; font-weight: 700; color: var(--text);">B. Core Functions (75%)</h3>
+                <span style="font-size: 0.75rem; color: var(--text3); background: var(--bg2); padding: 4px 10px; border-radius: 4px;">Weight: 75%</span>
+              </div>
+              
+              <!-- Instruction -->
+              <div style="border-left: 3px solid var(--accent); padding-left: 16px; margin-bottom: 20px;">
+                <h4 style="font-size: 0.95rem; font-weight: 600; color: var(--text); margin-bottom: 12px;">1. Instruction (45%)</h4>
+                <div class="form-group"><label class="form-label">Target / Output</label><textarea class="form-textarea" rows="2" placeholder="e.g., Teach 18 units, Submit syllabi, Conduct assessments"></textarea></div>
+                <div class="form-group"><label class="form-label">Actual Accomplishment</label><textarea class="form-textarea" rows="2" placeholder="Describe actual accomplishment"></textarea></div>
+                <div class="form-row">
+                  <div class="form-group"><label class="form-label">Quality (Q)</label><select class="form-select"><option value="">Select</option><option value="5">5</option><option value="4">4</option><option value="3">3</option><option value="2">2</option><option value="1">1</option></select></div>
+                  <div class="form-group"><label class="form-label">Efficiency (E)</label><select class="form-select"><option value="">Select</option><option value="5">5</option><option value="4">4</option><option value="3">3</option><option value="2">2</option><option value="1">1</option></select></div>
+                  <div class="form-group"><label class="form-label">Timeliness (T)</label><select class="form-select"><option value="">Select</option><option value="5">5</option><option value="4">4</option><option value="3">3</option><option value="2">2</option><option value="1">1</option></select></div>
+                </div>
+              </div>
+
+              <!-- Research -->
+              <div style="border-left: 3px solid var(--teal); padding-left: 16px; margin-bottom: 20px;">
+                <h4 style="font-size: 0.95rem; font-weight: 600; color: var(--text); margin-bottom: 12px;">2. Research (15%)</h4>
+                <div class="form-group"><label class="form-label">Target / Output</label><textarea class="form-textarea" rows="2" placeholder="e.g., Complete 1 research project, Present at conference, Publish paper"></textarea></div>
+                <div class="form-group"><label class="form-label">Actual Accomplishment</label><textarea class="form-textarea" rows="2" placeholder="Describe actual accomplishment"></textarea></div>
+                <div class="form-row">
+                  <div class="form-group"><label class="form-label">Quality (Q)</label><select class="form-select"><option value="">Select</option><option value="5">5</option><option value="4">4</option><option value="3">3</option><option value="2">2</option><option value="1">1</option></select></div>
+                  <div class="form-group"><label class="form-label">Efficiency (E)</label><select class="form-select"><option value="">Select</option><option value="5">5</option><option value="4">4</option><option value="3">3</option><option value="2">2</option><option value="1">1</option></select></div>
+                  <div class="form-group"><label class="form-label">Timeliness (T)</label><select class="form-select"><option value="">Select</option><option value="5">5</option><option value="4">4</option><option value="3">3</option><option value="2">2</option><option value="1">1</option></select></div>
+                </div>
+              </div>
+
+              <!-- Extension -->
+              <div style="border-left: 3px solid var(--accent2); padding-left: 16px;">
+                <h4 style="font-size: 0.95rem; font-weight: 600; color: var(--text); margin-bottom: 12px;">3. Extension Services (15%)</h4>
+                <div class="form-group"><label class="form-label">Target / Output</label><textarea class="form-textarea" rows="2" placeholder="e.g., Conduct 2 community outreach programs, Technical advisory services"></textarea></div>
+                <div class="form-group"><label class="form-label">Actual Accomplishment</label><textarea class="form-textarea" rows="2" placeholder="Describe actual accomplishment"></textarea></div>
+                <div class="form-row">
+                  <div class="form-group"><label class="form-label">Quality (Q)</label><select class="form-select"><option value="">Select</option><option value="5">5</option><option value="4">4</option><option value="3">3</option><option value="2">2</option><option value="1">1</option></select></div>
+                  <div class="form-group"><label class="form-label">Efficiency (E)</label><select class="form-select"><option value="">Select</option><option value="5">5</option><option value="4">4</option><option value="3">3</option><option value="2">2</option><option value="1">1</option></select></div>
+                  <div class="form-group"><label class="form-label">Timeliness (T)</label><select class="form-select"><option value="">Select</option><option value="5">5</option><option value="4">4</option><option value="3">3</option><option value="2">2</option><option value="1">1</option></select></div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Support Functions -->
+            <div style="background: var(--bg3); border: 1px solid var(--border); border-radius: var(--radius); padding: 20px; margin: 24px 0;">
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+                <h3 style="font-family: var(--font-display); font-size: 1.1rem; font-weight: 700; color: var(--text);">C. Support Functions (15%)</h3>
+                <span style="font-size: 0.75rem; color: var(--text3); background: var(--bg2); padding: 4px 10px; border-radius: 4px;">Weight: 15%</span>
+              </div>
+              <div class="form-group"><label class="form-label">Target / Output</label><textarea class="form-textarea" rows="2" placeholder="e.g., Committee work, Administrative tasks, Student advising"></textarea></div>
+              <div class="form-group"><label class="form-label">Actual Accomplishment</label><textarea class="form-textarea" rows="2" placeholder="Describe actual accomplishment"></textarea></div>
+              <div class="form-row">
+                <div class="form-group"><label class="form-label">Quality (Q)</label><select class="form-select"><option value="">Select</option><option value="5">5</option><option value="4">4</option><option value="3">3</option><option value="2">2</option><option value="1">1</option></select></div>
+                <div class="form-group"><label class="form-label">Efficiency (E)</label><select class="form-select"><option value="">Select</option><option value="5">5</option><option value="4">4</option><option value="3">3</option><option value="2">2</option><option value="1">1</option></select></div>
+                <div class="form-group"><label class="form-label">Timeliness (T)</label><select class="form-select"><option value="">Select</option><option value="5">5</option><option value="4">4</option><option value="3">3</option><option value="2">2</option><option value="1">1</option></select></div>
+              </div>
+            </div>
+
+            <!-- Overall Rating -->
+            <div style="background: rgba(79,124,255,0.08); border: 1px solid rgba(79,124,255,0.2); border-radius: var(--radius); padding: 20px; margin: 24px 0;">
+              <h3 style="font-family: var(--font-display); font-size: 1.1rem; font-weight: 700; color: var(--text); margin-bottom: 12px;">Overall Performance Rating</h3>
+              <div style="font-size: 0.8rem; color: var(--text3); margin-bottom: 16px; line-height: 1.6;">
+                Rating Scale: 5 = Outstanding (4.500-5.000) | 4 = Very Satisfactory (3.500-4.499) | 3 = Satisfactory (2.500-3.499) | 2 = Unsatisfactory (1.500-2.499) | 1 = Poor (1.000-1.499)
+              </div>
+              <div class="form-group"><label class="form-label">Numerical Rating</label><input type="number" class="form-input" placeholder="Auto-calculated based on weighted average" step="0.001" min="1" max="5" readonly style="background: var(--bg2);"></div>
+              <div class="form-group"><label class="form-label">Adjectival Rating</label><input type="text" class="form-input" placeholder="Auto-generated" readonly style="background: var(--bg2);"></div>
+              <div class="form-group"><label class="form-label">Supervisor's Comments</label><textarea class="form-textarea" rows="4" placeholder="Overall assessment, strengths, areas for improvement, and recommendations..."></textarea></div>
+            </div>
+            <div style="display: flex; gap: 12px; justify-content: flex-end; margin-top: 24px; padding-top: 24px; border-top: 1px solid var(--border);">
+              <a href="ipcr.html" class="btn btn-secondary">Cancel</a>
+              <button type="button" class="btn btn-secondary">Save as Draft</button>
+              <button type="submit" class="btn btn-primary">Submit IPCR</button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+<script src="js/theme.js"></script>
+<script src="js/interactions.js"></script>
+</body>
+</html>
