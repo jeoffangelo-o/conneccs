@@ -74,8 +74,8 @@ export default function ProfileScreen({ navigation }) {
       </View>
 
       <ScrollView 
-        style={{ flex: 1 }} 
         contentContainerStyle={styles.content}
+        keyboardShouldPersistTaps="handled"
         showsVerticalScrollIndicator={false}
       >
         {/* Profile Card */}

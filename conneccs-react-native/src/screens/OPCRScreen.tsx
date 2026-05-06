@@ -57,8 +57,8 @@ export default function OPCRScreen({ navigation }) {
       </View>
 
       <ScrollView 
-        style={{ flex: 1 }} 
         contentContainerStyle={styles.content}
+        keyboardShouldPersistTaps="handled"
         showsVerticalScrollIndicator={false}
       >
         {/* Header */}

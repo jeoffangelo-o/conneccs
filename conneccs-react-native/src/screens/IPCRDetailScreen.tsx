@@ -6,6 +6,7 @@ import {
   TouchableOpacity,
   TextInput,
   StyleSheet,
+  Platform,
 } from 'react-native';
 import { useTheme } from '../context/ThemeContext';
 import { useData } from '../../context/DataContext';
@@ -15,9 +16,35 @@ import { StatusBadge } from '../../components/StatusBadge';
 import { RatingInput } from '../../components/RatingInput';
 import { calculateA4, calculateFinalRating } from '../../utils/calculations';
 import usersData from '../../assets/data/users.json';
-import { User, IPCR } from '../../types';
+import { User } from '../../types';
 
 type TabType = 'Targets' | 'Accomplishments' | 'MOV' | 'Rating Summary';
+
+// Web-specific ScrollView wrapper
+const WebScrollView = ({ children, style, contentContainerStyle, ...props }: any) => {
+  if (Platform.OS === 'web') {
+    return (
+      <div
+        style={{
+          flex: 1,
+          overflow: 'auto',
+          WebkitOverflowScrolling: 'touch',
+          ...style,
+        }}
+      >
+        <div style={contentContainerStyle}>
+          {children}
+        </div>
+      </div>
+    );
+  }
+  
+  return (
+    <ScrollView style={style} contentContainerStyle={contentContainerStyle} {...props}>
+      {children}
+    </ScrollView>
+  );
+};
 
 export default function IPCRDetailScreen({ navigation, route }) {
   const { colors, isDark } = useTheme();
@@ -67,7 +94,7 @@ export default function IPCRDetailScreen({ navigation, route }) {
 
   const renderTargetsTab = () => (
     <View>
-      {ipcr.majorFunctions.map((mf, mfIndex) => (
+      {ipcr.majorFunctions.map((mf) => (
         <View key={mf.id} style={styles.panel}>
           <Text style={styles.panelTitle}>{mf.title}</Text>
           <Text style={styles.categoryBadge}>{mf.category} ({(mf.weight * 100)}%)</Text>
@@ -257,7 +284,7 @@ export default function IPCRDetailScreen({ navigation, route }) {
     <View style={styles.container}>
       <StatusBar style={isDark ? 'light' : 'dark'} />
       
-      {/* Topbar */}
+      {/* Fixed Topbar */}
       <View style={styles.topbar}>
         <TouchableOpacity onPress={() => navigation.goBack()}>
           <SvgIcon name="arrowBack" size={24} color={colors.text} style={{}} />
@@ -273,7 +300,7 @@ export default function IPCRDetailScreen({ navigation, route }) {
         </TouchableOpacity>
       </View>
 
-      {/* Header Card */}
+      {/* Fixed Header Card */}
       <View style={styles.headerCard}>
         <View style={styles.headerRow}>
           <View>
@@ -293,9 +320,12 @@ export default function IPCRDetailScreen({ navigation, route }) {
         )}
       </View>
 
-      {/* Tabs */}
+      {/* Fixed Tabs */}
       <View style={styles.tabsContainer}>
-        <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+        <ScrollView
+          horizontal
+          showsHorizontalScrollIndicator={false}
+        >
           {tabs.map((tab) => (
             <TouchableOpacity
               key={tab}
@@ -310,22 +340,23 @@ export default function IPCRDetailScreen({ navigation, route }) {
         </ScrollView>
       </View>
 
-      {/* Tab Content */}
-      <ScrollView 
-        style={{ flex: 1 }} 
-        contentContainerStyle={styles.content}
+      {/* Scrollable Content */}
+      <WebScrollView
+        style={styles.scrollView}
+        contentContainerStyle={styles.scrollContent}
+        keyboardShouldPersistTaps="handled"
         showsVerticalScrollIndicator={false}
       >
         {activeTab === 'Targets' && renderTargetsTab()}
         {activeTab === 'Accomplishments' && renderAccomplishmentsTab()}
         {activeTab === 'MOV' && renderMOVTab()}
         {activeTab === 'Rating Summary' && renderRatingSummaryTab()}
-      </ScrollView>
+      </WebScrollView>
     </View>
   );
 }
 
-const createStyles = (colors) => StyleSheet.create({
+const createStyles = (colors: any) => StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: colors.bg,
@@ -413,7 +444,10 @@ const createStyles = (colors) => StyleSheet.create({
     color: colors.accent,
     fontWeight: '600',
   },
-  content: {
+  scrollView: {
+    flex: 1,
+  },
+  scrollContent: {
     padding: 16,
     paddingBottom: 32,
   },

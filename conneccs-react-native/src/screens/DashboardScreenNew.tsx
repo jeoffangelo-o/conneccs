@@ -107,8 +107,8 @@ export default function DashboardScreen({ navigation }) {
       </View>
 
       <ScrollView 
-        style={{ flex: 1 }} 
         contentContainerStyle={styles.content}
+        keyboardShouldPersistTaps="handled"
         showsVerticalScrollIndicator={false}
       >
         {/* Stats Grid */}

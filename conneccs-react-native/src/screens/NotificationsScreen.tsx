@@ -74,8 +74,8 @@ export default function NotificationsScreen({ navigation }) {
       </View>
 
       <ScrollView 
-        style={{ flex: 1 }} 
         contentContainerStyle={styles.content}
+        keyboardShouldPersistTaps="handled"
         showsVerticalScrollIndicator={false}
       >
         {userNotifications.length === 0 ? (

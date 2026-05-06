@@ -5,10 +5,8 @@ import {
   TextInput,
   TouchableOpacity,
   StyleSheet,
-  KeyboardAvoidingView,
-  Platform,
-  ScrollView,
   Alert,
+  ScrollView,
 } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
 import { useAuth } from '../../context/AuthContext';
@@ -35,28 +33,31 @@ export default function LoginScreen({ navigation }) {
     }
   };
 
+  const quickLogin = (userEmail, userPassword) => {
+    setEmail(userEmail);
+    setPassword(userPassword);
+  };
+
   return (
-    <KeyboardAvoidingView
-      style={styles.container}
-      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-    >
+    <View style={styles.container}>
       <StatusBar style="light" />
       <ScrollView
-        contentContainerStyle={styles.scrollContainer}
+        contentContainerStyle={styles.scrollContent}
         keyboardShouldPersistTaps="handled"
+        showsVerticalScrollIndicator={false}
       >
-        <View style={styles.content}>
-          {/* Logo */}
-          <View style={styles.logoContainer}>
-            <View style={styles.logoMark}>
-              <Text style={styles.logoText}>C</Text>
-            </View>
-            <Text style={styles.brandName}>ConneCCS</Text>
-            <Text style={styles.brandTagline}>IPCR Management System</Text>
+        {/* Logo */}
+        <View style={styles.logoContainer}>
+          <View style={styles.logoMark}>
+            <Text style={styles.logoText}>C</Text>
           </View>
+          <Text style={styles.brandName}>ConneCCS</Text>
+          <Text style={styles.brandTagline}>IPCR Management System</Text>
+        </View>
 
-          {/* Login Form */}
-          <View style={styles.formContainer}>
+        {/* Login Form */}
+        <View style={styles.formContainer}>
+          <View style={styles.formLeft}>
             <Text style={styles.formTitle}>Sign In</Text>
             <Text style={styles.formSubtitle}>
               Welcome back! Please sign in to continue.
@@ -100,9 +101,40 @@ export default function LoginScreen({ navigation }) {
               </TouchableOpacity>
             </View>
           </View>
+
+          {/* Quick Login Section */}
+          <View style={styles.formRight}>
+            <Text style={styles.quickLoginLabel}>Quick Login</Text>
+            <View style={styles.quickLoginGrid}>
+              <TouchableOpacity 
+                style={styles.quickLoginBtn}
+                onPress={() => quickLogin('faculty1@cspc.edu.ph', 'faculty123')}
+              >
+                <Text style={styles.quickLoginBtnText}>Faculty</Text>
+              </TouchableOpacity>
+              <TouchableOpacity 
+                style={styles.quickLoginBtn}
+                onPress={() => quickLogin('chair@cspc.edu.ph', 'chair123')}
+              >
+                <Text style={styles.quickLoginBtnText}>Chair</Text>
+              </TouchableOpacity>
+              <TouchableOpacity 
+                style={styles.quickLoginBtn}
+                onPress={() => quickLogin('dean@cspc.edu.ph', 'dean123')}
+              >
+                <Text style={styles.quickLoginBtnText}>Dean</Text>
+              </TouchableOpacity>
+              <TouchableOpacity 
+                style={styles.quickLoginBtn}
+                onPress={() => quickLogin('admin@cspc.edu.ph', 'admin123')}
+              >
+                <Text style={styles.quickLoginBtnText}>Admin</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
         </View>
       </ScrollView>
-    </KeyboardAvoidingView>
+    </View>
   );
 }
 
@@ -111,15 +143,11 @@ const createStyles = (colors) => StyleSheet.create({
     flex: 1,
     backgroundColor: colors.bg,
   },
-  scrollContainer: {
+  scrollContent: {
     flexGrow: 1,
     justifyContent: 'center',
     padding: 24,
-  },
-  content: {
-    maxWidth: 400,
-    width: '100%',
-    alignSelf: 'center',
+    minHeight: '100%',
   },
   logoContainer: {
     alignItems: 'center',
@@ -151,11 +179,27 @@ const createStyles = (colors) => StyleSheet.create({
     color: colors.text3,
   },
   formContainer: {
+    flexDirection: 'row',
     backgroundColor: colors.bg2,
     borderRadius: 16,
     borderWidth: 1,
     borderColor: colors.border,
     padding: 24,
+    gap: 24,
+    maxWidth: 800,
+    width: '100%',
+    alignSelf: 'center',
+  },
+  formLeft: {
+    flex: 2,
+    minWidth: 0,
+  },
+  formRight: {
+    flex: 1,
+    minWidth: 120,
+    paddingLeft: 16,
+    borderLeftWidth: 1,
+    borderLeftColor: colors.border,
   },
   formTitle: {
     fontSize: 24,
@@ -212,5 +256,30 @@ const createStyles = (colors) => StyleSheet.create({
   registerText: {
     fontSize: 14,
     color: colors.text3,
+  },
+  quickLoginLabel: {
+    fontSize: 12,
+    fontWeight: '600',
+    color: colors.text3,
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
+    marginBottom: 12,
+  },
+  quickLoginGrid: {
+    gap: 8,
+  },
+  quickLoginBtn: {
+    backgroundColor: colors.bg3,
+    borderWidth: 1,
+    borderColor: colors.border,
+    paddingVertical: 10,
+    paddingHorizontal: 12,
+    borderRadius: 8,
+    alignItems: 'center',
+  },
+  quickLoginBtnText: {
+    fontSize: 12,
+    fontWeight: '600',
+    color: colors.accent,
   },
 });

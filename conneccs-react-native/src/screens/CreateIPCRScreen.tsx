@@ -148,8 +148,8 @@ export default function CreateIPCRScreen({ navigation }) {
       </View>
 
       <ScrollView 
-        style={{ flex: 1 }} 
         contentContainerStyle={styles.content}
+        keyboardShouldPersistTaps="handled"
         showsVerticalScrollIndicator={false}
       >
         {/* Step 1: Select Period */}
