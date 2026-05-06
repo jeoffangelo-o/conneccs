@@ -7,6 +7,7 @@ import {
   TextInput,
   StyleSheet,
   Alert,
+  Platform,
 } from 'react-native';
 import { useTheme } from '../context/ThemeContext';
 import { useAuth } from '../../context/AuthContext';
@@ -14,6 +15,7 @@ import { useData } from '../../context/DataContext';
 import { StatusBar } from 'expo-status-bar';
 import { SvgIcon } from '../components/SvgIcon';
 import { IPCR, IPCRMajorFunction, IPCRTarget } from '../../types';
+import { WebScrollView } from '../components/WebScrollView';
 
 type Period = 'Jan-Jun' | 'Jul-Dec' | 'Jan-Dec';
 
@@ -147,7 +149,7 @@ export default function CreateIPCRScreen({ navigation }) {
         ))}
       </View>
 
-      <ScrollView 
+      <WebScrollView 
         contentContainerStyle={styles.content}
         keyboardShouldPersistTaps="handled"
         showsVerticalScrollIndicator={false}
@@ -311,7 +313,7 @@ export default function CreateIPCRScreen({ navigation }) {
             </View>
           </View>
         )}
-      </ScrollView>
+      </WebScrollView>
 
       {/* Footer Buttons */}
       <View style={styles.footer}>

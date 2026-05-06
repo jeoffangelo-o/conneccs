@@ -14,6 +14,7 @@ import { SvgIcon } from '../components/SvgIcon';
 import { IpcrCard } from '../../components/IpcrCard';
 import usersData from '../../assets/data/users.json';
 import { User } from '../../types';
+import { WebScrollView } from '../components/WebScrollView';
 
 type FilterType = 'All' | 'Completed' | 'In Progress' | 'Revision Required';
 
@@ -106,7 +107,7 @@ export default function DashboardScreen({ navigation }) {
         </View>
       </View>
 
-      <ScrollView 
+      <WebScrollView 
         contentContainerStyle={styles.content}
         keyboardShouldPersistTaps="handled"
         showsVerticalScrollIndicator={false}
@@ -181,7 +182,7 @@ export default function DashboardScreen({ navigation }) {
             </View>
           )}
         </View>
-      </ScrollView>
+      </WebScrollView>
     </View>
   );
 }

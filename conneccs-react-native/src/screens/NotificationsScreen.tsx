@@ -11,6 +11,7 @@ import { useAuth } from '../../context/AuthContext';
 import { useData } from '../../context/DataContext';
 import { StatusBar } from 'expo-status-bar';
 import { SvgIcon } from '../components/SvgIcon';
+import { WebScrollView } from '../components/WebScrollView';
 
 export default function NotificationsScreen({ navigation }) {
   const { colors, isDark } = useTheme();
@@ -73,7 +74,7 @@ export default function NotificationsScreen({ navigation }) {
         </View>
       </View>
 
-      <ScrollView 
+      <WebScrollView 
         contentContainerStyle={styles.content}
         keyboardShouldPersistTaps="handled"
         showsVerticalScrollIndicator={false}
@@ -112,7 +113,7 @@ export default function NotificationsScreen({ navigation }) {
             ))}
           </View>
         )}
-      </ScrollView>
+      </WebScrollView>
     </View>
   );
 }

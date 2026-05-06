@@ -12,6 +12,7 @@ import { useAuth } from '../../context/AuthContext';
 import { StatusBar } from 'expo-status-bar';
 import { SvgIcon } from '../components/SvgIcon';
 import { AvatarCircle } from '../../components/AvatarCircle';
+import { WebScrollView } from '../components/WebScrollView';
 
 export default function ProfileScreen({ navigation }) {
   const { colors, isDark } = useTheme();
@@ -73,7 +74,7 @@ export default function ProfileScreen({ navigation }) {
         </View>
       </View>
 
-      <ScrollView 
+      <WebScrollView 
         contentContainerStyle={styles.content}
         keyboardShouldPersistTaps="handled"
         showsVerticalScrollIndicator={false}
@@ -142,7 +143,7 @@ export default function ProfileScreen({ navigation }) {
             <Text style={[styles.actionText, { color: colors.red }]}>Logout</Text>
           </TouchableOpacity>
         </View>
-      </ScrollView>
+      </WebScrollView>
     </View>
   );
 }

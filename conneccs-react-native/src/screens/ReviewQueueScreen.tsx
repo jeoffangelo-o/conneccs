@@ -15,6 +15,7 @@ import { SvgIcon } from '../components/SvgIcon';
 import { IpcrCard } from '../../components/IpcrCard';
 import usersData from '../../assets/data/users.json';
 import { User } from '../../types';
+import { WebScrollView } from '../components/WebScrollView';
 
 type TabType = 'Pending' | 'Revision Required';
 
@@ -138,7 +139,7 @@ export default function ReviewQueueScreen({ navigation }) {
         ))}
       </View>
 
-      <ScrollView 
+      <WebScrollView 
         contentContainerStyle={styles.content}
         keyboardShouldPersistTaps="handled"
         showsVerticalScrollIndicator={false}
@@ -182,7 +183,7 @@ export default function ReviewQueueScreen({ navigation }) {
             })}
           </View>
         )}
-      </ScrollView>
+      </WebScrollView>
     </View>
   );
 }

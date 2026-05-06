@@ -17,34 +17,9 @@ import { RatingInput } from '../../components/RatingInput';
 import { calculateA4, calculateFinalRating } from '../../utils/calculations';
 import usersData from '../../assets/data/users.json';
 import { User } from '../../types';
+import { WebScrollView } from '../components/WebScrollView';
 
 type TabType = 'Targets' | 'Accomplishments' | 'MOV' | 'Rating Summary';
-
-// Web-specific ScrollView wrapper
-const WebScrollView = ({ children, style, contentContainerStyle, ...props }: any) => {
-  if (Platform.OS === 'web') {
-    return (
-      <div
-        style={{
-          flex: 1,
-          overflow: 'auto',
-          WebkitOverflowScrolling: 'touch',
-          ...style,
-        }}
-      >
-        <div style={contentContainerStyle}>
-          {children}
-        </div>
-      </div>
-    );
-  }
-  
-  return (
-    <ScrollView style={style} contentContainerStyle={contentContainerStyle} {...props}>
-      {children}
-    </ScrollView>
-  );
-};
 
 export default function IPCRDetailScreen({ navigation, route }) {
   const { colors, isDark } = useTheme();
@@ -360,6 +335,11 @@ const createStyles = (colors: any) => StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: colors.bg,
+    ...(Platform.OS === 'web' ? { 
+      height: '100vh',
+      display: 'flex',
+      flexDirection: 'column',
+    } : {}),
   },
   topbar: {
     backgroundColor: colors.bg2,
@@ -446,6 +426,10 @@ const createStyles = (colors: any) => StyleSheet.create({
   },
   scrollView: {
     flex: 1,
+    ...(Platform.OS === 'web' ? { 
+      minHeight: 0,
+      overflow: 'auto',
+    } : {}),
   },
   scrollContent: {
     padding: 16,

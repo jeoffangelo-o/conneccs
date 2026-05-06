@@ -5,6 +5,7 @@ import {
   ScrollView,
   TouchableOpacity,
   StyleSheet,
+  Platform,
 } from 'react-native';
 import { useTheme } from '../context/ThemeContext';
 import { useData } from '../../context/DataContext';
@@ -12,6 +13,7 @@ import { StatusBar } from 'expo-status-bar';
 import { SvgIcon } from '../components/SvgIcon';
 import { ProgressBar } from '../../components/ProgressBar';
 import { countLinkedIPCRs } from '../../utils/calculations';
+import { WebScrollView } from '../components/WebScrollView';
 
 export default function OPCRScreen({ navigation }) {
   const { colors, isDark } = useTheme();
@@ -56,7 +58,7 @@ export default function OPCRScreen({ navigation }) {
         </TouchableOpacity>
       </View>
 
-      <ScrollView 
+      <WebScrollView 
         contentContainerStyle={styles.content}
         keyboardShouldPersistTaps="handled"
         showsVerticalScrollIndicator={false}
@@ -154,7 +156,7 @@ export default function OPCRScreen({ navigation }) {
             </View>
           );
         })}
-      </ScrollView>
+      </WebScrollView>
     </View>
   );
 }
