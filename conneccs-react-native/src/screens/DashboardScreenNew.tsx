@@ -1,10 +1,12 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import {
   View,
   Text,
   ScrollView,
   TouchableOpacity,
   StyleSheet,
+  Alert,
+  Platform,
 } from 'react-native';
 import { useTheme } from '../context/ThemeContext';
 import { useAuth } from '../../context/AuthContext';
@@ -20,10 +22,56 @@ type FilterType = 'All' | 'Completed' | 'In Progress' | 'Revision Required';
 
 export default function DashboardScreen({ navigation }) {
   const { colors, isDark } = useTheme();
-  const { user } = useAuth();
-  const { ipcrs } = useData();
+  const { user, logout } = useAuth();
+  const { ipcrs, generateIPCRForFaculty } = useData();
   const styles = createStyles(colors);
   const [activeFilter, setActiveFilter] = useState<FilterType>('All');
+  const [isGenerating, setIsGenerating] = useState(false);
+
+  // Auto-generate IPCR for faculty on first login
+  useEffect(() => {
+    const autoGenerateIPCR = async () => {
+      if (user && (user.role === 'FACULTY' || user.role === 'CHAIR')) {
+        setIsGenerating(true);
+        try {
+          const generatedIPCR = await generateIPCRForFaculty(user.id);
+          if (generatedIPCR) {
+            console.log('IPCR auto-generated for', user.name);
+          }
+        } catch (error) {
+          console.error('Error generating IPCR:', error);
+        } finally {
+          setIsGenerating(false);
+        }
+      }
+    };
+
+    autoGenerateIPCR();
+  }, [user?.id]);
+
+  const handleLogout = async () => {
+    if (Platform.OS === 'web') {
+      const confirmed = window.confirm('Are you sure you want to logout?');
+      if (confirmed) {
+        await logout();
+      }
+    } else {
+      Alert.alert(
+        'Logout',
+        'Are you sure you want to logout?',
+        [
+          { text: 'Cancel', style: 'cancel' },
+          {
+            text: 'Logout',
+            style: 'destructive',
+            onPress: async () => {
+              await logout();
+            },
+          },
+        ]
+      );
+    }
+  };
 
   const users = usersData as User[];
 
@@ -103,6 +151,12 @@ export default function DashboardScreen({ navigation }) {
             <View style={styles.badge}>
               <Text style={styles.badgeText}>3</Text>
             </View>
+          </TouchableOpacity>
+          <TouchableOpacity 
+            style={styles.logoutBtn}
+            onPress={handleLogout}
+          >
+            <SvgIcon name="logOut" size={20} color={colors.text2} style={{}} />
           </TouchableOpacity>
         </View>
       </View>
@@ -244,6 +298,13 @@ const createStyles = (colors) => StyleSheet.create({
   topbarIconBtn: {
     position: 'relative',
   },
+  logoutBtn: {
+    padding: 8,
+    borderRadius: 8,
+    backgroundColor: colors.bg3,
+    borderWidth: 1,
+    borderColor: colors.border,
+  },
   badge: {
     position: 'absolute',
     top: -6,
@@ -274,20 +335,22 @@ const createStyles = (colors) => StyleSheet.create({
   statCard: {
     flex: 1,
     minWidth: '47%',
-    backgroundColor: '#1a1a1a',
+    backgroundColor: colors.bg2,
     borderRadius: 12,
+    borderWidth: 1,
+    borderColor: colors.border,
     padding: 16,
     alignItems: 'center',
   },
   statValue: {
     fontSize: 32,
     fontWeight: '800',
-    color: '#fff',
+    color: colors.text,
     marginBottom: 4,
   },
   statLabel: {
     fontSize: 12,
-    color: '#9ca3af',
+    color: colors.text3,
     textTransform: 'uppercase',
     letterSpacing: 0.5,
   },
@@ -298,21 +361,24 @@ const createStyles = (colors) => StyleSheet.create({
     gap: 8,
   },
   filterChip: {
-    backgroundColor: '#2a2a2a',
+    backgroundColor: colors.bg3,
+    borderWidth: 1,
+    borderColor: colors.border,
     paddingHorizontal: 16,
     paddingVertical: 8,
     borderRadius: 20,
   },
   filterChipActive: {
-    backgroundColor: '#fff',
+    backgroundColor: colors.accent,
+    borderColor: colors.accent,
   },
   filterChipText: {
     fontSize: 13,
     fontWeight: '600',
-    color: '#9ca3af',
+    color: colors.text2,
   },
   filterChipTextActive: {
-    color: '#000',
+    color: '#fff',
   },
   list: {
     marginBottom: 20,
@@ -323,6 +389,6 @@ const createStyles = (colors) => StyleSheet.create({
   },
   emptyText: {
     fontSize: 14,
-    color: '#6b7280',
+    color: colors.text3,
   },
 });

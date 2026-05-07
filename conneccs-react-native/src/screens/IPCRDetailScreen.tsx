@@ -1,13 +1,6 @@
 import React, { useState, useMemo } from 'react';
-import {
-  View,
-  Text,
-  ScrollView,
-  TouchableOpacity,
-  TextInput,
-  StyleSheet,
-  Platform,
-} from 'react-native';
+import { TouchableOpacity, TextInput, StyleSheet } from 'react-native';
+import { ScrollView, YStack, XStack, Text as TamaguiText } from 'tamagui';
 import { useTheme } from '../context/ThemeContext';
 import { useData } from '../../context/DataContext';
 import { StatusBar } from 'expo-status-bar';
@@ -17,7 +10,6 @@ import { RatingInput } from '../../components/RatingInput';
 import { calculateA4, calculateFinalRating } from '../../utils/calculations';
 import usersData from '../../assets/data/users.json';
 import { User } from '../../types';
-import { WebScrollView } from '../components/WebScrollView';
 
 type TabType = 'Targets' | 'Accomplishments' | 'MOV' | 'Rating Summary';
 
@@ -34,9 +26,9 @@ export default function IPCRDetailScreen({ navigation, route }) {
 
   if (!ipcr || !faculty) {
     return (
-      <View style={styles.container}>
-        <Text style={styles.errorText}>IPCR not found</Text>
-      </View>
+      <YStack f={1} bg="$bg" ai="center" jc="center">
+        <TamaguiText color="$text3" fontSize={16}>IPCR not found</TamaguiText>
+      </YStack>
     );
   }
 
@@ -68,38 +60,38 @@ export default function IPCRDetailScreen({ navigation, route }) {
   };
 
   const renderTargetsTab = () => (
-    <View>
+    <YStack>
       {ipcr.majorFunctions.map((mf) => (
-        <View key={mf.id} style={styles.panel}>
-          <Text style={styles.panelTitle}>{mf.title}</Text>
-          <Text style={styles.categoryBadge}>{mf.category} ({(mf.weight * 100)}%)</Text>
+        <YStack key={mf.id} style={styles.panel}>
+          <TamaguiText style={styles.panelTitle}>{mf.title}</TamaguiText>
+          <TamaguiText style={styles.categoryBadge}>{mf.category} ({(mf.weight * 100)}%)</TamaguiText>
           
           {mf.targets.map((target, tIndex) => (
-            <View key={target.id} style={styles.targetCard}>
-              <Text style={styles.targetLabel}>Target {tIndex + 1}</Text>
+            <YStack key={target.id} style={styles.targetCard}>
+              <TamaguiText style={styles.targetLabel}>Target {tIndex + 1}</TamaguiText>
               
-              <View style={styles.formGroup}>
-                <Text style={styles.label}>Description</Text>
+              <YStack style={styles.formGroup}>
+                <TamaguiText style={styles.label}>Description</TamaguiText>
                 <TextInput
                   style={[styles.textArea, !isTargetSettingPhase && styles.inputDisabled]}
                   value={target.description}
                   editable={isTargetSettingPhase}
                   multiline
                 />
-              </View>
+              </YStack>
 
-              <View style={styles.formGroup}>
-                <Text style={styles.label}>Measures</Text>
+              <YStack style={styles.formGroup}>
+                <TamaguiText style={styles.label}>Measures</TamaguiText>
                 <TextInput
                   style={[styles.textArea, !isTargetSettingPhase && styles.inputDisabled]}
                   value={target.measures}
                   editable={isTargetSettingPhase}
                   multiline
                 />
-              </View>
+              </YStack>
 
-              <Text style={styles.ratingsLabel}>Ratings</Text>
-              <View style={styles.ratingsRow}>
+              <TamaguiText style={styles.ratingsLabel}>Ratings</TamaguiText>
+              <XStack gap="$3" mb="$3">
                 <RatingInput
                   label="Q1 - Quality"
                   value={target.q1Rating}
@@ -118,35 +110,35 @@ export default function IPCRDetailScreen({ navigation, route }) {
                   onChange={(val) => handleRatingChange(target.id, 't3Rating', val)}
                   disabled={!isEditable}
                 />
-              </View>
+              </XStack>
 
-              <View style={styles.a4Container}>
-                <Text style={styles.a4Label}>A4 - Average (Auto-calculated)</Text>
-                <View style={styles.a4Value}>
-                  <Text style={styles.a4Text}>
+              <YStack style={styles.a4Container}>
+                <TamaguiText style={styles.a4Label}>A4 - Average (Auto-calculated)</TamaguiText>
+                <YStack ai="center">
+                  <TamaguiText style={styles.a4Text}>
                     {target.a4Rating !== null ? target.a4Rating.toFixed(2) : '--'}
-                  </Text>
-                </View>
-              </View>
-            </View>
+                  </TamaguiText>
+                </YStack>
+              </YStack>
+            </YStack>
           ))}
-        </View>
+        </YStack>
       ))}
-    </View>
+    </YStack>
   );
 
   const renderAccomplishmentsTab = () => (
-    <View>
+    <YStack>
       {ipcr.majorFunctions.map((mf) => (
-        <View key={mf.id} style={styles.panel}>
-          <Text style={styles.panelTitle}>{mf.title}</Text>
+        <YStack key={mf.id} style={styles.panel}>
+          <TamaguiText style={styles.panelTitle}>{mf.title}</TamaguiText>
           
           {mf.targets.map((target, tIndex) => (
-            <View key={target.id} style={styles.targetCard}>
-              <Text style={styles.targetLabel}>Target {tIndex + 1}: {target.description}</Text>
+            <YStack key={target.id} style={styles.targetCard}>
+              <TamaguiText style={styles.targetLabel}>Target {tIndex + 1}: {target.description}</TamaguiText>
               
-              <View style={styles.formGroup}>
-                <Text style={styles.label}>Actual Accomplishments</Text>
+              <YStack style={styles.formGroup}>
+                <TamaguiText style={styles.label}>Actual Accomplishments</TamaguiText>
                 <TextInput
                   style={styles.textArea}
                   value={target.actualAccomplishments}
@@ -155,10 +147,10 @@ export default function IPCRDetailScreen({ navigation, route }) {
                   multiline
                   numberOfLines={4}
                 />
-              </View>
+              </YStack>
 
-              <View style={styles.formGroup}>
-                <Text style={styles.label}>Remarks</Text>
+              <YStack style={styles.formGroup}>
+                <TamaguiText style={styles.label}>Remarks</TamaguiText>
                 <TextInput
                   style={styles.textArea}
                   value={target.remarks}
@@ -167,274 +159,167 @@ export default function IPCRDetailScreen({ navigation, route }) {
                   multiline
                   numberOfLines={3}
                 />
-              </View>
-            </View>
+              </YStack>
+            </YStack>
           ))}
-        </View>
+        </YStack>
       ))}
-    </View>
+    </YStack>
   );
 
   const renderMOVTab = () => (
-    <View style={styles.panel}>
-      <Text style={styles.panelTitle}>Means of Verification (MOV)</Text>
-      <Text style={styles.infoText}>
+    <YStack style={styles.panel}>
+      <TamaguiText style={styles.panelTitle}>Means of Verification (MOV)</TamaguiText>
+      <TamaguiText style={styles.infoText}>
         Upload supporting documents for your accomplishments
-      </Text>
+      </TamaguiText>
 
       {ipcr.majorFunctions.map((mf) =>
         mf.targets.map((target, tIndex) => (
-          <View key={target.id} style={styles.movCard}>
-            <Text style={styles.movTargetTitle}>
+          <YStack key={target.id} mb={20}>
+            <TamaguiText style={styles.movTargetTitle}>
               {mf.title} - Target {tIndex + 1}
-            </Text>
+            </TamaguiText>
             
-            <View style={styles.fileGrid}>
+            <XStack flexWrap="wrap" gap="$3">
               {target.movFileUrls.map((file, fIndex) => (
-                <View key={fIndex} style={styles.fileCard}>
+                <YStack key={fIndex} style={styles.fileCard}>
                   <SvgIcon name="document" size={32} color={colors.accent} style={{}} />
-                  <Text style={styles.fileName}>{file}</Text>
-                </View>
+                  <TamaguiText style={styles.fileName}>{file}</TamaguiText>
+                </YStack>
               ))}
               
               <TouchableOpacity style={styles.uploadCard}>
                 <SvgIcon name="plus" size={24} color={colors.text3} style={{}} />
-                <Text style={styles.uploadText}>Upload MOV</Text>
+                <TamaguiText style={styles.uploadText}>Upload MOV</TamaguiText>
               </TouchableOpacity>
-            </View>
-          </View>
+            </XStack>
+          </YStack>
         ))
       )}
-    </View>
+    </YStack>
   );
 
   const renderRatingSummaryTab = () => (
-    <View>
-      <View style={styles.panel}>
-        <Text style={styles.panelTitle}>Rating Breakdown</Text>
+    <YStack>
+      <YStack style={styles.panel}>
+        <TamaguiText style={styles.panelTitle}>Rating Breakdown</TamaguiText>
         
-        <View style={styles.summaryRow}>
-          <Text style={styles.summaryLabel}>Strategic Priority Average:</Text>
-          <Text style={styles.summaryValue}>{ratingCalc.strategicAvg.toFixed(2)}</Text>
-        </View>
-        <View style={styles.summaryRow}>
-          <Text style={styles.summaryLabel}>Strategic Weighted (45%):</Text>
-          <Text style={styles.summaryValue}>{ratingCalc.strategicWeighted.toFixed(2)}</Text>
-        </View>
+        <XStack jc="space-between" py="$2">
+          <TamaguiText style={styles.summaryLabel}>Strategic Priority Average:</TamaguiText>
+          <TamaguiText style={styles.summaryValue}>{ratingCalc.strategicAvg.toFixed(2)}</TamaguiText>
+        </XStack>
+        <XStack jc="space-between" py="$2">
+          <TamaguiText style={styles.summaryLabel}>Strategic Weighted (45%):</TamaguiText>
+          <TamaguiText style={styles.summaryValue}>{ratingCalc.strategicWeighted.toFixed(2)}</TamaguiText>
+        </XStack>
 
-        <View style={styles.divider} />
+        <YStack h={1} bg="$border" my="$3" />
 
-        <View style={styles.summaryRow}>
-          <Text style={styles.summaryLabel}>Core Functions Average:</Text>
-          <Text style={styles.summaryValue}>{ratingCalc.coreAvg.toFixed(2)}</Text>
-        </View>
-        <View style={styles.summaryRow}>
-          <Text style={styles.summaryLabel}>Core Weighted (45%):</Text>
-          <Text style={styles.summaryValue}>{ratingCalc.coreWeighted.toFixed(2)}</Text>
-        </View>
+        <XStack jc="space-between" py="$2">
+          <TamaguiText style={styles.summaryLabel}>Core Functions Average:</TamaguiText>
+          <TamaguiText style={styles.summaryValue}>{ratingCalc.coreAvg.toFixed(2)}</TamaguiText>
+        </XStack>
+        <XStack jc="space-between" py="$2">
+          <TamaguiText style={styles.summaryLabel}>Core Weighted (45%):</TamaguiText>
+          <TamaguiText style={styles.summaryValue}>{ratingCalc.coreWeighted.toFixed(2)}</TamaguiText>
+        </XStack>
 
-        <View style={styles.divider} />
+        <YStack h={1} bg="$border" my="$3" />
 
-        <View style={styles.summaryRow}>
-          <Text style={styles.summaryLabel}>Support Functions Average:</Text>
-          <Text style={styles.summaryValue}>{ratingCalc.supportAvg.toFixed(2)}</Text>
-        </View>
-        <View style={styles.summaryRow}>
-          <Text style={styles.summaryLabel}>Support Weighted (10%):</Text>
-          <Text style={styles.summaryValue}>{ratingCalc.supportWeighted.toFixed(2)}</Text>
-        </View>
+        <XStack jc="space-between" py="$2">
+          <TamaguiText style={styles.summaryLabel}>Support Functions Average:</TamaguiText>
+          <TamaguiText style={styles.summaryValue}>{ratingCalc.supportAvg.toFixed(2)}</TamaguiText>
+        </XStack>
+        <XStack jc="space-between" py="$2">
+          <TamaguiText style={styles.summaryLabel}>Support Weighted (10%):</TamaguiText>
+          <TamaguiText style={styles.summaryValue}>{ratingCalc.supportWeighted.toFixed(2)}</TamaguiText>
+        </XStack>
 
-        <View style={styles.divider} />
+        <YStack h={1} bg="$border" my="$3" />
 
-        <View style={styles.finalRatingCard}>
-          <Text style={styles.finalRatingLabel}>Final Average Rating</Text>
-          <Text style={styles.finalRatingValue}>{ratingCalc.final.toFixed(2)}</Text>
-          <Text style={styles.adjectivalRating}>{ratingCalc.adjectival}</Text>
-        </View>
-      </View>
-    </View>
+        <YStack style={styles.finalRatingCard}>
+          <TamaguiText style={styles.finalRatingLabel}>Final Average Rating</TamaguiText>
+          <TamaguiText style={styles.finalRatingValue}>{ratingCalc.final.toFixed(2)}</TamaguiText>
+          <TamaguiText style={styles.adjectivalRating}>{ratingCalc.adjectival}</TamaguiText>
+        </YStack>
+      </YStack>
+    </YStack>
   );
 
   return (
-    <View style={styles.container}>
+    <YStack f={1} bg="$bg">
       <StatusBar style={isDark ? 'light' : 'dark'} />
       
       {/* Fixed Topbar */}
-      <View style={styles.topbar}>
+      <XStack bg="$bg2" borderBottomWidth={1} borderBottomColor="$border" px="$4" py="$3" pt={48} ai="center">
         <TouchableOpacity onPress={() => navigation.goBack()}>
           <SvgIcon name="arrowBack" size={24} color={colors.text} style={{}} />
         </TouchableOpacity>
-        <View style={styles.topbarCenter}>
-          <Text style={styles.topbarTitle}>IPCR Detail</Text>
-          <Text style={styles.topbarBreadcrumb}>
+        <YStack f={1} mx="$4">
+          <TamaguiText fontSize={17} fontWeight="700" color="$text">IPCR Detail</TamaguiText>
+          <TamaguiText fontSize={11} color="$text3" mt={2}>
             {faculty.firstName} {faculty.lastName} • {ipcr.period}
-          </Text>
-        </View>
+          </TamaguiText>
+        </YStack>
         <TouchableOpacity>
           <SvgIcon name="moreVertical" size={22} color={colors.text2} style={{}} />
         </TouchableOpacity>
-      </View>
+      </XStack>
 
       {/* Fixed Header Card */}
-      <View style={styles.headerCard}>
-        <View style={styles.headerRow}>
-          <View>
-            <Text style={styles.facultyName}>
+      <YStack bg="$bg2" borderBottomWidth={1} borderBottomColor="$border" p="$4">
+        <XStack jc="space-between" ai="flex-start" mb="$3">
+          <YStack>
+            <TamaguiText fontSize={18} fontWeight="700" color="$text">
               {faculty.firstName} {faculty.lastName}
-            </Text>
-            <Text style={styles.period}>{ipcr.period}</Text>
-          </View>
+            </TamaguiText>
+            <TamaguiText fontSize={13} color="$text3" mt={2}>{ipcr.period}</TamaguiText>
+          </YStack>
           <StatusBadge status={ipcr.status} />
-        </View>
+        </XStack>
         {ipcr.finalRating && (
-          <View style={styles.ratingBadge}>
+          <XStack ai="center" gap="$2">
             <SvgIcon name="star" size={20} color="#f59e0b" style={{}} />
-            <Text style={styles.ratingText}>{ipcr.finalRating.toFixed(1)}</Text>
-            <Text style={styles.ratingLabel}>{ipcr.adjectivalRating}</Text>
-          </View>
+            <TamaguiText fontSize={20} fontWeight="800" color="$text">{ipcr.finalRating.toFixed(1)}</TamaguiText>
+            <TamaguiText fontSize={13} color="$text2">{ipcr.adjectivalRating}</TamaguiText>
+          </XStack>
         )}
-      </View>
+      </YStack>
 
       {/* Fixed Tabs */}
-      <View style={styles.tabsContainer}>
-        <ScrollView
-          horizontal
-          showsHorizontalScrollIndicator={false}
-        >
-          {tabs.map((tab) => (
-            <TouchableOpacity
-              key={tab}
-              style={[styles.tab, activeTab === tab && styles.tabActive]}
-              onPress={() => setActiveTab(tab)}
-            >
-              <Text style={[styles.tabText, activeTab === tab && styles.tabTextActive]}>
-                {tab}
-              </Text>
-            </TouchableOpacity>
-          ))}
+      <YStack bg="$bg2" borderBottomWidth={1} borderBottomColor="$border">
+        <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+          <XStack>
+            {tabs.map((tab) => (
+              <TouchableOpacity
+                key={tab}
+                style={[styles.tab, activeTab === tab && styles.tabActive]}
+                onPress={() => setActiveTab(tab)}
+              >
+                <TamaguiText style={[styles.tabText, activeTab === tab && styles.tabTextActive]}>
+                  {tab}
+                </TamaguiText>
+              </TouchableOpacity>
+            ))}
+          </XStack>
         </ScrollView>
-      </View>
+      </YStack>
 
-      {/* Scrollable Content */}
-      <WebScrollView
-        style={styles.scrollView}
-        contentContainerStyle={styles.scrollContent}
-        keyboardShouldPersistTaps="handled"
-        showsVerticalScrollIndicator={false}
-      >
-        {activeTab === 'Targets' && renderTargetsTab()}
-        {activeTab === 'Accomplishments' && renderAccomplishmentsTab()}
-        {activeTab === 'MOV' && renderMOVTab()}
-        {activeTab === 'Rating Summary' && renderRatingSummaryTab()}
-      </WebScrollView>
-    </View>
+      {/* Scrollable Content - Tamagui ScrollView with proper web support */}
+      <ScrollView f={1}>
+        <YStack p="$4" pb="$8">
+          {activeTab === 'Targets' && renderTargetsTab()}
+          {activeTab === 'Accomplishments' && renderAccomplishmentsTab()}
+          {activeTab === 'MOV' && renderMOVTab()}
+          {activeTab === 'Rating Summary' && renderRatingSummaryTab()}
+        </YStack>
+      </ScrollView>
+    </YStack>
   );
 }
 
 const createStyles = (colors: any) => StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: colors.bg,
-    ...(Platform.OS === 'web' ? { 
-      height: '100vh',
-      display: 'flex',
-      flexDirection: 'column',
-    } : {}),
-  },
-  topbar: {
-    backgroundColor: colors.bg2,
-    borderBottomWidth: 1,
-    borderBottomColor: colors.border,
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-    paddingTop: 48,
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  topbarCenter: {
-    flex: 1,
-    marginHorizontal: 16,
-  },
-  topbarTitle: {
-    fontSize: 17,
-    fontWeight: '700',
-    color: colors.text,
-  },
-  topbarBreadcrumb: {
-    fontSize: 11,
-    color: colors.text3,
-    marginTop: 2,
-  },
-  headerCard: {
-    backgroundColor: colors.bg2,
-    borderBottomWidth: 1,
-    borderBottomColor: colors.border,
-    padding: 16,
-  },
-  headerRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'flex-start',
-    marginBottom: 12,
-  },
-  facultyName: {
-    fontSize: 18,
-    fontWeight: '700',
-    color: colors.text,
-  },
-  period: {
-    fontSize: 13,
-    color: colors.text3,
-    marginTop: 2,
-  },
-  ratingBadge: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-  },
-  ratingText: {
-    fontSize: 20,
-    fontWeight: '800',
-    color: colors.text,
-  },
-  ratingLabel: {
-    fontSize: 13,
-    color: colors.text2,
-  },
-  tabsContainer: {
-    backgroundColor: colors.bg2,
-    borderBottomWidth: 1,
-    borderBottomColor: colors.border,
-  },
-  tab: {
-    paddingHorizontal: 20,
-    paddingVertical: 14,
-    borderBottomWidth: 2,
-    borderBottomColor: 'transparent',
-  },
-  tabActive: {
-    borderBottomColor: colors.accent,
-  },
-  tabText: {
-    fontSize: 14,
-    fontWeight: '500',
-    color: colors.text3,
-  },
-  tabTextActive: {
-    color: colors.accent,
-    fontWeight: '600',
-  },
-  scrollView: {
-    flex: 1,
-    ...(Platform.OS === 'web' ? { 
-      minHeight: 0,
-      overflow: 'auto',
-    } : {}),
-  },
-  scrollContent: {
-    padding: 16,
-    paddingBottom: 32,
-  },
   panel: {
     backgroundColor: colors.bg2,
     borderRadius: 12,
@@ -498,11 +383,6 @@ const createStyles = (colors: any) => StyleSheet.create({
     marginBottom: 12,
     marginTop: 8,
   },
-  ratingsRow: {
-    flexDirection: 'row',
-    gap: 12,
-    marginBottom: 12,
-  },
   a4Container: {
     backgroundColor: colors.bg,
     borderRadius: 8,
@@ -516,9 +396,6 @@ const createStyles = (colors: any) => StyleSheet.create({
     color: colors.text3,
     marginBottom: 6,
   },
-  a4Value: {
-    alignItems: 'center',
-  },
   a4Text: {
     fontSize: 24,
     fontWeight: '800',
@@ -529,19 +406,11 @@ const createStyles = (colors: any) => StyleSheet.create({
     color: colors.text3,
     marginBottom: 16,
   },
-  movCard: {
-    marginBottom: 20,
-  },
   movTargetTitle: {
     fontSize: 14,
     fontWeight: '600',
     color: colors.text,
     marginBottom: 12,
-  },
-  fileGrid: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: 12,
   },
   fileCard: {
     backgroundColor: colors.bg3,
@@ -573,11 +442,6 @@ const createStyles = (colors: any) => StyleSheet.create({
     color: colors.text3,
     marginTop: 8,
   },
-  summaryRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    paddingVertical: 8,
-  },
   summaryLabel: {
     fontSize: 14,
     color: colors.text2,
@@ -586,11 +450,6 @@ const createStyles = (colors: any) => StyleSheet.create({
     fontSize: 14,
     fontWeight: '600',
     color: colors.text,
-  },
-  divider: {
-    height: 1,
-    backgroundColor: colors.border,
-    marginVertical: 12,
   },
   finalRatingCard: {
     backgroundColor: colors.bg3,
@@ -617,10 +476,22 @@ const createStyles = (colors: any) => StyleSheet.create({
     fontWeight: '600',
     color: colors.text,
   },
-  errorText: {
-    fontSize: 16,
+  tab: {
+    paddingHorizontal: 20,
+    paddingVertical: 14,
+    borderBottomWidth: 2,
+    borderBottomColor: 'transparent',
+  },
+  tabActive: {
+    borderBottomColor: colors.accent,
+  },
+  tabText: {
+    fontSize: 14,
+    fontWeight: '500',
     color: colors.text3,
-    textAlign: 'center',
-    marginTop: 40,
+  },
+  tabTextActive: {
+    color: colors.accent,
+    fontWeight: '600',
   },
 });

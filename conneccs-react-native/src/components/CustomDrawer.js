@@ -21,6 +21,7 @@ const SimpleIcon = ({ name, size = 18, color }) => {
     'moon-outline': 'moon',
     'user-outline': 'user',
     'clipboard-outline': 'clipboard',
+    'calendar-outline': 'calendar',
   };
   
   return <SvgIcon name={iconMap[name] || 'grid'} size={size} color={color} style={{}} />;
@@ -41,21 +42,49 @@ export default function CustomDrawer(props) {
       icon: 'grid-outline', 
       route: 'Dashboard', 
       section: 'Main',
-      roles: ['FACULTY', 'CHAIR', 'DEAN', 'ADMIN']
+      roles: ['FACULTY', 'CHAIR', 'DEAN', 'ADMIN', 'SECRETARY']
     },
     { 
       name: 'OPCR', 
       icon: 'document-text-outline', 
       route: 'OPCR', 
       section: 'Main',
-      roles: ['FACULTY', 'CHAIR', 'DEAN', 'ADMIN']
+      roles: ['FACULTY', 'CHAIR', 'DEAN', 'ADMIN', 'SECRETARY']
+    },
+    { 
+      name: 'Upload OPCR', 
+      icon: 'document-text-outline', 
+      route: 'SecretaryOPCRUpload', 
+      section: 'Secretary',
+      roles: ['SECRETARY', 'ADMIN']
+    },
+    { 
+      name: 'Calendar', 
+      icon: 'calendar-outline', 
+      route: 'Calendar', 
+      section: 'IPCR',
+      roles: ['FACULTY', 'CHAIR', 'DEAN', 'ADMIN', 'SECRETARY']
     },
     { 
       name: 'Review Queue', 
       icon: 'clipboard-outline', 
       route: 'ReviewQueue', 
       section: 'Main',
-      roles: ['CHAIR', 'DEAN', 'ADMIN']
+      roles: ['CHAIR', 'DEAN', 'ADMIN', 'SECRETARY']
+    },
+    { 
+      name: 'Reportorial Requirements', 
+      icon: 'folder-outline', 
+      route: 'ReportorialRequirements', 
+      section: 'Documents',
+      roles: ['FACULTY', 'CHAIR', 'DEAN', 'ADMIN', 'SECRETARY']
+    },
+    { 
+      name: 'Messages', 
+      icon: 'chatbubble-outline', 
+      route: 'Messages', 
+      section: 'Communication',
+      roles: ['FACULTY', 'CHAIR', 'DEAN', 'ADMIN', 'SECRETARY']
     },
     { 
       name: 'Notifications', 
@@ -63,14 +92,14 @@ export default function CustomDrawer(props) {
       route: 'Notifications', 
       section: 'Account',
       badge: unreadCount > 0 ? unreadCount : null,
-      roles: ['FACULTY', 'CHAIR', 'DEAN', 'ADMIN']
+      roles: ['FACULTY', 'CHAIR', 'DEAN', 'ADMIN', 'SECRETARY']
     },
     { 
       name: 'Profile', 
       icon: 'user-outline', 
       route: 'Profile', 
       section: 'Account',
-      roles: ['FACULTY', 'CHAIR', 'DEAN', 'ADMIN']
+      roles: ['FACULTY', 'CHAIR', 'DEAN', 'ADMIN', 'SECRETARY']
     },
   ];
 
@@ -140,6 +169,10 @@ export default function CustomDrawer(props) {
 
       <ScrollView style={styles.navContainer} showsVerticalScrollIndicator={false}>
         {renderSection('Main')}
+        {renderSection('Secretary')}
+        {renderSection('IPCR')}
+        {renderSection('Documents')}
+        {renderSection('Communication')}
         {renderSection('Account')}
       </ScrollView>
 

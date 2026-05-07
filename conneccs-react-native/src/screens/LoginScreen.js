@@ -1,13 +1,11 @@
 import React, { useState } from 'react';
 import {
-  View,
-  Text,
   TextInput,
   TouchableOpacity,
   StyleSheet,
   Alert,
-  ScrollView,
 } from 'react-native';
+import { ScrollView, YStack, XStack, Text as TamaguiText } from 'tamagui';
 import { StatusBar } from 'expo-status-bar';
 import { useAuth } from '../../context/AuthContext';
 import { useTheme } from '../context/ThemeContext';
@@ -19,13 +17,13 @@ export default function LoginScreen({ navigation }) {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
 
-  const handleLogin = () => {
+  const handleLogin = async () => {
     if (!email || !password) {
       Alert.alert('Error', 'Please fill in all fields');
       return;
     }
     
-    const success = login(email, password);
+    const success = await login(email, password);
     if (success) {
       navigation.replace('Main');
     } else {
@@ -33,193 +31,165 @@ export default function LoginScreen({ navigation }) {
     }
   };
 
-  const quickLogin = (userEmail, userPassword) => {
+  const quickLogin = async (userEmail, userPassword) => {
     setEmail(userEmail);
     setPassword(userPassword);
+    const success = await login(userEmail, userPassword);
+    if (success) {
+      navigation.replace('Main');
+    }
   };
 
   return (
-    <View style={styles.container}>
+    <YStack f={1} bg="$bg">
       <StatusBar style="light" />
-      <ScrollView
-        contentContainerStyle={styles.scrollContent}
-        keyboardShouldPersistTaps="handled"
-        showsVerticalScrollIndicator={false}
-      >
+      <ScrollView f={1} contentContainerStyle={styles.scrollContent}>
         {/* Logo */}
-        <View style={styles.logoContainer}>
-          <View style={styles.logoMark}>
-            <Text style={styles.logoText}>C</Text>
-          </View>
-          <Text style={styles.brandName}>ConneCCS</Text>
-          <Text style={styles.brandTagline}>IPCR Management System</Text>
-        </View>
+        <YStack ai="center" mb={40}>
+          <YStack w={64} h={64} bg="$accent" borderRadius={16} ai="center" jc="center" mb={16}>
+            <TamaguiText color="#fff" fontSize={32} fontWeight="800">C</TamaguiText>
+          </YStack>
+          <TamaguiText fontSize={28} fontWeight="800" color="$text" letterSpacing={-1} mb={4}>
+            ConneCCS
+          </TamaguiText>
+          <TamaguiText fontSize={14} color="$text3">
+            IPCR Management System
+          </TamaguiText>
+        </YStack>
 
         {/* Login Form */}
-        <View style={styles.formContainer}>
-          <View style={styles.formLeft}>
-            <Text style={styles.formTitle}>Sign In</Text>
-            <Text style={styles.formSubtitle}>
-              Welcome back! Please sign in to continue.
-            </Text>
+        <YStack 
+          bg="$bg2" 
+          borderRadius={16} 
+          borderWidth={1} 
+          borderColor="$border" 
+          p={24}
+          maxWidth={500}
+          width="100%"
+          alignSelf="center"
+        >
+          <TamaguiText fontSize={24} fontWeight="800" color="$text" mb={8}>
+            Sign In
+          </TamaguiText>
+          <TamaguiText fontSize={14} color="$text3" mb={24}>
+            Welcome back! Please sign in to continue.
+          </TamaguiText>
 
-            <View style={styles.formGroup}>
-              <Text style={styles.label}>Email Address</Text>
-              <TextInput
-                style={styles.input}
-                placeholder="Enter your email"
-                placeholderTextColor={colors.text3}
-                value={email}
-                onChangeText={setEmail}
-                keyboardType="email-address"
-                autoCapitalize="none"
-                autoCorrect={false}
-              />
-            </View>
+          <YStack mb={16}>
+            <TamaguiText fontSize={13} fontWeight="600" color="$text2" mb={6}>
+              Email Address
+            </TamaguiText>
+            <TextInput
+              style={styles.input}
+              placeholder="Enter your email"
+              placeholderTextColor={colors.text3}
+              value={email}
+              onChangeText={setEmail}
+              keyboardType="email-address"
+              autoCapitalize="none"
+              autoCorrect={false}
+            />
+          </YStack>
 
-            <View style={styles.formGroup}>
-              <Text style={styles.label}>Password</Text>
-              <TextInput
-                style={styles.input}
-                placeholder="Enter your password"
-                placeholderTextColor={colors.text3}
-                value={password}
-                onChangeText={setPassword}
-                secureTextEntry
-                autoCapitalize="none"
-              />
-            </View>
+          <YStack mb={16}>
+            <TamaguiText fontSize={13} fontWeight="600" color="$text2" mb={6}>
+              Password
+            </TamaguiText>
+            <TextInput
+              style={styles.input}
+              placeholder="Enter your password"
+              placeholderTextColor={colors.text3}
+              value={password}
+              onChangeText={setPassword}
+              secureTextEntry
+              autoCapitalize="none"
+            />
+          </YStack>
 
-            <TouchableOpacity style={styles.btnPrimary} onPress={handleLogin}>
-              <Text style={styles.btnPrimaryText}>Sign In</Text>
+          <TouchableOpacity style={styles.btnPrimary} onPress={handleLogin}>
+            <TamaguiText color="#fff" fontSize={15} fontWeight="600">
+              Sign In
+            </TamaguiText>
+          </TouchableOpacity>
+
+          <XStack jc="center" ai="center" mt={16}>
+            <TamaguiText fontSize={14} color="$text3">
+              Don't have an account?{' '}
+            </TamaguiText>
+            <TouchableOpacity onPress={() => navigation.navigate('Register')}>
+              <TamaguiText fontSize={14} color="$accent" fontWeight="500">
+                Register here
+              </TamaguiText>
             </TouchableOpacity>
+          </XStack>
 
-            <View style={styles.registerPrompt}>
-              <Text style={styles.registerText}>Don't have an account? </Text>
-              <TouchableOpacity onPress={() => navigation.navigate('Register')}>
-                <Text style={styles.linkText}>Register here</Text>
-              </TouchableOpacity>
-            </View>
-          </View>
-
-          {/* Quick Login Section */}
-          <View style={styles.formRight}>
-            <Text style={styles.quickLoginLabel}>Quick Login</Text>
-            <View style={styles.quickLoginGrid}>
+          {/* Quick Login Section - At Bottom */}
+          <YStack mt={24} pt={24} borderTopWidth={1} borderTopColor="$border">
+            <TamaguiText 
+              fontSize={12} 
+              fontWeight="600" 
+              color="$text3" 
+              textTransform="uppercase" 
+              letterSpacing={0.5}
+              mb={12}
+              textAlign="center"
+            >
+              Quick Login
+            </TamaguiText>
+            <XStack gap={8} flexWrap="wrap" jc="center">
               <TouchableOpacity 
                 style={styles.quickLoginBtn}
                 onPress={() => quickLogin('faculty1@cspc.edu.ph', 'faculty123')}
               >
-                <Text style={styles.quickLoginBtnText}>Faculty</Text>
+                <TamaguiText fontSize={12} fontWeight="600" color="$accent">
+                  Faculty
+                </TamaguiText>
               </TouchableOpacity>
               <TouchableOpacity 
                 style={styles.quickLoginBtn}
                 onPress={() => quickLogin('chair@cspc.edu.ph', 'chair123')}
               >
-                <Text style={styles.quickLoginBtnText}>Chair</Text>
+                <TamaguiText fontSize={12} fontWeight="600" color="$accent">
+                  Chair
+                </TamaguiText>
               </TouchableOpacity>
               <TouchableOpacity 
                 style={styles.quickLoginBtn}
                 onPress={() => quickLogin('dean@cspc.edu.ph', 'dean123')}
               >
-                <Text style={styles.quickLoginBtnText}>Dean</Text>
+                <TamaguiText fontSize={12} fontWeight="600" color="$accent">
+                  Dean
+                </TamaguiText>
               </TouchableOpacity>
               <TouchableOpacity 
                 style={styles.quickLoginBtn}
                 onPress={() => quickLogin('admin@cspc.edu.ph', 'admin123')}
               >
-                <Text style={styles.quickLoginBtnText}>Admin</Text>
+                <TamaguiText fontSize={12} fontWeight="600" color="$accent">
+                  Admin
+                </TamaguiText>
               </TouchableOpacity>
-            </View>
-          </View>
-        </View>
+              <TouchableOpacity 
+                style={styles.quickLoginBtn}
+                onPress={() => quickLogin('jo@cspc.edu.ph', 'secretary123')}
+              >
+                <TamaguiText fontSize={12} fontWeight="600" color="$accent">
+                  Secretary (JO)
+                </TamaguiText>
+              </TouchableOpacity>
+            </XStack>
+          </YStack>
+        </YStack>
       </ScrollView>
-    </View>
+    </YStack>
   );
 }
 
 const createStyles = (colors) => StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: colors.bg,
-  },
   scrollContent: {
     flexGrow: 1,
     justifyContent: 'center',
     padding: 24,
-    minHeight: '100%',
-  },
-  logoContainer: {
-    alignItems: 'center',
-    marginBottom: 40,
-  },
-  logoMark: {
-    width: 64,
-    height: 64,
-    backgroundColor: colors.accent,
-    borderRadius: 16,
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginBottom: 16,
-  },
-  logoText: {
-    color: '#fff',
-    fontSize: 32,
-    fontWeight: '800',
-  },
-  brandName: {
-    fontSize: 28,
-    fontWeight: '800',
-    color: colors.text,
-    letterSpacing: -1,
-    marginBottom: 4,
-  },
-  brandTagline: {
-    fontSize: 14,
-    color: colors.text3,
-  },
-  formContainer: {
-    flexDirection: 'row',
-    backgroundColor: colors.bg2,
-    borderRadius: 16,
-    borderWidth: 1,
-    borderColor: colors.border,
-    padding: 24,
-    gap: 24,
-    maxWidth: 800,
-    width: '100%',
-    alignSelf: 'center',
-  },
-  formLeft: {
-    flex: 2,
-    minWidth: 0,
-  },
-  formRight: {
-    flex: 1,
-    minWidth: 120,
-    paddingLeft: 16,
-    borderLeftWidth: 1,
-    borderLeftColor: colors.border,
-  },
-  formTitle: {
-    fontSize: 24,
-    fontWeight: '800',
-    color: colors.text,
-    marginBottom: 8,
-  },
-  formSubtitle: {
-    fontSize: 14,
-    color: colors.text3,
-    marginBottom: 24,
-  },
-  formGroup: {
-    marginBottom: 16,
-  },
-  label: {
-    fontSize: 13,
-    fontWeight: '600',
-    color: colors.text2,
-    marginBottom: 6,
   },
   input: {
     backgroundColor: colors.bg3,
@@ -230,56 +200,21 @@ const createStyles = (colors) => StyleSheet.create({
     fontSize: 14,
     color: colors.text,
   },
-  linkText: {
-    fontSize: 14,
-    color: colors.accent,
-    fontWeight: '500',
-  },
   btnPrimary: {
     backgroundColor: colors.accent,
     paddingVertical: 14,
     borderRadius: 8,
     alignItems: 'center',
-    marginBottom: 16,
     marginTop: 8,
-  },
-  btnPrimaryText: {
-    color: '#fff',
-    fontSize: 15,
-    fontWeight: '600',
-  },
-  registerPrompt: {
-    flexDirection: 'row',
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  registerText: {
-    fontSize: 14,
-    color: colors.text3,
-  },
-  quickLoginLabel: {
-    fontSize: 12,
-    fontWeight: '600',
-    color: colors.text3,
-    textTransform: 'uppercase',
-    letterSpacing: 0.5,
-    marginBottom: 12,
-  },
-  quickLoginGrid: {
-    gap: 8,
   },
   quickLoginBtn: {
     backgroundColor: colors.bg3,
     borderWidth: 1,
     borderColor: colors.border,
     paddingVertical: 10,
-    paddingHorizontal: 12,
+    paddingHorizontal: 16,
     borderRadius: 8,
     alignItems: 'center',
-  },
-  quickLoginBtnText: {
-    fontSize: 12,
-    fontWeight: '600',
-    color: colors.accent,
+    minWidth: 100,
   },
 });
