@@ -3,6 +3,7 @@ import { Platform } from 'react-native';
 import { YStack, XStack, ScrollView, Text as TamaguiText } from 'tamagui';
 import { useTheme } from '../context/ThemeContext';
 import { useData } from '../../context/DataContext';
+import { useAuth } from '../../context/AuthContext';
 import { StatusBar } from 'expo-status-bar';
 import { SvgIcon } from '../components/SvgIcon';
 import { ProgressBar } from '../../components/ProgressBar';
@@ -11,8 +12,82 @@ import { countLinkedIPCRs } from '../../utils/calculations';
 export default function OPCRScreen({ navigation }) {
   const { colors, isDark } = useTheme();
   const { opcr, ipcrs } = useData();
+  const { user } = useAuth();
   const [expandedSections, setExpandedSections] = useState<string[]>([]);
   const [showFacultyOverview, setShowFacultyOverview] = useState(true);
+  const [selectedCategory, setSelectedCategory] = useState<string>('ALL');
+
+  // Check if user is Vianne Faye S. Gastilo (only secretary who can access OPCR)
+  const canAccessOPCR = () => {
+    if (!user) return false;
+    
+    // Allow admin and dean to access
+    if (user.role === 'ADMIN' || user.role === 'DEAN') return true;
+    
+    // Only Vianne Faye S. Gastilo can access OPCR among secretaries
+    if (user.role === 'SECRETARY') {
+      return user.name.includes('Vianne') || user.name.includes('Gastilo');
+    }
+    
+    return false;
+  };
+
+  // If user doesn't have access, show access denied screen
+  if (!canAccessOPCR()) {
+    return (
+      <YStack f={1} bg="$bg">
+        <StatusBar style={isDark ? 'light' : 'dark'} />
+        
+        {/* Topbar */}
+        <XStack
+          bg="$bg2"
+          bw={1}
+          bbc="$border"
+          px="$4"
+          py="$3"
+          pt={48}
+          ai="center"
+        >
+          <XStack
+            pressStyle={{ opacity: 0.7 }}
+            onPress={() => navigation.openDrawer()}
+            cursor="pointer"
+          >
+            <SvgIcon name="menu" size={24} color={colors.text} />
+          </XStack>
+          <YStack f={1} mx="$4">
+            <TamaguiText fontSize={17} fontWeight="700" color="$text">
+              OPCR
+            </TamaguiText>
+            <TamaguiText fontSize={11} color="$text3" mt={2}>
+              Office Performance Commitment Review
+            </TamaguiText>
+          </YStack>
+        </XStack>
+
+        {/* Access Denied Content */}
+        <YStack f={1} ai="center" jc="center" p="$5">
+          <YStack
+            bg="$bg2"
+            br="$4"
+            bw={1}
+            bc="$border"
+            p="$6"
+            ai="center"
+            maxWidth={400}
+          >
+            <SvgIcon name="alertCircle" size={64} color={colors.orange} mb="$4" />
+            <TamaguiText fontSize={20} fontWeight="700" color="$text" mb="$2" textAlign="center">
+              Access Restricted
+            </TamaguiText>
+            <TamaguiText fontSize={14} color="$text3" textAlign="center" lineHeight={22}>
+              You do not have permission to view the OPCR. Only Vianne Faye S. Gastilo (Administrative Aide III) can access this section.
+            </TamaguiText>
+          </YStack>
+        </YStack>
+      </YStack>
+    );
+  }
 
   const toggleSection = (id: string) => {
     setExpandedSections(prev =>
@@ -66,6 +141,19 @@ export default function OPCRScreen({ navigation }) {
   };
 
   const facultySummary = getFacultySummary();
+
+  // Filter major functions by selected category
+  const filteredMajorFunctions = selectedCategory === 'ALL'
+    ? opcr.majorFunctions
+    : opcr.majorFunctions.filter(mf => mf.category === selectedCategory);
+
+  // Count functions by category
+  const categoryCounts = {
+    ALL: opcr.majorFunctions.length,
+    STRATEGIC: opcr.majorFunctions.filter(mf => mf.category === 'STRATEGIC').length,
+    CORE: opcr.majorFunctions.filter(mf => mf.category === 'CORE').length,
+    SUPPORT: opcr.majorFunctions.filter(mf => mf.category === 'SUPPORT').length,
+  };
 
   return (
     <YStack f={1} bg="$bg">
@@ -285,8 +373,205 @@ export default function OPCRScreen({ navigation }) {
           )}
         </YStack>
 
+        {/* Category Filter Buttons */}
+        <YStack mb="$4">
+          <TamaguiText fontSize={13} fontWeight="600" color="$text3" mb="$3">
+            Filter by Category
+          </TamaguiText>
+          <XStack gap="$2.5" flexWrap="wrap">
+            {/* All Button */}
+            <XStack
+              bg={selectedCategory === 'ALL' ? '$accent' : '$bg2'}
+              bw={1}
+              bc={selectedCategory === 'ALL' ? '$accent' : '$border'}
+              px="$4"
+              py="$2.5"
+              br="$3"
+              ai="center"
+              gap="$2"
+              pressStyle={{ opacity: 0.7 }}
+              onPress={() => setSelectedCategory('ALL')}
+              cursor="pointer"
+            >
+              <TamaguiText
+                fontSize={13}
+                fontWeight="600"
+                color={selectedCategory === 'ALL' ? '#fff' : '$text'}
+              >
+                All
+              </TamaguiText>
+              <YStack
+                bg={selectedCategory === 'ALL' ? 'rgba(255,255,255,0.25)' : '$bg3'}
+                px="$2"
+                py="$0.5"
+                br="$2"
+                minWidth={24}
+                ai="center"
+              >
+                <TamaguiText
+                  fontSize={11}
+                  fontWeight="700"
+                  color={selectedCategory === 'ALL' ? '#fff' : '$text3'}
+                >
+                  {categoryCounts.ALL}
+                </TamaguiText>
+              </YStack>
+            </XStack>
+
+            {/* Strategic Button */}
+            <XStack
+              bg={selectedCategory === 'STRATEGIC' ? '$accent' : '$bg2'}
+              bw={1}
+              bc={selectedCategory === 'STRATEGIC' ? '$accent' : '$border'}
+              px="$4"
+              py="$2.5"
+              br="$3"
+              ai="center"
+              gap="$2"
+              pressStyle={{ opacity: 0.7 }}
+              onPress={() => setSelectedCategory('STRATEGIC')}
+              cursor="pointer"
+            >
+              <YStack
+                w={10}
+                h={10}
+                br={5}
+                backgroundColor={selectedCategory === 'STRATEGIC' ? '#fff' : colors.accent}
+              />
+              <TamaguiText
+                fontSize={13}
+                fontWeight="600"
+                color={selectedCategory === 'STRATEGIC' ? '#fff' : '$text'}
+              >
+                Strategic
+              </TamaguiText>
+              <YStack
+                bg={selectedCategory === 'STRATEGIC' ? 'rgba(255,255,255,0.25)' : '$bg3'}
+                px="$2"
+                py="$0.5"
+                br="$2"
+                minWidth={24}
+                ai="center"
+              >
+                <TamaguiText
+                  fontSize={11}
+                  fontWeight="700"
+                  color={selectedCategory === 'STRATEGIC' ? '#fff' : '$text3'}
+                >
+                  {categoryCounts.STRATEGIC}
+                </TamaguiText>
+              </YStack>
+            </XStack>
+
+            {/* Core Button */}
+            <XStack
+              bg={selectedCategory === 'CORE' ? colors.teal : '$bg2'}
+              bw={1}
+              bc={selectedCategory === 'CORE' ? colors.teal : '$border'}
+              px="$4"
+              py="$2.5"
+              br="$3"
+              ai="center"
+              gap="$2"
+              pressStyle={{ opacity: 0.7 }}
+              onPress={() => setSelectedCategory('CORE')}
+              cursor="pointer"
+            >
+              <YStack
+                w={10}
+                h={10}
+                br={5}
+                backgroundColor={selectedCategory === 'CORE' ? '#fff' : colors.teal}
+              />
+              <TamaguiText
+                fontSize={13}
+                fontWeight="600"
+                color={selectedCategory === 'CORE' ? '#fff' : '$text'}
+              >
+                Core
+              </TamaguiText>
+              <YStack
+                bg={selectedCategory === 'CORE' ? 'rgba(255,255,255,0.25)' : '$bg3'}
+                px="$2"
+                py="$0.5"
+                br="$2"
+                minWidth={24}
+                ai="center"
+              >
+                <TamaguiText
+                  fontSize={11}
+                  fontWeight="700"
+                  color={selectedCategory === 'CORE' ? '#fff' : '$text3'}
+                >
+                  {categoryCounts.CORE}
+                </TamaguiText>
+              </YStack>
+            </XStack>
+
+            {/* Support Button */}
+            <XStack
+              bg={selectedCategory === 'SUPPORT' ? colors.orange : '$bg2'}
+              bw={1}
+              bc={selectedCategory === 'SUPPORT' ? colors.orange : '$border'}
+              px="$4"
+              py="$2.5"
+              br="$3"
+              ai="center"
+              gap="$2"
+              pressStyle={{ opacity: 0.7 }}
+              onPress={() => setSelectedCategory('SUPPORT')}
+              cursor="pointer"
+            >
+              <YStack
+                w={10}
+                h={10}
+                br={5}
+                backgroundColor={selectedCategory === 'SUPPORT' ? '#fff' : colors.orange}
+              />
+              <TamaguiText
+                fontSize={13}
+                fontWeight="600"
+                color={selectedCategory === 'SUPPORT' ? '#fff' : '$text'}
+              >
+                Support
+              </TamaguiText>
+              <YStack
+                bg={selectedCategory === 'SUPPORT' ? 'rgba(255,255,255,0.25)' : '$bg3'}
+                px="$2"
+                py="$0.5"
+                br="$2"
+                minWidth={24}
+                ai="center"
+              >
+                <TamaguiText
+                  fontSize={11}
+                  fontWeight="700"
+                  color={selectedCategory === 'SUPPORT' ? '#fff' : '$text3'}
+                >
+                  {categoryCounts.SUPPORT}
+                </TamaguiText>
+              </YStack>
+            </XStack>
+          </XStack>
+        </YStack>
+
         {/* Major Functions */}
-        {opcr.majorFunctions.map((mf) => {
+        {filteredMajorFunctions.length === 0 ? (
+          <YStack
+            bg="$bg2"
+            br="$4"
+            bw={1}
+            bc="$border"
+            p="$5"
+            ai="center"
+          >
+            <SvgIcon name="alertCircle" size={48} color={colors.text3} mb="$3" />
+            <TamaguiText fontSize={14} color="$text3" textAlign="center">
+              No {selectedCategory.toLowerCase()} functions found
+            </TamaguiText>
+          </YStack>
+        ) : (
+          filteredMajorFunctions.map((mf) => {
           const isExpanded = expandedSections.includes(mf.id);
           const categoryColor = getCategoryColor(mf.category);
 
@@ -387,6 +672,29 @@ export default function OPCRScreen({ navigation }) {
                           </TamaguiText>
                         </XStack>
 
+                        {/* Required Ratings */}
+                        {si.requiredRatings && si.requiredRatings.length > 0 && (
+                          <XStack mb="$3" gap="$2" flexWrap="wrap">
+                            <TamaguiText fontSize={12} fontWeight="600" color="$text3">
+                              Required Ratings:
+                            </TamaguiText>
+                            {si.requiredRatings.map((rating) => (
+                              <XStack
+                                key={rating}
+                                bg={`${categoryColor}20`}
+                                px="$2"
+                                py="$1"
+                                br="$1.5"
+                                ai="center"
+                              >
+                                <TamaguiText fontSize={11} fontWeight="600" color={categoryColor}>
+                                  {rating === 'Q' ? 'Quality' : rating === 'E' ? 'Efficiency' : 'Timeliness'}
+                                </TamaguiText>
+                              </XStack>
+                            ))}
+                          </XStack>
+                        )}
+
                         {/* Progress */}
                         <YStack mb="$3">
                           <XStack jc="space-between" ai="center" mb="$2">
@@ -437,7 +745,8 @@ export default function OPCRScreen({ navigation }) {
               )}
             </YStack>
           );
-        })}
+        })
+        )}
       </ScrollView>
     </YStack>
   );

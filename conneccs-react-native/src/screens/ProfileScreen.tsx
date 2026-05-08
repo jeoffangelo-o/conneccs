@@ -114,6 +114,14 @@ export default function ProfileScreen({ navigation }) {
               </View>
             )}
             
+            {user.position && (
+              <View style={styles.infoRow}>
+                <SvgIcon name="award" size={18} color={colors.text3} style={{}} />
+                <Text style={styles.infoLabel}>Position</Text>
+                <Text style={styles.infoValue}>{user.position}</Text>
+              </View>
+            )}
+            
             {user.program && (
               <View style={styles.infoRow}>
                 <SvgIcon name="book" size={18} color={colors.text3} style={{}} />
@@ -192,8 +200,10 @@ const createStyles = (colors: any) => StyleSheet.create({
     paddingBottom: 32,
   },
   profileCard: {
-    backgroundColor: '#1a1a1a',
+    backgroundColor: colors.bg2,
     borderRadius: 12,
+    borderWidth: 1,
+    borderColor: colors.border,
     padding: 24,
     marginBottom: 16,
   },
@@ -245,10 +255,13 @@ const createStyles = (colors: any) => StyleSheet.create({
     fontSize: 13,
     fontWeight: '600',
     color: colors.text,
+    textAlign: 'right',
   },
   actionsCard: {
-    backgroundColor: '#1a1a1a',
+    backgroundColor: colors.bg2,
     borderRadius: 12,
+    borderWidth: 1,
+    borderColor: colors.border,
     overflow: 'hidden',
   },
   actionItem: {

@@ -7,8 +7,10 @@ import {
   StyleSheet,
 } from 'react-native';
 import { useTheme } from '../context/ThemeContext';
+import { useAuth } from '../../context/AuthContext';
 import { StatusBar } from 'expo-status-bar';
 import { SvgIcon } from '../components/SvgIcon';
+import { getTimelinessStatus } from '../../utils/timeliness';
 
 type Requirement = {
   no: string;
@@ -19,6 +21,16 @@ type Requirement = {
   deadline: string;
   remarks: string;
   staff: string;
+};
+
+type Submission = {
+  requirementNo: string;
+  submittedAt: Date;
+  fileUri: string;
+  fileName: string;
+  qualityRating: number;
+  timelinessRating: number;
+  accomplishments: string;
 };
 
 const requirements: Requirement[] = [
@@ -199,58 +211,114 @@ const otherDocuments: Requirement[] = [
 
 export default function ReportorialRequirementsScreen({ navigation }) {
   const { colors, isDark } = useTheme();
+  const { user } = useAuth();
   const styles = createStyles(colors);
   const [activeTab, setActiveTab] = useState<'requirements' | 'other'>('requirements');
+  const [submissions, setSubmissions] = useState<Submission[]>([]);
 
-  const renderRequirementCard = (req: Requirement) => (
-    <TouchableOpacity 
-      key={req.no} 
-      style={styles.card}
-      onPress={() => navigation.navigate('ReportorialFolder', { requirement: req })}
-    >
-      <View style={styles.cardHeader}>
-        <View style={styles.cardNumber}>
-          <Text style={styles.cardNumberText}>{req.no}</Text>
-        </View>
-        <View style={styles.cardStaff}>
-          <Text style={styles.cardStaffText}>{req.staff}</Text>
-        </View>
-      </View>
-      
-      <Text style={styles.cardTitle}>{req.requirement}</Text>
-      
-      <View style={styles.cardSection}>
-        <Text style={styles.cardLabel}>Template:</Text>
-        <Text style={styles.cardValue}>{req.template || 'N/A'}</Text>
-      </View>
+  // Map secretary names to staff codes
+  const getSecretaryStaffCode = (userName: string): string | null => {
+    if (userName.includes('Jo Ann') || userName.includes('Baeta')) return 'JO';
+    if (userName.includes('Stephanie') || userName.includes('Otares')) return 'STEPH';
+    if (userName.includes('Reychille') || userName.includes('Tañamor')) return 'CHEN';
+    if (userName.includes('Vianne') || userName.includes('Gastilo')) return 'VIANNE';
+    return null;
+  };
 
-      <View style={styles.cardRow}>
-        <View style={styles.cardColumn}>
-          <Text style={styles.cardLabel}>Copies:</Text>
-          <Text style={styles.cardValue}>{req.copies}</Text>
-        </View>
-        <View style={styles.cardColumn}>
-          <Text style={styles.cardLabel}>Size:</Text>
-          <Text style={styles.cardValue}>{req.fileSize}</Text>
-        </View>
-      </View>
+  // Get the staff code for the current user
+  const userStaffCode = user ? getSecretaryStaffCode(user.name) : null;
 
-      <View style={styles.cardSection}>
-        <Text style={styles.cardLabel}>Deadline:</Text>
-        <Text style={[styles.cardValue, styles.deadlineText]}>{req.deadline || 'TBA'}</Text>
-      </View>
+  // Filter requirements based on secretary assignment
+  const filterRequirementsBySecretary = (reqs: Requirement[]) => {
+    // If not a secretary or staff code not found, show all (for admin/dean)
+    if (!user || user.role !== 'SECRETARY' || !userStaffCode) {
+      return reqs;
+    }
+    
+    // Filter to show only requirements assigned to this secretary
+    return reqs.filter(req => req.staff === userStaffCode);
+  };
 
-      <View style={styles.cardSection}>
-        <Text style={styles.cardLabel}>Remarks:</Text>
-        <Text style={styles.cardValue}>{req.remarks}</Text>
-      </View>
-      
-      <View style={styles.cardFooter}>
-        <SvgIcon name="folder" size={16} color={colors.accent} style={{}} />
-        <Text style={styles.cardFooterText}>Click to open folder</Text>
-      </View>
-    </TouchableOpacity>
-  );
+  const filteredRequirements = filterRequirementsBySecretary(requirements);
+  const filteredOtherDocuments = filterRequirementsBySecretary(otherDocuments);
+
+  const renderRequirementCard = (req: Requirement) => {
+    const submission = submissions.find(s => s.requirementNo === req.no);
+    const status = getTimelinessStatus(req.deadline, submission?.submittedAt);
+    
+    return (
+      <TouchableOpacity 
+        key={req.no} 
+        style={styles.card}
+        onPress={() => {
+          // Navigate to folder view to see all submissions
+          navigation.navigate('ReportorialFolder', { 
+            requirement: req,
+            submissions: submissions.filter(s => s.requirementNo === req.no)
+          });
+        }}
+      >
+        <View style={styles.cardHeader}>
+          <View style={styles.cardNumber}>
+            <Text style={styles.cardNumberText}>{req.no}</Text>
+          </View>
+          <View style={styles.cardStaff}>
+            <Text style={styles.cardStaffText}>{req.staff}</Text>
+          </View>
+        </View>
+        
+        {/* Status Badge */}
+        <View style={[styles.statusBadge, { backgroundColor: `${status.color}20` }]}>
+          <View style={[styles.statusDot, { backgroundColor: status.color }]} />
+          <Text style={[styles.statusText, { color: status.color }]}>
+            {submission ? '✅ Submitted' : status.status === 'overdue' ? `⚠️ Overdue (${status.daysUntil} days)` : status.status === 'no-deadline' ? '📋 No Deadline' : `⏰ Pending (${status.daysUntil} days left)`}
+          </Text>
+        </View>
+        
+        <Text style={styles.cardTitle}>{req.requirement}</Text>
+        
+        <View style={styles.cardSection}>
+          <Text style={styles.cardLabel}>Template:</Text>
+          <Text style={styles.cardValue}>{req.template || 'N/A'}</Text>
+        </View>
+
+        <View style={styles.cardRow}>
+          <View style={styles.cardColumn}>
+            <Text style={styles.cardLabel}>Copies:</Text>
+            <Text style={styles.cardValue}>{req.copies}</Text>
+          </View>
+          <View style={styles.cardColumn}>
+            <Text style={styles.cardLabel}>Size:</Text>
+            <Text style={styles.cardValue}>{req.fileSize}</Text>
+          </View>
+        </View>
+
+        <View style={styles.cardSection}>
+          <Text style={styles.cardLabel}>Deadline:</Text>
+          <Text style={[styles.cardValue, styles.deadlineText]}>{req.deadline || 'TBA'}</Text>
+        </View>
+
+        <View style={styles.cardSection}>
+          <Text style={styles.cardLabel}>Remarks:</Text>
+          <Text style={styles.cardValue}>{req.remarks}</Text>
+        </View>
+        
+        {submission && (
+          <View style={styles.submissionInfo}>
+            <Text style={styles.submissionLabel}>Your submission: {submission.submittedAt.toLocaleDateString()}</Text>
+            <Text style={styles.submissionLabel}>Q: {submission.qualityRating}/5 | T: {submission.timelinessRating}/5</Text>
+          </View>
+        )}
+        
+        <View style={styles.cardFooter}>
+          <SvgIcon name="folder" size={16} color={colors.accent} style={{}} />
+          <Text style={styles.cardFooterText}>
+            Click to open folder
+          </Text>
+        </View>
+      </TouchableOpacity>
+    );
+  };
 
   return (
     <View style={styles.container}>
@@ -293,8 +361,8 @@ export default function ReportorialRequirementsScreen({ navigation }) {
       <ScrollView style={styles.content}>
         <View style={styles.grid}>
           {activeTab === 'requirements'
-            ? requirements.map(renderRequirementCard)
-            : otherDocuments.map(renderRequirementCard)}
+            ? filteredRequirements.map(renderRequirementCard)
+            : filteredOtherDocuments.map(renderRequirementCard)}
         </View>
       </ScrollView>
     </View>
@@ -459,5 +527,111 @@ const createStyles = (colors: any) => StyleSheet.create({
     fontSize: 12,
     fontWeight: '600',
     color: colors.accent,
+  },
+  statusBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+    borderRadius: 8,
+    marginBottom: 12,
+  },
+  statusDot: {
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+  },
+  statusText: {
+    fontSize: 12,
+    fontWeight: '600',
+  },
+  submissionInfo: {
+    marginTop: 12,
+    paddingTop: 12,
+    borderTopWidth: 1,
+    borderTopColor: colors.border,
+  },
+  submissionLabel: {
+    fontSize: 11,
+    color: colors.text3,
+    marginBottom: 4,
+  },
+  inputGroup: {
+    marginBottom: 20,
+  },
+  inputLabel: {
+    fontSize: 13,
+    fontWeight: '600',
+    marginBottom: 8,
+  },
+  inputHint: {
+    fontSize: 11,
+    marginBottom: 8,
+  },
+  input: {
+    borderWidth: 1,
+    borderRadius: 8,
+    paddingHorizontal: 12,
+    paddingVertical: 10,
+    fontSize: 14,
+  },
+  textArea: {
+    borderWidth: 1,
+    borderRadius: 8,
+    paddingHorizontal: 12,
+    paddingVertical: 10,
+    fontSize: 14,
+    minHeight: 100,
+  },
+  fileButtons: {
+    flexDirection: 'row',
+    gap: 12,
+  },
+  fileButton: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 8,
+    paddingVertical: 12,
+    borderRadius: 8,
+    borderWidth: 1,
+  },
+  fileButtonText: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#fff',
+  },
+  selectedFile: {
+    fontSize: 12,
+    marginTop: 8,
+    fontWeight: '600',
+  },
+  infoBox: {
+    flexDirection: 'row',
+    gap: 10,
+    padding: 12,
+    borderRadius: 8,
+    borderWidth: 1,
+    marginBottom: 20,
+  },
+  infoText: {
+    flex: 1,
+    fontSize: 12,
+    lineHeight: 18,
+  },
+  submitButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 8,
+    paddingVertical: 14,
+    borderRadius: 8,
+  },
+  submitButtonText: {
+    fontSize: 15,
+    fontWeight: '700',
+    color: '#fff',
   },
 });

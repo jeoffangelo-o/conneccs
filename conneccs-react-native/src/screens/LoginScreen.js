@@ -158,7 +158,7 @@ export default function LoginScreen({ navigation }) {
             <XStack gap={8} flexWrap="wrap" jc="center">
               <TouchableOpacity 
                 style={styles.quickLoginBtn}
-                onPress={() => quickLogin('onesa@cspc.edu.ph', 'faculty123')}
+                onPress={() => quickLogin('onesa@cspc.edu.ph', 'dean123')}
               >
                 <TamaguiText fontSize={12} fontWeight="600" color="$accent">
                   Dean (Onesa)
@@ -174,10 +174,10 @@ export default function LoginScreen({ navigation }) {
               </TouchableOpacity>
               <TouchableOpacity 
                 style={styles.quickLoginBtn}
-                onPress={() => quickLogin('gastilo@cspc.edu.ph', 'faculty123')}
+                onPress={() => quickLogin('gastilo@cspc.edu.ph', 'secretary123')}
               >
                 <TamaguiText fontSize={12} fontWeight="600" color="$accent">
-                  Faculty (Gastilo)
+                  Secretary (Gastilo)
                 </TamaguiText>
               </TouchableOpacity>
               <TouchableOpacity 
@@ -190,18 +190,18 @@ export default function LoginScreen({ navigation }) {
               </TouchableOpacity>
               <TouchableOpacity 
                 style={styles.quickLoginBtn}
-                onPress={() => quickLogin('bayta@cspc.edu.ph', 'faculty123')}
+                onPress={() => quickLogin('baeta@cspc.edu.ph', 'secretary123')}
               >
                 <TamaguiText fontSize={12} fontWeight="600" color="$accent">
-                  Faculty (Bayta)
+                  Secretary (Baeta)
                 </TamaguiText>
               </TouchableOpacity>
               <TouchableOpacity 
                 style={styles.quickLoginBtn}
-                onPress={() => quickLogin('jo@cspc.edu.ph', 'secretary123')}
+                onPress={() => quickLogin('tanamor@cspc.edu.ph', 'secretary123')}
               >
                 <TamaguiText fontSize={12} fontWeight="600" color="$accent">
-                  Secretary (Jo)
+                  Secretary (Tañamor)
                 </TamaguiText>
               </TouchableOpacity>
               <TouchableOpacity 

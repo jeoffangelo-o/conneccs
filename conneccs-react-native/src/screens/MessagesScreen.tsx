@@ -7,6 +7,7 @@ import {
   TextInput,
   StyleSheet,
   Platform,
+  useWindowDimensions,
 } from 'react-native';
 import { useTheme } from '../context/ThemeContext';
 import { useAuth } from '../../context/AuthContext';
@@ -190,12 +191,20 @@ const members: Member[] = [
 export default function MessagesScreen({ navigation }) {
   const { colors, isDark } = useTheme();
   const { user } = useAuth();
-  const styles = createStyles(colors);
+  const { width } = useWindowDimensions();
+  const styles = createStyles(colors, width);
   const [activeChannel, setActiveChannel] = useState('1');
   const [messageText, setMessageText] = useState('');
   const [channelMessageLists, setChannelMessageLists] = useState(channelMessages);
-  const [showMembers, setShowMembers] = useState(false);
+  const [showMembers, setShowMembers] = useState(width > 1024);
+  const [showChannels, setShowChannels] = useState(width > 768);
   const [isLoading, setIsLoading] = useState(true);
+
+  // Update sidebar visibility when window resizes
+  useEffect(() => {
+    setShowMembers(width > 1024);
+    setShowChannels(width > 768);
+  }, [width]);
 
   // Load messages from AsyncStorage on mount
   useEffect(() => {
@@ -270,9 +279,16 @@ export default function MessagesScreen({ navigation }) {
       {/* Topbar */}
       <View style={styles.topbar}>
         <View style={styles.topbarLeft}>
-          <TouchableOpacity onPress={() => navigation.openDrawer()}>
-            <SvgIcon name="menu" size={24} color={colors.text} style={{}} />
-          </TouchableOpacity>
+          {width <= 768 && (
+            <TouchableOpacity onPress={() => setShowChannels(!showChannels)}>
+              <SvgIcon name="menu" size={24} color={colors.text} style={{}} />
+            </TouchableOpacity>
+          )}
+          {width > 768 && (
+            <TouchableOpacity onPress={() => navigation.openDrawer()}>
+              <SvgIcon name="menu" size={24} color={colors.text} style={{}} />
+            </TouchableOpacity>
+          )}
           <View style={styles.topbarTitle}>
             <Text style={styles.topbarTitleText}>Messages</Text>
             <Text style={styles.topbarBreadcrumb}>CCS Faculty Portal › Messages</Text>
@@ -281,10 +297,25 @@ export default function MessagesScreen({ navigation }) {
       </View>
 
       <View style={styles.messagesLayout}>
-        {/* Channels Sidebar */}
-        <View style={styles.channelsSidebar}>
+        {/* Overlay backdrop for mobile */}
+        {showChannels && width <= 768 && (
+          <TouchableOpacity 
+            style={styles.mobileOverlay}
+            activeOpacity={1}
+            onPress={() => setShowChannels(false)}
+          />
+        )}
+
+        {/* Channels Sidebar - Collapsible on mobile */}
+        {showChannels && (
+          <View style={[styles.channelsSidebar, width <= 768 && styles.channelsSidebarMobile]}>
           <View style={styles.channelsHeader}>
             <Text style={styles.channelsHeaderText}>CCS Channels</Text>
+            {width <= 768 && (
+              <TouchableOpacity onPress={() => setShowChannels(false)}>
+                <SvgIcon name="x" size={20} color={colors.text3} style={{}} />
+              </TouchableOpacity>
+            )}
           </View>
           <ScrollView style={styles.channelsList}>
             <Text style={styles.channelSectionLabel}>TEXT CHANNELS</Text>
@@ -295,7 +326,12 @@ export default function MessagesScreen({ navigation }) {
                   styles.channelItem,
                   activeChannel === channel.id && styles.channelItemActive,
                 ]}
-                onPress={() => setActiveChannel(channel.id)}
+                onPress={() => {
+                  setActiveChannel(channel.id);
+                  if (width <= 768) {
+                    setShowChannels(false);
+                  }
+                }}
               >
                 <SvgIcon
                   name="messageCircle"
@@ -315,22 +351,30 @@ export default function MessagesScreen({ navigation }) {
             ))}
           </ScrollView>
         </View>
+        )}
 
         {/* Chat Area */}
         <View style={styles.chatArea}>
           {/* Chat Header */}
           <View style={styles.chatHeader}>
+            {width <= 768 && (
+              <TouchableOpacity onPress={() => setShowChannels(!showChannels)}>
+                <SvgIcon name="menu" size={20} color={colors.text2} style={{}} />
+              </TouchableOpacity>
+            )}
             <SvgIcon name="messageCircle" size={20} color={colors.text2} style={{}} />
             <Text style={styles.chatHeaderTitle}>
               # {channels.find((c) => c.id === activeChannel)?.name}
             </Text>
             <View style={{ flex: 1 }} />
-            <TouchableOpacity 
-              style={styles.toggleMembersBtn}
-              onPress={() => setShowMembers(!showMembers)}
-            >
-              <SvgIcon name="users" size={20} color={colors.text2} style={{}} />
-            </TouchableOpacity>
+            {width > 768 && (
+              <TouchableOpacity 
+                style={styles.toggleMembersBtn}
+                onPress={() => setShowMembers(!showMembers)}
+              >
+                <SvgIcon name="users" size={20} color={colors.text2} style={{}} />
+              </TouchableOpacity>
+            )}
           </View>
 
           {/* Messages */}
@@ -393,8 +437,8 @@ export default function MessagesScreen({ navigation }) {
           </View>
         </View>
 
-        {/* Members Sidebar - Toggleable */}
-        {showMembers && (
+        {/* Members Sidebar - Toggleable, hidden on mobile */}
+        {showMembers && width > 768 && (
           <View style={styles.membersSidebar}>
             <ScrollView showsVerticalScrollIndicator={false}>
               {Object.entries(groupedMembers).map(([role, roleMembers]) => (
@@ -421,7 +465,7 @@ export default function MessagesScreen({ navigation }) {
   );
 }
 
-const createStyles = (colors: any) => StyleSheet.create({
+const createStyles = (colors: any, width: number) => StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: colors.bg,
@@ -430,7 +474,7 @@ const createStyles = (colors: any) => StyleSheet.create({
     backgroundColor: colors.bg2,
     borderBottomWidth: 1,
     borderBottomColor: colors.border,
-    paddingHorizontal: 24,
+    paddingHorizontal: width <= 768 ? 16 : 24,
     paddingVertical: 16,
     flexDirection: 'row',
     justifyContent: 'space-between',
@@ -459,18 +503,43 @@ const createStyles = (colors: any) => StyleSheet.create({
   messagesLayout: {
     flex: 1,
     flexDirection: 'row',
+    position: 'relative',
+  },
+  mobileOverlay: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    zIndex: 9,
   },
   // Channels Sidebar
   channelsSidebar: {
-    width: 240,
+    width: width <= 768 ? '100%' : width <= 1024 ? 200 : 240,
     backgroundColor: colors.bg2,
     borderRightWidth: 1,
     borderRightColor: colors.border,
+  },
+  channelsSidebarMobile: {
+    position: 'absolute',
+    left: 0,
+    top: 0,
+    bottom: 0,
+    zIndex: 10,
+    shadowColor: '#000',
+    shadowOffset: { width: 2, height: 0 },
+    shadowOpacity: 0.25,
+    shadowRadius: 8,
+    elevation: 5,
   },
   channelsHeader: {
     padding: 16,
     borderBottomWidth: 1,
     borderBottomColor: colors.border,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
   },
   channelsHeaderText: {
     fontWeight: '700',
@@ -551,39 +620,42 @@ const createStyles = (colors: any) => StyleSheet.create({
     flex: 1,
   },
   chatMessagesContent: {
-    padding: 20,
-    gap: 16,
+    padding: width <= 768 ? 12 : 20,
+    gap: width <= 768 ? 12 : 16,
   },
   messageGroup: {
     flexDirection: 'row',
-    gap: 12,
-    marginBottom: 16,
+    gap: width <= 768 ? 8 : 12,
+    marginBottom: width <= 768 ? 12 : 16,
   },
   messageAvatar: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
+    width: width <= 768 ? 32 : 40,
+    height: width <= 768 ? 32 : 40,
+    borderRadius: width <= 768 ? 16 : 20,
     backgroundColor: colors.accent,
     alignItems: 'center',
     justifyContent: 'center',
+    flexShrink: 0,
   },
   messageAvatarText: {
     color: '#fff',
     fontWeight: '700',
-    fontSize: 14,
+    fontSize: width <= 768 ? 12 : 14,
   },
   messageContent: {
     flex: 1,
+    minWidth: 0,
   },
   messageHeader: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 8,
     marginBottom: 4,
+    flexWrap: 'wrap',
   },
   messageAuthor: {
     fontWeight: '600',
-    fontSize: 14,
+    fontSize: width <= 768 ? 13 : 14,
     color: colors.text,
   },
   messageRole: {
@@ -593,22 +665,22 @@ const createStyles = (colors: any) => StyleSheet.create({
     backgroundColor: `${colors.accent}20`,
   },
   messageRoleText: {
-    fontSize: 11,
+    fontSize: width <= 768 ? 10 : 11,
     color: colors.accent,
     fontWeight: '600',
   },
   messageTime: {
-    fontSize: 11,
+    fontSize: width <= 768 ? 10 : 11,
     color: colors.text3,
   },
   messageText: {
-    fontSize: 14,
+    fontSize: width <= 768 ? 13 : 14,
     color: colors.text2,
-    lineHeight: 20,
+    lineHeight: width <= 768 ? 18 : 20,
   },
   messageAttachment: {
     marginTop: 8,
-    padding: 12,
+    padding: width <= 768 ? 10 : 12,
     backgroundColor: colors.bg3,
     borderWidth: 1,
     borderColor: colors.border,
@@ -616,7 +688,7 @@ const createStyles = (colors: any) => StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 10,
-    maxWidth: 400,
+    maxWidth: width <= 768 ? '100%' : 400,
   },
   attachmentIcon: {
     width: 32,
@@ -640,7 +712,7 @@ const createStyles = (colors: any) => StyleSheet.create({
     marginTop: 2,
   },
   chatInputArea: {
-    padding: 20,
+    padding: width <= 768 ? 12 : 20,
     backgroundColor: colors.bg2,
     borderTopWidth: 1,
     borderTopColor: colors.border,
@@ -648,26 +720,28 @@ const createStyles = (colors: any) => StyleSheet.create({
   chatInputWrapper: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 12,
+    gap: width <= 768 ? 8 : 12,
     backgroundColor: colors.bg3,
     borderWidth: 1,
     borderColor: colors.border,
     borderRadius: 8,
-    paddingHorizontal: 12,
+    paddingHorizontal: width <= 768 ? 8 : 12,
     paddingVertical: Platform.OS === 'web' ? 8 : 12,
   },
   chatInput: {
     flex: 1,
-    fontSize: 14,
+    fontSize: width <= 768 ? 13 : 14,
     color: colors.text,
     outlineStyle: 'none',
+    minWidth: 0,
   },
   inputBtn: {
-    width: 32,
-    height: 32,
+    width: width <= 768 ? 28 : 32,
+    height: width <= 768 ? 28 : 32,
     alignItems: 'center',
     justifyContent: 'center',
     borderRadius: 4,
+    flexShrink: 0,
   },
   sendBtn: {
     backgroundColor: colors.accent,
@@ -675,7 +749,7 @@ const createStyles = (colors: any) => StyleSheet.create({
   },
   // Members Sidebar
   membersSidebar: {
-    width: 200,
+    width: width <= 1024 ? 180 : 200,
     backgroundColor: colors.bg2,
     borderLeftWidth: 1,
     borderLeftColor: colors.border,

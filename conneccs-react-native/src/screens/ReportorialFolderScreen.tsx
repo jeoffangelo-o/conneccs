@@ -12,6 +12,9 @@ import { useTheme } from '../context/ThemeContext';
 import { useAuth } from '../../context/AuthContext';
 import { StatusBar } from 'expo-status-bar';
 import { SvgIcon } from '../components/SvgIcon';
+import { calculateTimelinessRating, parseDeadline } from '../../utils/timeliness';
+import * as DocumentPicker from 'expo-document-picker';
+import * as ImagePicker from 'expo-image-picker';
 
 type Document = {
   id: string;
@@ -20,6 +23,9 @@ type Document = {
   uploadedAt: string;
   size: string;
   status: 'pending' | 'approved' | 'rejected';
+  qualityRating?: number;
+  timelinessRating?: number;
+  accomplishments?: string;
 };
 
 export default function ReportorialFolderScreen({ route, navigation }) {
@@ -36,6 +42,9 @@ export default function ReportorialFolderScreen({ route, navigation }) {
       uploadedAt: '2026-04-15 10:30 AM',
       size: '2.4 MB',
       status: 'approved',
+      qualityRating: 5,
+      timelinessRating: 5,
+      accomplishments: 'Submitted complete letter with all required signatures',
     },
     {
       id: '2',
@@ -44,36 +53,73 @@ export default function ReportorialFolderScreen({ route, navigation }) {
       uploadedAt: '2026-04-14 3:45 PM',
       size: '1.8 MB',
       status: 'pending',
+      qualityRating: 4,
+      timelinessRating: 4,
+      accomplishments: 'Submitted letter with supporting documents',
     },
   ]);
 
   const [showUploadModal, setShowUploadModal] = useState(false);
   const [selectedFile, setSelectedFile] = useState<any>(null);
+  const [qualityRating, setQualityRating] = useState<number>(5);
+  const [accomplishments, setAccomplishments] = useState<string>('');
+  const [calculatedTimelinessRating, setCalculatedTimelinessRating] = useState<number>(5);
 
-  const handleFileSelect = () => {
-    // In a real app, this would open file picker
-    // For web: <input type="file" />
-    // For mobile: DocumentPicker or ImagePicker
-    if (Platform.OS === 'web') {
-      const input = document.createElement('input');
-      input.type = 'file';
-      input.accept = '.pdf,.doc,.docx,.xls,.xlsx';
-      input.onchange = (e: any) => {
-        const file = e.target.files[0];
-        if (file) {
-          setSelectedFile({
-            name: file.name,
-            size: `${(file.size / 1024 / 1024).toFixed(2)} MB`,
-            type: file.type,
-          });
-        }
-      };
-      input.click();
+  const handleFileSelect = async () => {
+    try {
+      const result = await DocumentPicker.getDocumentAsync({
+        type: ['application/pdf', 'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'],
+        copyToCacheDirectory: true,
+      });
+
+      if (!result.canceled && result.assets && result.assets.length > 0) {
+        const file = result.assets[0];
+        setSelectedFile({
+          name: file.name,
+          size: `${(file.size / 1024 / 1024).toFixed(2)} MB`,
+          uri: file.uri,
+          type: file.mimeType,
+        });
+
+        // Calculate automatic timeliness rating based on deadline
+        const submissionDate = new Date();
+        const timelinessRating = calculateTimelinessRating(requirement.deadline, submissionDate);
+        setCalculatedTimelinessRating(timelinessRating);
+      }
+    } catch (error) {
+      console.error('Error picking document:', error);
+    }
+  };
+
+  const handleImageSelect = async () => {
+    try {
+      const result = await ImagePicker.launchImageLibraryAsync({
+        mediaTypes: ImagePicker.MediaTypeOptions.Images,
+        allowsEditing: false,
+        quality: 1,
+      });
+
+      if (!result.canceled && result.assets && result.assets.length > 0) {
+        const image = result.assets[0];
+        setSelectedFile({
+          name: `image_${Date.now()}.jpg`,
+          size: `${((image.fileSize || 0) / 1024 / 1024).toFixed(2)} MB`,
+          uri: image.uri,
+          type: 'image/jpeg',
+        });
+
+        // Calculate automatic timeliness rating
+        const submissionDate = new Date();
+        const timelinessRating = calculateTimelinessRating(requirement.deadline, submissionDate);
+        setCalculatedTimelinessRating(timelinessRating);
+      }
+    } catch (error) {
+      console.error('Error picking image:', error);
     }
   };
 
   const handleUpload = () => {
-    if (!selectedFile) return;
+    if (!selectedFile || !accomplishments.trim()) return;
 
     const newDoc: Document = {
       id: String(Date.now()),
@@ -82,11 +128,28 @@ export default function ReportorialFolderScreen({ route, navigation }) {
       uploadedAt: new Date().toLocaleString(),
       size: selectedFile.size,
       status: 'pending',
+      qualityRating: qualityRating,
+      timelinessRating: calculatedTimelinessRating,
+      accomplishments: accomplishments,
     };
 
     setDocuments([newDoc, ...documents]);
     setSelectedFile(null);
+    setQualityRating(5);
+    setAccomplishments('');
+    setCalculatedTimelinessRating(5);
     setShowUploadModal(false);
+  };
+
+  const getTimelinessLabel = (rating: number) => {
+    switch (rating) {
+      case 5: return '5 - Submitted 2+ days early';
+      case 4: return '4 - Submitted 1 day early';
+      case 3: return '3 - Submitted on time';
+      case 2: return '2 - Submitted late';
+      case 1: return '1 - Not completed';
+      default: return 'N/A';
+    }
   };
 
   const getStatusColor = (status: string) => {
@@ -190,6 +253,23 @@ export default function ReportorialFolderScreen({ route, navigation }) {
                   <Text style={styles.documentMetaText}>•</Text>
                   <Text style={styles.documentMetaText}>{doc.size}</Text>
                 </View>
+                {doc.qualityRating && doc.timelinessRating && (
+                  <View style={styles.ratingsRow}>
+                    <View style={styles.ratingBadge}>
+                      <Text style={styles.ratingLabel}>Q:</Text>
+                      <Text style={styles.ratingValue}>{doc.qualityRating}/5</Text>
+                    </View>
+                    <View style={styles.ratingBadge}>
+                      <Text style={styles.ratingLabel}>T:</Text>
+                      <Text style={styles.ratingValue}>{doc.timelinessRating}/5</Text>
+                    </View>
+                  </View>
+                )}
+                {doc.accomplishments && (
+                  <Text style={styles.accomplishmentsText} numberOfLines={2}>
+                    {doc.accomplishments}
+                  </Text>
+                )}
               </View>
               <View style={[styles.statusBadge, { backgroundColor: `${getStatusColor(doc.status)}20` }]}>
                 <SvgIcon 
@@ -219,31 +299,110 @@ export default function ReportorialFolderScreen({ route, navigation }) {
               <TouchableOpacity onPress={() => {
                 setShowUploadModal(false);
                 setSelectedFile(null);
+                setQualityRating(5);
+                setAccomplishments('');
+                setCalculatedTimelinessRating(5);
               }}>
-                <SvgIcon name="alertCircle" size={24} color={colors.text3} style={{}} />
+                <SvgIcon name="x" size={24} color={colors.text3} style={{}} />
               </TouchableOpacity>
             </View>
 
-            <View style={styles.modalContent}>
+            <ScrollView style={styles.modalScroll} contentContainerStyle={styles.modalContent}>
               <TouchableOpacity 
                 style={styles.fileSelectBtn}
                 onPress={handleFileSelect}
               >
-                <SvgIcon name="folder" size={32} color={colors.accent} style={{}} />
+                <SvgIcon name="document" size={32} color={colors.accent} style={{}} />
                 <Text style={styles.fileSelectText}>
-                  {selectedFile ? selectedFile.name : 'Choose File'}
+                  {selectedFile ? selectedFile.name : 'Choose Document (PDF, DOC, DOCX)'}
                 </Text>
                 {selectedFile && (
                   <Text style={styles.fileSelectSize}>{selectedFile.size}</Text>
                 )}
               </TouchableOpacity>
 
+              <TouchableOpacity 
+                style={styles.fileSelectBtn}
+                onPress={handleImageSelect}
+              >
+                <SvgIcon name="image" size={32} color={colors.teal} style={{}} />
+                <Text style={styles.fileSelectText}>
+                  Choose Image (JPG, PNG)
+                </Text>
+              </TouchableOpacity>
+
+              {/* Accomplishments Input */}
+              <View style={styles.inputGroup}>
+                <Text style={styles.inputLabel}>Accomplishments / Description *</Text>
+                <TextInput
+                  style={[styles.textArea, { 
+                    color: colors.text, 
+                    backgroundColor: colors.bg3,
+                    borderColor: colors.border 
+                  }]}
+                  placeholder="Describe what you accomplished for this requirement..."
+                  placeholderTextColor={colors.text3}
+                  multiline
+                  numberOfLines={4}
+                  value={accomplishments}
+                  onChangeText={setAccomplishments}
+                />
+              </View>
+
+              {/* Self Quality Rating */}
+              <View style={styles.inputGroup}>
+                <Text style={styles.inputLabel}>Self Quality Rating *</Text>
+                <Text style={styles.inputHint}>Rate the quality of your work (1-5)</Text>
+                <View style={styles.ratingButtons}>
+                  {[1, 2, 3, 4, 5].map((rating) => (
+                    <TouchableOpacity
+                      key={rating}
+                      style={[
+                        styles.ratingButton,
+                        qualityRating === rating && styles.ratingButtonActive,
+                        { borderColor: colors.border }
+                      ]}
+                      onPress={() => setQualityRating(rating)}
+                    >
+                      <Text style={[
+                        styles.ratingButtonText,
+                        { color: qualityRating === rating ? '#fff' : colors.text }
+                      ]}>
+                        {rating}
+                      </Text>
+                    </TouchableOpacity>
+                  ))}
+                </View>
+              </View>
+
+              {/* Automatic Timeliness Rating Display */}
+              {selectedFile && (
+                <View style={[styles.infoBox, { 
+                  backgroundColor: `${colors.green}15`,
+                  borderColor: colors.green 
+                }]}>
+                  <SvgIcon name="info" size={20} color={colors.green} style={{}} />
+                  <View style={{ flex: 1 }}>
+                    <Text style={[styles.infoText, { color: colors.text }]}>
+                      <Text style={{ fontWeight: '700' }}>Automatic Timeliness Rating: </Text>
+                      {getTimelinessLabel(calculatedTimelinessRating)}
+                    </Text>
+                    <Text style={[styles.infoText, { color: colors.text3, fontSize: 11, marginTop: 4 }]}>
+                      Based on submission date vs deadline: {requirement.deadline || 'No deadline'}
+                    </Text>
+                  </View>
+                </View>
+              )}
+
               <View style={styles.uploadInfo}>
                 <Text style={styles.uploadInfoText}>
-                  • Accepted formats: PDF, DOC, DOCX, XLS, XLSX
+                  • Accepted formats: PDF, DOC, DOCX, JPG, PNG
                 </Text>
                 <Text style={styles.uploadInfoText}>
                   • Maximum file size: 10 MB
+                </Text>
+                <Text style={styles.uploadInfoText}>
+                  • Timeliness rating is calculated automatically
                 </Text>
                 <Text style={styles.uploadInfoText}>
                   • Files will be reviewed by {requirement.staff}
@@ -256,20 +415,26 @@ export default function ReportorialFolderScreen({ route, navigation }) {
                   onPress={() => {
                     setShowUploadModal(false);
                     setSelectedFile(null);
+                    setQualityRating(5);
+                    setAccomplishments('');
+                    setCalculatedTimelinessRating(5);
                   }}
                 >
                   <Text style={styles.modalBtnSecondaryText}>Cancel</Text>
                 </TouchableOpacity>
                 <TouchableOpacity 
-                  style={[styles.modalBtnPrimary, !selectedFile && styles.modalBtnDisabled]}
+                  style={[
+                    styles.modalBtnPrimary, 
+                    (!selectedFile || !accomplishments.trim()) && styles.modalBtnDisabled
+                  ]}
                   onPress={handleUpload}
-                  disabled={!selectedFile}
+                  disabled={!selectedFile || !accomplishments.trim()}
                 >
-                  <SvgIcon name="plus" size={18} color="#fff" style={{}} />
-                  <Text style={styles.modalBtnPrimaryText}>Upload</Text>
+                  <SvgIcon name="upload" size={18} color="#fff" style={{}} />
+                  <Text style={styles.modalBtnPrimaryText}>Submit</Text>
                 </TouchableOpacity>
               </View>
-            </View>
+            </ScrollView>
           </View>
         </View>
       )}
@@ -435,6 +600,36 @@ const createStyles = (colors: any) => StyleSheet.create({
     fontSize: 12,
     color: colors.text3,
   },
+  ratingsRow: {
+    flexDirection: 'row',
+    gap: 8,
+    marginTop: 8,
+  },
+  ratingBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    backgroundColor: `${colors.accent}15`,
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 6,
+  },
+  ratingLabel: {
+    fontSize: 11,
+    fontWeight: '600',
+    color: colors.accent,
+  },
+  ratingValue: {
+    fontSize: 11,
+    fontWeight: '700',
+    color: colors.accent,
+  },
+  accomplishmentsText: {
+    fontSize: 12,
+    color: colors.text2,
+    marginTop: 6,
+    fontStyle: 'italic',
+  },
   statusBadge: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -470,8 +665,10 @@ const createStyles = (colors: any) => StyleSheet.create({
     borderRadius: 12,
     width: '100%',
     maxWidth: 500,
+    maxHeight: '90%',
     borderWidth: 1,
     borderColor: colors.border,
+    overflow: 'hidden',
   },
   modalHeader: {
     flexDirection: 'row',
@@ -480,11 +677,15 @@ const createStyles = (colors: any) => StyleSheet.create({
     padding: 20,
     borderBottomWidth: 1,
     borderBottomColor: colors.border,
+    backgroundColor: colors.bg2,
   },
   modalTitle: {
     fontSize: 18,
     fontWeight: '700',
     color: colors.text,
+  },
+  modalScroll: {
+    flex: 1,
   },
   modalContent: {
     padding: 20,
@@ -494,11 +695,11 @@ const createStyles = (colors: any) => StyleSheet.create({
     borderStyle: 'dashed',
     borderColor: colors.border,
     borderRadius: 12,
-    padding: 40,
+    padding: 24,
     alignItems: 'center',
     justifyContent: 'center',
     backgroundColor: colors.bg3,
-    marginBottom: 20,
+    marginBottom: 12,
   },
   fileSelectText: {
     fontSize: 14,
@@ -514,14 +715,14 @@ const createStyles = (colors: any) => StyleSheet.create({
   uploadInfo: {
     backgroundColor: colors.bg3,
     borderRadius: 8,
-    padding: 16,
-    marginBottom: 20,
+    padding: 12,
+    marginBottom: 16,
   },
   uploadInfoText: {
     fontSize: 12,
     color: colors.text2,
-    marginBottom: 6,
-    lineHeight: 18,
+    marginBottom: 4,
+    lineHeight: 16,
   },
   modalActions: {
     flexDirection: 'row',
@@ -559,5 +760,62 @@ const createStyles = (colors: any) => StyleSheet.create({
     fontSize: 14,
     fontWeight: '600',
     color: '#fff',
+  },
+  inputGroup: {
+    marginBottom: 16,
+  },
+  inputLabel: {
+    fontSize: 13,
+    fontWeight: '600',
+    color: colors.text,
+    marginBottom: 8,
+  },
+  inputHint: {
+    fontSize: 11,
+    color: colors.text3,
+    marginBottom: 8,
+  },
+  textArea: {
+    borderWidth: 1,
+    borderRadius: 8,
+    paddingHorizontal: 12,
+    paddingVertical: 10,
+    fontSize: 14,
+    minHeight: 80,
+    textAlignVertical: 'top',
+  },
+  ratingButtons: {
+    flexDirection: 'row',
+    gap: 10,
+  },
+  ratingButton: {
+    flex: 1,
+    paddingVertical: 12,
+    borderRadius: 8,
+    borderWidth: 2,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: colors.bg3,
+  },
+  ratingButtonActive: {
+    backgroundColor: colors.accent,
+    borderColor: colors.accent,
+  },
+  ratingButtonText: {
+    fontSize: 16,
+    fontWeight: '700',
+  },
+  infoBox: {
+    flexDirection: 'row',
+    gap: 10,
+    padding: 12,
+    borderRadius: 8,
+    borderWidth: 1,
+    marginBottom: 16,
+  },
+  infoText: {
+    flex: 1,
+    fontSize: 12,
+    lineHeight: 18,
   },
 });

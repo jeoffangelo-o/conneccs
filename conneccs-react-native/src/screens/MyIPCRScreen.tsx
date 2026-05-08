@@ -18,6 +18,7 @@ export default function MyIPCRScreen({ navigation }) {
   const { ipcrs, updateIPCR, deleteIPCR, generateIPCRForFaculty } = useData();
   const [myIPCR, setMyIPCR] = useState<IPCR | null>(null);
   const [expandedSections, setExpandedSections] = useState<string[]>([]);
+  const [selectedCategory, setSelectedCategory] = useState<string>('ALL');
   const [editingTarget, setEditingTarget] = useState<string | null>(null);
   const [showRatingGuide, setShowRatingGuide] = useState(false);
   const [showImageChoice, setShowImageChoice] = useState(false);
@@ -814,8 +815,215 @@ export default function MyIPCRScreen({ navigation }) {
           </YStack>
         )}
 
+        {/* Category Filter Buttons */}
+        {myIPCR && myIPCR.majorFunctions && myIPCR.majorFunctions.length > 0 && (
+          <YStack mb="$4">
+            <TamaguiText fontSize={13} fontWeight="600" color="$text3" mb="$3">
+              Filter by Category
+            </TamaguiText>
+            <XStack gap="$2.5" flexWrap="wrap">
+              {/* All Button */}
+              <XStack
+                bg={selectedCategory === 'ALL' ? '$accent' : '$bg2'}
+                bw={1}
+                bc={selectedCategory === 'ALL' ? '$accent' : '$border'}
+                px="$4"
+                py="$2.5"
+                br="$3"
+                ai="center"
+                gap="$2"
+                pressStyle={{ opacity: 0.7 }}
+                onPress={() => setSelectedCategory('ALL')}
+                cursor="pointer"
+              >
+                <TamaguiText
+                  fontSize={13}
+                  fontWeight="600"
+                  color={selectedCategory === 'ALL' ? '#fff' : '$text'}
+                >
+                  All
+                </TamaguiText>
+                <YStack
+                  bg={selectedCategory === 'ALL' ? 'rgba(255,255,255,0.25)' : '$bg3'}
+                  px="$2"
+                  py="$0.5"
+                  br="$2"
+                  minWidth={24}
+                  ai="center"
+                >
+                  <TamaguiText
+                    fontSize={11}
+                    fontWeight="700"
+                    color={selectedCategory === 'ALL' ? '#fff' : '$text3'}
+                  >
+                    {myIPCR.majorFunctions.length}
+                  </TamaguiText>
+                </YStack>
+              </XStack>
+
+              {/* Strategic Button */}
+              <XStack
+                bg={selectedCategory === 'STRATEGIC' ? '$accent' : '$bg2'}
+                bw={1}
+                bc={selectedCategory === 'STRATEGIC' ? '$accent' : '$border'}
+                px="$4"
+                py="$2.5"
+                br="$3"
+                ai="center"
+                gap="$2"
+                pressStyle={{ opacity: 0.7 }}
+                onPress={() => setSelectedCategory('STRATEGIC')}
+                cursor="pointer"
+              >
+                <YStack
+                  w={10}
+                  h={10}
+                  br={5}
+                  backgroundColor={selectedCategory === 'STRATEGIC' ? '#fff' : colors.accent}
+                />
+                <TamaguiText
+                  fontSize={13}
+                  fontWeight="600"
+                  color={selectedCategory === 'STRATEGIC' ? '#fff' : '$text'}
+                >
+                  Strategic
+                </TamaguiText>
+                <YStack
+                  bg={selectedCategory === 'STRATEGIC' ? 'rgba(255,255,255,0.25)' : '$bg3'}
+                  px="$2"
+                  py="$0.5"
+                  br="$2"
+                  minWidth={24}
+                  ai="center"
+                >
+                  <TamaguiText
+                    fontSize={11}
+                    fontWeight="700"
+                    color={selectedCategory === 'STRATEGIC' ? '#fff' : '$text3'}
+                  >
+                    {myIPCR.majorFunctions.filter(mf => mf.category === 'STRATEGIC').length}
+                  </TamaguiText>
+                </YStack>
+              </XStack>
+
+              {/* Core Button */}
+              <XStack
+                bg={selectedCategory === 'CORE' ? colors.teal : '$bg2'}
+                bw={1}
+                bc={selectedCategory === 'CORE' ? colors.teal : '$border'}
+                px="$4"
+                py="$2.5"
+                br="$3"
+                ai="center"
+                gap="$2"
+                pressStyle={{ opacity: 0.7 }}
+                onPress={() => setSelectedCategory('CORE')}
+                cursor="pointer"
+              >
+                <YStack
+                  w={10}
+                  h={10}
+                  br={5}
+                  backgroundColor={selectedCategory === 'CORE' ? '#fff' : colors.teal}
+                />
+                <TamaguiText
+                  fontSize={13}
+                  fontWeight="600"
+                  color={selectedCategory === 'CORE' ? '#fff' : '$text'}
+                >
+                  Core
+                </TamaguiText>
+                <YStack
+                  bg={selectedCategory === 'CORE' ? 'rgba(255,255,255,0.25)' : '$bg3'}
+                  px="$2"
+                  py="$0.5"
+                  br="$2"
+                  minWidth={24}
+                  ai="center"
+                >
+                  <TamaguiText
+                    fontSize={11}
+                    fontWeight="700"
+                    color={selectedCategory === 'CORE' ? '#fff' : '$text3'}
+                  >
+                    {myIPCR.majorFunctions.filter(mf => mf.category === 'CORE').length}
+                  </TamaguiText>
+                </YStack>
+              </XStack>
+
+              {/* Support Button */}
+              <XStack
+                bg={selectedCategory === 'SUPPORT' ? colors.orange : '$bg2'}
+                bw={1}
+                bc={selectedCategory === 'SUPPORT' ? colors.orange : '$border'}
+                px="$4"
+                py="$2.5"
+                br="$3"
+                ai="center"
+                gap="$2"
+                pressStyle={{ opacity: 0.7 }}
+                onPress={() => setSelectedCategory('SUPPORT')}
+                cursor="pointer"
+              >
+                <YStack
+                  w={10}
+                  h={10}
+                  br={5}
+                  backgroundColor={selectedCategory === 'SUPPORT' ? '#fff' : colors.orange}
+                />
+                <TamaguiText
+                  fontSize={13}
+                  fontWeight="600"
+                  color={selectedCategory === 'SUPPORT' ? '#fff' : '$text'}
+                >
+                  Support
+                </TamaguiText>
+                <YStack
+                  bg={selectedCategory === 'SUPPORT' ? 'rgba(255,255,255,0.25)' : '$bg3'}
+                  px="$2"
+                  py="$0.5"
+                  br="$2"
+                  minWidth={24}
+                  ai="center"
+                >
+                  <TamaguiText
+                    fontSize={11}
+                    fontWeight="700"
+                    color={selectedCategory === 'SUPPORT' ? '#fff' : '$text3'}
+                  >
+                    {myIPCR.majorFunctions.filter(mf => mf.category === 'SUPPORT').length}
+                  </TamaguiText>
+                </YStack>
+              </XStack>
+            </XStack>
+          </YStack>
+        )}
+
         {/* Major Functions */}
-        {myIPCR.majorFunctions && myIPCR.majorFunctions.map((mf) => {
+        {myIPCR.majorFunctions && (() => {
+          const filteredFunctions = myIPCR.majorFunctions.filter(mf => 
+            selectedCategory === 'ALL' || mf.category === selectedCategory
+          );
+          
+          if (filteredFunctions.length === 0) {
+            return (
+              <YStack
+                bg="$bg2"
+                br="$4"
+                bw={1}
+                bc="$border"
+                p="$5"
+                ai="center"
+              >
+                <SvgIcon name="alertCircle" size={48} color={colors.text3} mb="$3" />
+                <TamaguiText fontSize={14} color="$text3" textAlign="center">
+                  No {selectedCategory.toLowerCase()} functions found
+                </TamaguiText>
+              </YStack>
+            );
+          }
+          
+          return filteredFunctions.map((mf) => {
           const isExpanded = expandedSections.includes(mf.id);
           const categoryColor = getCategoryColor(mf.category);
           const completedTargets = mf.targets.filter(t => t.a4Rating && t.a4Rating > 0).length;
@@ -1163,24 +1371,33 @@ export default function MyIPCRScreen({ navigation }) {
                             {/* View Mode */}
                             {hasRating && (
                               <YStack bg="$bg" br="$2" p="$3" gap="$2" mb="$3">
-                                <XStack jc="space-between">
-                                  <TamaguiText fontSize={12} color="$text3">Quality (Q1)</TamaguiText>
-                                  <TamaguiText fontSize={12} fontWeight="600" color="$text">
-                                    {target.q1Rating?.toFixed(2)}
-                                  </TamaguiText>
-                                </XStack>
-                                <XStack jc="space-between">
-                                  <TamaguiText fontSize={12} color="$text3">Efficiency (E2)</TamaguiText>
-                                  <TamaguiText fontSize={12} fontWeight="600" color="$text">
-                                    {target.e2Rating?.toFixed(2)}
-                                  </TamaguiText>
-                                </XStack>
-                                <XStack jc="space-between">
-                                  <TamaguiText fontSize={12} color="$text3">Timeliness (T3)</TamaguiText>
-                                  <TamaguiText fontSize={12} fontWeight="600" color="$text">
-                                    {target.t3Rating?.toFixed(2)}
-                                  </TamaguiText>
-                                </XStack>
+                                {/* Q1 Rating - Only show if required */}
+                                {(!target.requiredRatings || target.requiredRatings.includes('Q')) && target.q1Rating != null && (
+                                  <XStack jc="space-between">
+                                    <TamaguiText fontSize={12} color="$text3">Quality (Q1)</TamaguiText>
+                                    <TamaguiText fontSize={12} fontWeight="600" color="$text">
+                                      {target.q1Rating?.toFixed(2)}
+                                    </TamaguiText>
+                                  </XStack>
+                                )}
+                                {/* E2 Rating - Only show if required */}
+                                {(!target.requiredRatings || target.requiredRatings.includes('E')) && target.e2Rating != null && (
+                                  <XStack jc="space-between">
+                                    <TamaguiText fontSize={12} color="$text3">Efficiency (E2)</TamaguiText>
+                                    <TamaguiText fontSize={12} fontWeight="600" color="$text">
+                                      {target.e2Rating?.toFixed(2)}
+                                    </TamaguiText>
+                                  </XStack>
+                                )}
+                                {/* T3 Rating - Only show if required */}
+                                {(!target.requiredRatings || target.requiredRatings.includes('T')) && target.t3Rating != null && (
+                                  <XStack jc="space-between">
+                                    <TamaguiText fontSize={12} color="$text3">Timeliness (T3)</TamaguiText>
+                                    <TamaguiText fontSize={12} fontWeight="600" color="$text">
+                                      {target.t3Rating?.toFixed(2)}
+                                    </TamaguiText>
+                                  </XStack>
+                                )}
                                 <XStack jc="space-between" pt="$2" btw={1} btc="$border">
                                   <TamaguiText fontSize={13} fontWeight="600" color="$text">Average (A4)</TamaguiText>
                                   <TamaguiText fontSize={14} fontWeight="700" color="$accent">
@@ -1306,7 +1523,8 @@ export default function MyIPCRScreen({ navigation }) {
               )}
             </YStack>
           );
-        })}
+        });
+        })()}
       </ScrollView>
 
       {/* Rating Guide Modal */}
