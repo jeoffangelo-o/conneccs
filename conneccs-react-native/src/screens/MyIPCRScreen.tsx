@@ -245,11 +245,18 @@ export default function MyIPCRScreen({ navigation }) {
   const handleUploadImage = async (targetId: string) => {
     // Show choice dialog for mobile, direct file picker for web
     if (Platform.OS === 'web') {
-      // On web, use HTML file input (no camera access in web for now)
+      // On web, show a simple choice using window.confirm or create a custom dialog
+      const useCamera = window.confirm('Would you like to take a photo with your camera?\n\nClick OK to use camera, or Cancel to choose from files.');
+      
       const input = document.createElement('input');
       input.type = 'file';
       input.accept = 'image/*';
-      input.capture = 'environment'; // Suggests camera on mobile browsers
+      
+      // If user wants camera, add capture attribute
+      if (useCamera) {
+        input.capture = 'environment'; // Use rear camera
+      }
+      
       input.onchange = (e: any) => {
         const file = e.target.files[0];
         if (file && myIPCR) {
