@@ -62,6 +62,7 @@ export interface IPCRTarget {
   actualAccomplishments: string;
   remarks: string;
   movFileUrls: string[];
+  requiredRatings?: ('Q' | 'E' | 'T')[]; // Which ratings are required for this target
 }
 
 export interface IPCRMajorFunction {

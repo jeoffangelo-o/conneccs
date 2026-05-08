@@ -45,8 +45,15 @@ export default function CustomDrawer(props) {
       roles: ['FACULTY', 'CHAIR', 'DEAN', 'ADMIN', 'SECRETARY']
     },
     { 
-      name: 'OPCR', 
+      name: 'My IPCR', 
       icon: 'document-text-outline', 
+      route: 'MyIPCR', 
+      section: 'IPCR',
+      roles: ['FACULTY', 'CHAIR', 'DEAN']
+    },
+    { 
+      name: 'OPCR', 
+      icon: 'pulse-outline', 
       route: 'OPCR', 
       section: 'Main',
       roles: ['FACULTY', 'CHAIR', 'DEAN', 'ADMIN', 'SECRETARY']
@@ -162,7 +169,7 @@ export default function CustomDrawer(props) {
           />
           <View>
             <Text style={styles.brandName}>ConneCCS</Text>
-            <Text style={styles.brandTagline}>IPCR Management</Text>
+            <Text style={styles.brandTagline}>Target Monitoring</Text>
           </View>
         </View>
       </View>

@@ -130,7 +130,7 @@ export default function DashboardScreen({ navigation }) {
           </TouchableOpacity>
           <View style={styles.topbarTitle}>
             <Text style={styles.topbarTitleText}>Dashboard</Text>
-            <Text style={styles.topbarBreadcrumb}>IPCR Management System</Text>
+            <Text style={styles.topbarBreadcrumb}>Target Monitoring & Management System</Text>
           </View>
         </View>
         <View style={styles.topbarRight}>

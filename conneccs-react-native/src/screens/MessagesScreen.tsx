@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
@@ -12,6 +12,9 @@ import { useTheme } from '../context/ThemeContext';
 import { useAuth } from '../../context/AuthContext';
 import { StatusBar } from 'expo-status-bar';
 import { SvgIcon } from '../components/SvgIcon';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+
+const MESSAGES_STORAGE_KEY = '@conneccs_messages';
 
 type Channel = {
   id: string;
@@ -192,10 +195,45 @@ export default function MessagesScreen({ navigation }) {
   const [messageText, setMessageText] = useState('');
   const [channelMessageLists, setChannelMessageLists] = useState(channelMessages);
   const [showMembers, setShowMembers] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+
+  // Load messages from AsyncStorage on mount
+  useEffect(() => {
+    loadMessages();
+    
+    // Poll for new messages every 2 seconds
+    const interval = setInterval(() => {
+      loadMessages();
+    }, 2000);
+    
+    return () => clearInterval(interval);
+  }, []);
+
+  const loadMessages = async () => {
+    try {
+      const stored = await AsyncStorage.getItem(MESSAGES_STORAGE_KEY);
+      if (stored) {
+        const parsedMessages = JSON.parse(stored);
+        setChannelMessageLists(parsedMessages);
+      }
+      setIsLoading(false);
+    } catch (error) {
+      console.error('Error loading messages:', error);
+      setIsLoading(false);
+    }
+  };
+
+  const saveMessages = async (messages: Record<string, Message[]>) => {
+    try {
+      await AsyncStorage.setItem(MESSAGES_STORAGE_KEY, JSON.stringify(messages));
+    } catch (error) {
+      console.error('Error saving messages:', error);
+    }
+  };
 
   const currentMessages = channelMessageLists[activeChannel] || [];
 
-  const handleSendMessage = () => {
+  const handleSendMessage = async () => {
     if (messageText.trim() === '') return;
 
     const newMessage: Message = {
@@ -207,10 +245,13 @@ export default function MessagesScreen({ navigation }) {
       text: messageText,
     };
 
-    setChannelMessageLists({
+    const updatedMessages = {
       ...channelMessageLists,
       [activeChannel]: [...currentMessages, newMessage],
-    });
+    };
+
+    setChannelMessageLists(updatedMessages);
+    await saveMessages(updatedMessages);
     setMessageText('');
   };
 

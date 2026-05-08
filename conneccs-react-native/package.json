@@ -1,5 +1,5 @@
 {
-  "name": "conneccs-react-native",
+  "name": "conneccs-target-monitoring",
   "version": "1.0.0",
   "main": "node_modules/expo/AppEntry.js",
   "scripts": {
@@ -19,6 +19,8 @@
     "@tamagui/config": "^2.0.0-rc.41",
     "@types/react": "~18.2.45",
     "expo": "~50.0.0",
+    "expo-document-picker": "^55.0.13",
+    "expo-image-picker": "^55.0.20",
     "expo-status-bar": "~1.11.1",
     "react": "18.2.0",
     "react-dom": "18.2.0",

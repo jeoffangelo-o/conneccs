@@ -1,24 +1,16 @@
 import React, { useState } from 'react';
-import {
-  View,
-  Text,
-  ScrollView,
-  TouchableOpacity,
-  StyleSheet,
-  Platform,
-} from 'react-native';
+import { Platform } from 'react-native';
+import { YStack, XStack, ScrollView, Text as TamaguiText } from 'tamagui';
 import { useTheme } from '../context/ThemeContext';
 import { useData } from '../../context/DataContext';
 import { StatusBar } from 'expo-status-bar';
 import { SvgIcon } from '../components/SvgIcon';
 import { ProgressBar } from '../../components/ProgressBar';
 import { countLinkedIPCRs } from '../../utils/calculations';
-import { WebScrollView } from '../components/WebScrollView';
 
 export default function OPCRScreen({ navigation }) {
   const { colors, isDark } = useTheme();
   const { opcr, ipcrs } = useData();
-  const styles = createStyles(colors);
   const [expandedSections, setExpandedSections] = useState<string[]>([]);
 
   const toggleSection = (id: string) => {
@@ -41,36 +33,71 @@ export default function OPCRScreen({ navigation }) {
   };
 
   return (
-    <View style={styles.container}>
+    <YStack f={1} bg="$bg">
       <StatusBar style={isDark ? 'light' : 'dark'} />
       
       {/* Topbar */}
-      <View style={styles.topbar}>
-        <TouchableOpacity onPress={() => navigation.openDrawer()}>
+      <XStack
+        bg="$bg2"
+        bw={1}
+        bbc="$border"
+        px="$4"
+        py="$3"
+        pt={48}
+        ai="center"
+      >
+        <XStack
+          pressStyle={{ opacity: 0.7 }}
+          onPress={() => navigation.openDrawer()}
+          cursor="pointer"
+        >
           <SvgIcon name="menu" size={24} color={colors.text} />
-        </TouchableOpacity>
-        <View style={styles.topbarCenter}>
-          <Text style={styles.topbarTitle}>OPCR</Text>
-          <Text style={styles.topbarBreadcrumb}>Office Performance Commitment Review</Text>
-        </View>
-        <TouchableOpacity>
+        </XStack>
+        <YStack f={1} mx="$4">
+          <TamaguiText fontSize={17} fontWeight="700" color="$text">
+            OPCR
+          </TamaguiText>
+          <TamaguiText fontSize={11} color="$text3" mt={2}>
+            Office Performance Commitment Review
+          </TamaguiText>
+        </YStack>
+        <XStack pressStyle={{ opacity: 0.7 }} cursor="pointer">
           <SvgIcon name="bell" size={22} color={colors.text2} />
-        </TouchableOpacity>
-      </View>
+        </XStack>
+      </XStack>
 
-      <WebScrollView 
-        contentContainerStyle={styles.content}
-        keyboardShouldPersistTaps="handled"
+      <ScrollView
+        f={1}
+        contentContainerStyle={{ padding: 16, paddingBottom: 32 }}
         showsVerticalScrollIndicator={false}
       >
         {/* Header */}
-        <View style={styles.header}>
-          <Text style={styles.headerTitle}>{opcr.officeName}</Text>
-          <Text style={styles.headerSubtitle}>{opcr.period}</Text>
-          <View style={styles.statusBadge}>
-            <Text style={styles.statusText}>{opcr.status}</Text>
-          </View>
-        </View>
+        <YStack
+          bg="$bg2"
+          br="$4"
+          bw={1}
+          bc="$border"
+          p="$5"
+          mb="$5"
+        >
+          <TamaguiText fontSize={20} fontWeight="800" color="$text" mb="$1">
+            {opcr.officeName}
+          </TamaguiText>
+          <TamaguiText fontSize={14} color="$text3" mb="$3">
+            {opcr.period}
+          </TamaguiText>
+          <XStack
+            bg="rgba(16, 185, 129, 0.15)"
+            px="$3"
+            py="$2"
+            br="$3"
+            alignSelf="flex-start"
+          >
+            <TamaguiText fontSize={12} fontWeight="600" color="$green">
+              {opcr.status}
+            </TamaguiText>
+          </XStack>
+        </YStack>
 
         {/* Major Functions */}
         {opcr.majorFunctions.map((mf) => {
@@ -78,298 +105,154 @@ export default function OPCRScreen({ navigation }) {
           const categoryColor = getCategoryColor(mf.category);
 
           return (
-            <View key={mf.id} style={styles.accordion}>
-              <TouchableOpacity
-                style={styles.accordionHeader}
+            <YStack
+              key={mf.id}
+              bg="$bg2"
+              br="$4"
+              bw={1}
+              bc="$border"
+              mb="$3"
+              overflow="hidden"
+            >
+              {/* Accordion Header */}
+              <XStack
+                p="$4"
+                ai="center"
+                jc="space-between"
+                pressStyle={{ opacity: 0.7 }}
                 onPress={() => toggleSection(mf.id)}
+                cursor="pointer"
               >
-                <View style={styles.accordionLeft}>
-                  <View style={[styles.categoryDot, { backgroundColor: categoryColor }]} />
-                  <View style={styles.accordionTitleContainer}>
-                    <Text style={styles.accordionTitle}>{mf.title}</Text>
-                    <Text style={styles.accordionSubtitle}>
+                <XStack f={1} ai="center" gap="$3">
+                  <YStack
+                    w={12}
+                    h={12}
+                    br={6}
+                    backgroundColor={categoryColor}
+                  />
+                  <YStack f={1}>
+                    <TamaguiText fontSize={15} fontWeight="600" color="$text" mb={2}>
+                      {mf.title}
+                    </TamaguiText>
+                    <TamaguiText fontSize={12} color="$text3">
                       {mf.category} • Weight: {(mf.weight * 100)}%
-                    </Text>
-                  </View>
-                </View>
+                    </TamaguiText>
+                  </YStack>
+                </XStack>
                 <SvgIcon
                   name={isExpanded ? 'chevronUp' : 'chevronDown'}
                   size={20}
                   color={colors.text3}
                 />
-              </TouchableOpacity>
+              </XStack>
 
+              {/* Accordion Content */}
               {isExpanded && (
-                <View style={styles.accordionContent}>
+                <YStack
+                  btw={1}
+                  btc="$border"
+                  p="$4"
+                  gap="$3"
+                  bg="$bg2"
+                >
                   {mf.successIndicators.map((si, index) => {
                     const linkedCount = countLinkedIPCRs(si.id, ipcrs);
                     
                     return (
-                      <View key={si.id} style={styles.indicatorCard}>
-                        <View style={styles.indicatorHeader}>
-                          <Text style={styles.indicatorCode}>{si.code}</Text>
-                          <View style={styles.timelinePill}>
-                            <Text style={styles.timelineText}>{si.timeline}</Text>
-                          </View>
-                        </View>
+                      <YStack
+                        key={si.id}
+                        bg="$bg3"
+                        br="$3"
+                        p="$3.5"
+                      >
+                        {/* Indicator Header */}
+                        <XStack jc="space-between" ai="center" mb="$2">
+                          <TamaguiText
+                            fontSize={12}
+                            fontWeight="700"
+                            color="$accent"
+                            textTransform="uppercase"
+                          >
+                            {si.code}
+                          </TamaguiText>
+                          <XStack
+                            bg="$bg"
+                            px="$2.5"
+                            py="$1"
+                            br="$3"
+                          >
+                            <TamaguiText fontSize={11} fontWeight="600" color="$text3">
+                              {si.timeline}
+                            </TamaguiText>
+                          </XStack>
+                        </XStack>
 
-                        <Text style={styles.indicatorDescription}>{si.description}</Text>
+                        <TamaguiText fontSize={14} color="$text" mb="$2.5" lineHeight={20}>
+                          {si.description}
+                        </TamaguiText>
                         
-                        <View style={styles.measuresRow}>
-                          <Text style={styles.measuresLabel}>Measures:</Text>
-                          <Text style={styles.measuresText}>{si.measures}</Text>
-                        </View>
+                        {/* Measures */}
+                        <XStack mb="$3">
+                          <TamaguiText fontSize={12} fontWeight="600" color="$text3" mr="$2">
+                            Measures:
+                          </TamaguiText>
+                          <TamaguiText fontSize={12} color="$text2" f={1}>
+                            {si.measures}
+                          </TamaguiText>
+                        </XStack>
 
-                        <View style={styles.progressSection}>
-                          <View style={styles.progressHeader}>
-                            <Text style={styles.progressLabel}>Progress</Text>
-                            <Text style={styles.progressValue}>
+                        {/* Progress */}
+                        <YStack mb="$3">
+                          <XStack jc="space-between" ai="center" mb="$2">
+                            <TamaguiText fontSize={12} fontWeight="600" color="$text3" f={1}>
+                              Progress
+                            </TamaguiText>
+                            <TamaguiText fontSize={12} fontWeight="600" color="$text" mr="$2">
                               {si.actualValue} / {si.targetValue}
-                            </Text>
-                            <Text style={styles.progressPercent}>
+                            </TamaguiText>
+                            <TamaguiText fontSize={14} fontWeight="700" color="$accent">
                               {si.percentAccomplished}%
-                            </Text>
-                          </View>
+                            </TamaguiText>
+                          </XStack>
                           <ProgressBar
                             percent={si.percentAccomplished}
                             color={categoryColor}
                             height={8}
                           />
-                        </View>
+                        </YStack>
 
-                        <View style={styles.accountableRow}>
-                          <Text style={styles.accountableLabel}>Accountable:</Text>
-                          <Text style={styles.accountableText}>{si.accountableUnits}</Text>
-                        </View>
+                        {/* Accountable */}
+                        <XStack mb="$2">
+                          <TamaguiText fontSize={12} fontWeight="600" color="$text3" mr="$2">
+                            Accountable:
+                          </TamaguiText>
+                          <TamaguiText fontSize={12} color="$text2" f={1}>
+                            {si.accountableUnits}
+                          </TamaguiText>
+                        </XStack>
 
-                        <View style={styles.linkedRow}>
+                        {/* Linked IPCRs */}
+                        <XStack
+                          ai="center"
+                          gap="$2"
+                          pt="$2"
+                          btw={1}
+                          btc="$border"
+                        >
                           <SvgIcon name="link" size={16} color={colors.accent} />
-                          <Text style={styles.linkedText}>
+                          <TamaguiText fontSize={12} fontWeight="600" color="$accent">
                             Linked IPCRs: {linkedCount}
-                          </Text>
-                        </View>
-                      </View>
+                          </TamaguiText>
+                        </XStack>
+                      </YStack>
                     );
                   })}
-                </View>
+                </YStack>
               )}
-            </View>
+            </YStack>
           );
         })}
-      </WebScrollView>
-    </View>
+      </ScrollView>
+    </YStack>
   );
 }
-
-const createStyles = (colors) => StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: colors.bg,
-  },
-  topbar: {
-    backgroundColor: colors.bg2,
-    borderBottomWidth: 1,
-    borderBottomColor: colors.border,
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-    paddingTop: 48,
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  topbarCenter: {
-    flex: 1,
-    marginHorizontal: 16,
-  },
-  topbarTitle: {
-    fontSize: 17,
-    fontWeight: '700',
-    color: colors.text,
-  },
-  topbarBreadcrumb: {
-    fontSize: 11,
-    color: colors.text3,
-    marginTop: 2,
-  },
-  content: {
-    padding: 16,
-    paddingBottom: 32,
-  },
-  header: {
-    backgroundColor: colors.bg2,
-    borderRadius: 12,
-    borderWidth: 1,
-    borderColor: colors.border,
-    padding: 20,
-    marginBottom: 20,
-  },
-  headerTitle: {
-    fontSize: 20,
-    fontWeight: '800',
-    color: colors.text,
-    marginBottom: 4,
-  },
-  headerSubtitle: {
-    fontSize: 14,
-    color: colors.text3,
-    marginBottom: 12,
-  },
-  statusBadge: {
-    backgroundColor: 'rgba(16, 185, 129, 0.15)',
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: 12,
-    alignSelf: 'flex-start',
-  },
-  statusText: {
-    fontSize: 12,
-    fontWeight: '600',
-    color: colors.green,
-  },
-  accordion: {
-    backgroundColor: colors.bg2,
-    borderRadius: 12,
-    borderWidth: 1,
-    borderColor: colors.border,
-    marginBottom: 12,
-    overflow: 'hidden',
-  },
-  accordionHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    padding: 16,
-  },
-  accordionLeft: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    flex: 1,
-    gap: 12,
-  },
-  categoryDot: {
-    width: 12,
-    height: 12,
-    borderRadius: 6,
-  },
-  accordionTitleContainer: {
-    flex: 1,
-  },
-  accordionTitle: {
-    fontSize: 15,
-    fontWeight: '600',
-    color: colors.text,
-    marginBottom: 2,
-  },
-  accordionSubtitle: {
-    fontSize: 12,
-    color: colors.text3,
-  },
-  accordionContent: {
-    borderTopWidth: 1,
-    borderTopColor: colors.border,
-    padding: 16,
-    gap: 12,
-  },
-  indicatorCard: {
-    backgroundColor: colors.bg3,
-    borderRadius: 8,
-    padding: 14,
-  },
-  indicatorHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 8,
-  },
-  indicatorCode: {
-    fontSize: 12,
-    fontWeight: '700',
-    color: colors.accent,
-    textTransform: 'uppercase',
-  },
-  timelinePill: {
-    backgroundColor: colors.bg,
-    paddingHorizontal: 10,
-    paddingVertical: 4,
-    borderRadius: 12,
-  },
-  timelineText: {
-    fontSize: 11,
-    fontWeight: '600',
-    color: colors.text3,
-  },
-  indicatorDescription: {
-    fontSize: 14,
-    color: colors.text,
-    marginBottom: 10,
-    lineHeight: 20,
-  },
-  measuresRow: {
-    flexDirection: 'row',
-    marginBottom: 12,
-  },
-  measuresLabel: {
-    fontSize: 12,
-    fontWeight: '600',
-    color: colors.text3,
-    marginRight: 6,
-  },
-  measuresText: {
-    fontSize: 12,
-    color: colors.text2,
-    flex: 1,
-  },
-  progressSection: {
-    marginBottom: 12,
-  },
-  progressHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 8,
-  },
-  progressLabel: {
-    fontSize: 12,
-    fontWeight: '600',
-    color: colors.text3,
-    flex: 1,
-  },
-  progressValue: {
-    fontSize: 12,
-    fontWeight: '600',
-    color: colors.text,
-    marginRight: 8,
-  },
-  progressPercent: {
-    fontSize: 14,
-    fontWeight: '700',
-    color: colors.accent,
-  },
-  accountableRow: {
-    flexDirection: 'row',
-    marginBottom: 8,
-  },
-  accountableLabel: {
-    fontSize: 12,
-    fontWeight: '600',
-    color: colors.text3,
-    marginRight: 6,
-  },
-  accountableText: {
-    fontSize: 12,
-    color: colors.text2,
-    flex: 1,
-  },
-  linkedRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 6,
-    paddingTop: 8,
-    borderTopWidth: 1,
-    borderTopColor: colors.border,
-  },
-  linkedText: {
-    fontSize: 12,
-    fontWeight: '600',
-    color: colors.accent,
-  },
-});

@@ -1,235 +1,426 @@
-# ConneCCS React Native
+# ConneCCS: Web-Based Departmental Target Monitoring and Management System
 
-A mobile application for the CCS Faculty Portal, converted from the web design with 1:1 design accuracy.
+## For the College of Computer Studies
 
-## 🚀 Features
+---
 
-- **Authentication**: Login and Registration screens
-- **Dashboard**: Overview with stats and quick actions
-- **Faculty Management**: View faculty profiles and details
-- **Reports**: Submit and manage reports
-- **IPCR Monitoring**: Individual Performance Commitment and Review
-- **Workload Management**: View faculty workload distribution
-- **Documents**: Manage folders and files
-- **Announcements**: Post and view announcements
-- **Messages**: Communication system
-- **Theme Toggle**: Dark/Light mode support
+## 📋 System Overview
 
-## 📱 Screens Implemented
+**ConneCCS** (College of Computer Studies - Comprehensive System) is a web-based departmental target monitoring and management system designed specifically for the College of Computer Studies. The system streamlines the process of setting, tracking, and evaluating departmental and individual performance targets through the OPCR (Office Performance Commitment and Review) and IPCR (Individual Performance Commitment and Review) framework.
 
-### Core Screens
-- ✅ Login Screen
-- ✅ Register Screen
-- ✅ Dashboard Screen
-- ✅ Custom Drawer Navigation
+### What is Target Monitoring?
 
-### Main Features
-- ✅ Faculty List Screen
-- ✅ Faculty Detail Screen
-- ✅ Announcements Screen
-- ✅ Announcement Form Screen
-- ✅ Reports Screen
-- ✅ Report Form Screen
-- ✅ IPCR Screen
-- ✅ IPCR Form Screen
-- ✅ Workload Screen
-- ✅ Documents Screen
-- ✅ Folder Form Screen
-- ✅ Messages Screen
+The system monitors **targets** - specific, measurable goals set at the departmental level (OPCR) and distributed to individual faculty members (IPCR). It's not just about managing IPCRs; it's about:
+- **Setting departmental targets** (OPCR)
+- **Distributing targets** to individuals (IPCR generation)
+- **Monitoring progress** on all targets
+- **Evaluating performance** against targets
+- **Managing the entire target lifecycle**
 
-## 🎨 Design System
+### Key Objectives
 
-### Colors (Dark Theme)
-- Background: `#0f0e0d`
-- Background 2: `#1a1816`
-- Background 3: `#252220`
-- Border: `#3a3530`
-- Text: `#f0ebe0`
-- Accent: `#4f7cff`
-- Green: `#8fb569`
-- Red: `#d97171`
+1. **Target Setting & Distribution**
+   - Upload departmental OPCR targets
+   - Automatically distribute targets to faculty members
+   - Align individual goals with departmental objectives
 
-### Typography
-- Display Font: System (800 weight)
-- Body Font: System (400 weight)
-- Font Sizes: 10-28px
+2. **Performance Monitoring**
+   - Track progress on assigned targets
+   - Monitor accomplishments in real-time
+   - Visualize performance metrics and trends
 
-### Components
-- Buttons: Primary, Secondary
-- Cards: Panel, Stat Card, Faculty Card
-- Forms: Input, Textarea, Select
-- Badges: Green, Red, Blue, Yellow, Gray
-- Avatar: Small, Medium, Large
+3. **Evaluation & Review**
+   - Structured review workflow
+   - Multi-level approval process
+   - Comprehensive rating system
 
-## 🛠️ Installation
+4. **Collaboration & Communication**
+   - Channel-based messaging
+   - Document sharing
+   - Announcement system
+
+---
+
+## 🎯 Core Features
+
+### 1. Departmental Target Management (OPCR)
+
+#### Upload & Distribution
+- **Secretary uploads OPCR document** (Excel format recommended)
+- System extracts departmental targets with:
+  - Target IDs and descriptions
+  - Key Result Areas (KRAs)
+  - Success indicators
+  - Target values and weights
+  - Accountable persons
+  - Timeline/periods
+
+#### Auto-Distribution
+- **Automatic IPCR generation** when faculty logs in
+- Filters targets by faculty name in "Accountable" field
+- Creates personalized IPCR with relevant targets
+- Ensures alignment with departmental goals
+
+### 2. Individual Target Monitoring (IPCR)
+
+#### Target Setting Phase
+- View assigned targets from OPCR
+- Organized by function category:
+  - **Strategic Functions** (45% weight)
+  - **Core Functions** (45% weight)
+  - **Support Functions** (10% weight)
+- Clear target values and success indicators
+- Timeline and accountability information
+
+#### Accomplishment Tracking
+- Input actual accomplishments
+- Upload supporting documents
+- Self-assessment ratings:
+  - **Quality (Q)** - How well was it done?
+  - **Efficiency (E)** - Resource utilization
+  - **Timeliness (T)** - On-time completion
+- Progress indicators
+
+#### Performance Evaluation
+- Weighted rating calculation
+- Category-wise performance
+- Overall rating with adjectival equivalent:
+  - 4.50-5.00: **Outstanding**
+  - 3.50-4.49: **Very Satisfactory**
+  - 2.50-3.49: **Satisfactory**
+  - 1.50-2.49: **Unsatisfactory**
+  - 0.00-1.49: **Poor**
+
+### 3. Review & Approval Workflow
+
+#### Multi-Level Review
+1. **Faculty** - Self-assessment and submission
+2. **Program Chair** - Initial review and feedback
+3. **Dean** - Final approval and validation
+
+#### Review Features
+- Comment and feedback system
+- Rating adjustments
+- Approval/rejection with reasons
+- Revision requests
+- Audit trail
+
+### 4. Monitoring Dashboard
+
+#### Performance Overview
+- Overall rating display
+- Category breakdowns
+- Progress indicators
+- Completion status
+
+#### Analytics
+- Performance trends over time
+- Comparison with targets
+- Category-wise analysis
+- Faculty performance distribution
+
+#### Quick Stats
+- Total targets assigned
+- Completed targets
+- Pending reviews
+- Submission status
+
+### 5. Communication Tools
+
+#### Messaging System
+- Channel-based communication:
+  - #general - General discussions
+  - #announcements - Official announcements
+  - #faculty-lounge - Casual conversations
+  - #research-updates - Research news
+- Real-time updates (2-second polling)
+- Persistent message history
+- File attachments
+- User presence indicators
+
+#### Announcements
+- Department-wide announcements
+- Priority levels
+- Target audience selection
+- Read receipts
+
+### 6. Document Management
+
+#### Repository
+- Organized folder structure
+- Upload/download documents
+- Version control
+- Search functionality
+- Permission management
+
+#### Supporting Documents
+- Link documents to targets
+- Evidence of accomplishments
+- Reports and outputs
+- Certificates and awards
+
+---
+
+## 👥 User Roles & Permissions
+
+### 1. Faculty
+**Primary Users** - Individual target monitoring
+- ✅ View assigned targets
+- ✅ Submit accomplishments
+- ✅ Upload supporting documents
+- ✅ Self-assessment
+- ✅ Track personal performance
+- ✅ Communicate via messaging
+
+### 2. Program Chair
+**Middle Management** - Program-level monitoring
+- ✅ All faculty permissions
+- ✅ Review faculty IPCRs in their program
+- ✅ Approve/reject submissions
+- ✅ Provide feedback
+- ✅ Monitor program performance
+- ✅ Access program analytics
+
+### 3. Dean
+**Top Management** - College-wide monitoring
+- ✅ All program chair permissions
+- ✅ Oversee all college IPCRs
+- ✅ Final approval authority
+- ✅ College-wide analytics
+- ✅ Strategic planning support
+- ✅ Comprehensive reports
+
+### 4. Secretary
+**Administrative Support** - System management
+- ✅ Upload OPCR documents
+- ✅ Manage document repository
+- ✅ Support administrative tasks
+- ✅ Access all records
+- ✅ Generate reports
+
+### 5. Admin
+**System Administrator** - Full system access
+- ✅ All permissions
+- ✅ User management
+- ✅ System configuration
+- ✅ Data management
+- ✅ Backup and maintenance
+
+---
+
+## 🔄 System Workflow
+
+### Phase 1: Target Setting (Start of Period)
+
+```
+1. Secretary uploads OPCR document
+   ↓
+2. System extracts departmental targets
+   ↓
+3. Targets are stored in the system
+   ↓
+4. Faculty logs in
+   ↓
+5. System auto-generates personalized IPCR
+   ↓
+6. Faculty reviews assigned targets
+```
+
+### Phase 2: Monitoring & Accomplishment (During Period)
+
+```
+1. Faculty works on assigned targets
+   ↓
+2. Faculty inputs accomplishments
+   ↓
+3. Faculty uploads supporting documents
+   ↓
+4. Faculty performs self-assessment
+   ↓
+5. System tracks progress
+   ↓
+6. Dashboard shows real-time status
+```
+
+### Phase 3: Review & Evaluation (End of Period)
+
+```
+1. Faculty submits IPCR
+   ↓
+2. Program Chair reviews
+   ↓
+3. Program Chair provides feedback
+   ↓
+4. Program Chair approves/requests revision
+   ↓
+5. Dean performs final review
+   ↓
+6. Dean approves
+   ↓
+7. System generates final rating
+   ↓
+8. Reports are generated
+```
+
+---
+
+## 🛠️ Technical Stack
+
+### Frontend
+- **Framework**: React Native (Expo)
+- **UI Library**: Tamagui
+- **Language**: TypeScript/JavaScript
+- **Navigation**: React Navigation
+- **State Management**: React Context API
+- **Storage**: AsyncStorage
+
+### Data Processing
+- **Excel Parsing**: xlsx library
+- **File Handling**: Expo File System
+- **Data Validation**: Custom validators
+
+### Deployment
+- **Platform**: Web (primary)
+- **Future**: iOS and Android mobile apps
+
+---
+
+## 📊 Data Management
+
+### Storage Strategy
+- **AsyncStorage** for local persistence
+- **JSON-based** data structures
+- **Cross-session** data sharing
+- **Real-time** updates via polling
+
+### Data Security
+- Role-based access control (RBAC)
+- Session management
+- Data validation
+- Audit trails
+
+---
+
+## 🚀 Getting Started
 
 ### Prerequisites
 - Node.js (v16 or higher)
 - npm or yarn
 - Expo CLI
-- iOS Simulator (Mac) or Android Emulator
 
-### Setup
+### Installation
 
-1. **Install dependencies**
 ```bash
+# Navigate to project directory
 cd conneccs-react-native
+
+# Install dependencies
 npm install
-```
 
-2. **Start the development server**
-```bash
+# Start development server
 npm start
+
+# Open in web browser
+Press 'w' or navigate to http://localhost:8081
 ```
 
-3. **Run on device/simulator**
-```bash
-# iOS
-npm run ios
-
-# Android
-npm run android
-
-# Web
-npm run web
-```
-
-## 📂 Project Structure
-
-```
-conneccs-react-native/
-├── App.js                      # Main app entry point
-├── app.json                    # Expo configuration
-├── package.json                # Dependencies
-├── src/
-│   ├── components/
-│   │   └── CustomDrawer.js     # Drawer navigation component
-│   ├── context/
-│   │   └── ThemeContext.js     # Theme provider (dark/light)
-│   ├── screens/
-│   │   ├── LoginScreen.js
-│   │   ├── RegisterScreen.js
-│   │   ├── DashboardScreen.js
-│   │   ├── FacultyScreen.js
-│   │   ├── FacultyDetailScreen.js
-│   │   ├── AnnouncementsScreen.js
-│   │   ├── AnnouncementFormScreen.js
-│   │   ├── ReportsScreen.js
-│   │   ├── ReportFormScreen.js
-│   │   ├── IPCRScreen.js
-│   │   ├── IPCRFormScreen.js
-│   │   ├── WorkloadScreen.js
-│   │   ├── DocumentsScreen.js
-│   │   ├── FolderFormScreen.js
-│   │   └── MessagesScreen.js
-│   └── styles/
-│       └── globalStyles.js     # Global style definitions
-└── assets/                     # Images and icons
-```
-
-## 🎯 Key Features
-
-### Navigation
-- **Drawer Navigation**: Side menu with all main sections
-- **Stack Navigation**: For nested screens (forms, details)
-- **Deep Linking**: Support for direct navigation
-
-### Theme System
-- **Dark Mode**: Default theme matching web design
-- **Light Mode**: Alternative theme
-- **Toggle**: Easy switch between themes
-- **Persistent**: Theme preference saved
-
-### Forms
-- **Validation**: Input validation on all forms
-- **Error Handling**: User-friendly error messages
-- **Auto-save**: Draft functionality
-- **File Upload**: Support for document attachments
-
-### Data Management
-- **Local State**: React hooks for component state
-- **Context API**: Global state (theme, user)
-- **AsyncStorage**: Persistent data storage (future)
-- **API Integration**: Ready for backend connection (future)
-
-## 🔧 Configuration
-
-### Theme Customization
-Edit `src/context/ThemeContext.js` to modify colors:
-
-```javascript
-const theme = {
-  dark: {
-    bg: '#0f0e0d',
-    accent: '#4f7cff',
-    // ... more colors
-  },
-  light: {
-    bg: '#faf8f3',
-    accent: '#4f7cff',
-    // ... more colors
-  },
-};
-```
-
-### Navigation Structure
-Edit `App.js` to modify navigation:
-
-```javascript
-<Drawer.Navigator>
-  <Drawer.Screen name="Dashboard" component={DashboardScreen} />
-  // Add more screens
-</Drawer.Navigator>
-```
-
-## 📱 Platform-Specific Notes
-
-### iOS
-- Requires Xcode for iOS Simulator
-- CocoaPods for native dependencies
-- Safe area handling built-in
-
-### Android
-- Requires Android Studio for emulator
-- Gradle configuration included
-- Material Design components
-
-### Web
-- Responsive design for web browsers
-- Touch and mouse input support
-- Progressive Web App ready
-
-## 🚧 Future Enhancements
-
-- [ ] Backend API integration
-- [ ] Push notifications
-- [ ] Offline mode with data sync
-- [ ] File upload/download
-- [ ] Real-time messaging
-- [ ] Biometric authentication
-- [ ] Analytics integration
-- [ ] Performance optimization
-- [ ] Unit and integration tests
-- [ ] CI/CD pipeline
-
-## 📄 License
-
-This project is part of the ConneCCS Faculty Portal system.
-
-## 👥 Credits
-
-Converted from the ConneCCS web design to React Native with 1:1 design accuracy.
-
-## 🐛 Known Issues
-
-- File upload functionality requires native modules
-- Some animations may differ from web version
-- Performance optimization needed for large lists
-
-## 📞 Support
-
-For issues or questions, please refer to the main ConneCCS documentation.
+### Quick Login (Demo)
+- **Dean**: onesa@cspc.edu.ph / faculty123
+- **Chair**: colle@cspc.edu.ph / faculty123
+- **Faculty**: gastilo@cspc.edu.ph / faculty123
+- **Secretary**: jo@cspc.edu.ph / secretary123
+- **Admin**: admin@cspc.edu.ph / admin123
 
 ---
 
-**Note**: This is a mobile conversion of the ConneCCS web application. All screens maintain the same design language and user experience as the original web version.
+## 📈 Key Benefits
+
+### For Faculty
+✅ Clear visibility of assigned targets  
+✅ Easy accomplishment tracking  
+✅ Automated rating calculations  
+✅ Progress monitoring  
+✅ Document organization  
+
+### For Program Chairs
+✅ Program-level performance overview  
+✅ Efficient review workflow  
+✅ Faculty performance comparison  
+✅ Feedback management  
+✅ Analytics and insights  
+
+### For Dean
+✅ College-wide monitoring  
+✅ Strategic decision support  
+✅ Performance trends analysis  
+✅ Resource allocation insights  
+✅ Comprehensive reporting  
+
+### For the Department
+✅ Alignment of individual and departmental goals  
+✅ Transparent performance evaluation  
+✅ Efficient target distribution  
+✅ Data-driven decision making  
+✅ Improved accountability  
+
+---
+
+## 📝 System Highlights
+
+### Automation
+- **Auto-IPCR Generation**: Saves time in target distribution
+- **Automatic Calculations**: Eliminates manual computation errors
+- **Real-time Updates**: Instant visibility of changes
+
+### Transparency
+- **Clear Criteria**: Well-defined rating dimensions
+- **Audit Trail**: Complete history of changes
+- **Open Communication**: Messaging and feedback system
+
+### Efficiency
+- **Paperless Process**: Digital document management
+- **Streamlined Workflow**: Structured review process
+- **Quick Access**: Dashboard and search functionality
+
+### Accuracy
+- **Data Validation**: Ensures data integrity
+- **Weighted Calculations**: Precise rating computation
+- **Consistent Evaluation**: Standardized criteria
+
+---
+
+## 🔮 Future Enhancements
+
+### Planned Features
+1. **Backend API** - Real database and server
+2. **Mobile Apps** - Native iOS and Android apps
+3. **Advanced Analytics** - Predictive insights
+4. **Email Notifications** - Automated alerts
+5. **PDF Reports** - Exportable documents
+6. **Calendar Integration** - Deadline tracking
+7. **Advanced PDF Parsing** - Server-side processing
+8. **Multi-department Support** - Expand beyond CCS
+
+---
+
+## 📞 Support
+
+For technical support or inquiries:
+- **Department**: College of Computer Studies
+- **Institution**: Camarines Sur Polytechnic Colleges (CSPC)
+
+---
+
+## 📄 License
+
+This system is developed for the exclusive use of the College of Computer Studies, Camarines Sur Polytechnic Colleges.
+
+---
+
+## 🎓 About
+
+**ConneCCS** is designed to support the College of Computer Studies in achieving its mission of excellence in education, research, and extension through effective target monitoring and performance management.
+
+**Version**: 1.0.0  
+**Last Updated**: 2026  
+**Developed for**: College of Computer Studies, CSPC

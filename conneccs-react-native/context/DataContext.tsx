@@ -5,6 +5,7 @@ import opcrData from '../assets/data/opcr.json';
 import notificationsData from '../assets/data/notifications.json';
 import usersData from '../assets/data/users.json';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { useAuth } from './AuthContext';
 
 interface DataContextType {
   ipcrs: IPCR[];
@@ -22,6 +23,7 @@ interface DataContextType {
 const DataContext = createContext<DataContextType | undefined>(undefined);
 
 export const DataProvider = ({ children }: { children: ReactNode }) => {
+  const { setAutoGenerateIPCR } = useAuth();
   const [ipcrs, setIpcrs] = useState<IPCR[]>(ipcrData as IPCR[]);
   const [opcr, setOpcr] = useState<OPCR>(opcrData as OPCR);
   const [notifications, setNotifications] = useState<Notification[]>(
@@ -38,6 +40,13 @@ export const DataProvider = ({ children }: { children: ReactNode }) => {
   useEffect(() => {
     saveIPCRs();
   }, [ipcrs]);
+
+  // Register auto-generate IPCR callback with AuthContext
+  useEffect(() => {
+    setAutoGenerateIPCR(async (userId: string) => {
+      await generateIPCRForFaculty(userId);
+    });
+  }, [opcr, ipcrs]); // Re-register when OPCR or IPCRs change
 
   const loadIPCRs = async () => {
     try {
@@ -69,24 +78,156 @@ export const DataProvider = ({ children }: { children: ReactNode }) => {
     }
   };
 
+  // Helper function to determine required ratings based on target description and measures
+  const determineRequiredRatings = (description: string, measures: string): ('Q' | 'E' | 'T')[] => {
+    const combined = (description + ' ' + measures).toLowerCase();
+    const ratings: ('Q' | 'E' | 'T')[] = [];
+    
+    // Quality (Q) - for written work, documents, reports, submissions
+    if (
+      combined.includes('submit') ||
+      combined.includes('document') ||
+      combined.includes('report') ||
+      combined.includes('complete') ||
+      combined.includes('revision') ||
+      combined.includes('requirements')
+    ) {
+      ratings.push('Q');
+    }
+    
+    // Effectiveness (E) - for results, outcomes, achievements, percentages
+    if (
+      combined.includes('100%') ||
+      combined.includes('percent') ||
+      combined.includes('attendance') ||
+      combined.includes('accreditation') ||
+      combined.includes('ensured') ||
+      combined.includes('achieved')
+    ) {
+      ratings.push('E');
+    }
+    
+    // Timeliness (T) - for deadlines, schedules, on-time delivery
+    if (
+      combined.includes('on or before') ||
+      combined.includes('deadline') ||
+      combined.includes('schedule') ||
+      combined.includes('timely') ||
+      combined.includes('working days') ||
+      combined.includes('ensuing month')
+    ) {
+      ratings.push('T');
+    }
+    
+    // If no specific indicators found, require all three
+    if (ratings.length === 0) {
+      return ['Q', 'E', 'T'];
+    }
+    
+    return ratings;
+  };
+
+  // Migrate existing IPCRs to add requiredRatings field
+  useEffect(() => {
+    const migrateIPCRs = async () => {
+      console.log('=== Starting IPCR Migration ===');
+      console.log('Total IPCRs to check:', ipcrs.length);
+      
+      let needsMigration = false;
+      
+      const migratedIPCRs = ipcrs.map(ipcr => {
+        console.log(`Checking IPCR: ${ipcr.id}`);
+        
+        if (!ipcr.majorFunctions) {
+          console.log('  No major functions, skipping');
+          return ipcr;
+        }
+        
+        const updatedMajorFunctions = ipcr.majorFunctions.map(mf => {
+          if (!mf.targets) return mf;
+          
+          const updatedTargets = mf.targets.map(target => {
+            // Check if target already has requiredRatings
+            if (target.requiredRatings && target.requiredRatings.length > 0) {
+              console.log(`  Target ${target.id} already has requiredRatings:`, target.requiredRatings);
+              return target;
+            }
+            
+            needsMigration = true;
+            
+            // Determine required ratings based on description and measures
+            const requiredRatings = determineRequiredRatings(
+              target.description || '',
+              target.measures || ''
+            );
+            
+            console.log(`  ✓ Migrating target ${target.id}:`, requiredRatings.join(', '));
+            console.log(`    Description: ${target.description?.substring(0, 60)}...`);
+            
+            return {
+              ...target,
+              requiredRatings,
+            };
+          });
+          
+          return {
+            ...mf,
+            targets: updatedTargets,
+          };
+        });
+        
+        return {
+          ...ipcr,
+          majorFunctions: updatedMajorFunctions,
+        };
+      });
+      
+      if (needsMigration) {
+        console.log('=== Migration Complete - Updating IPCRs ===');
+        setIpcrs(migratedIPCRs);
+      } else {
+        console.log('=== No migration needed - all IPCRs up to date ===');
+      }
+    };
+    
+    if (ipcrs.length > 0) {
+      migrateIPCRs();
+    }
+  }, [ipcrs.length]); // Run when IPCRs are loaded
+
   const generateIPCRForFaculty = async (userId: string): Promise<IPCR | null> => {
+    console.log('=== Auto-generating IPCR for faculty:', userId);
+    
     // Find the user
     const user = usersData.find((u: any) => u.id === userId);
-    if (!user) return null;
+    if (!user) {
+      console.log('User not found:', userId);
+      return null;
+    }
+
+    console.log('Found user:', user.name, 'Last name:', user.lastName);
 
     // Check if IPCR already exists for this user and period
     const existingIPCR = ipcrs.find(
       ipcr => ipcr.facultyId === userId && ipcr.period === opcr.period
     );
-    if (existingIPCR) return existingIPCR;
+    if (existingIPCR) {
+      console.log('IPCR already exists for this period:', existingIPCR.id);
+      return existingIPCR;
+    }
 
     // Extract faculty last name for matching
     const facultyLastName = user.lastName.toLowerCase();
+    console.log('Searching for targets with accountable:', facultyLastName);
 
-    // Filter OPCR targets where this faculty is accountable
-    const assignedTargets: any[] = [];
+    // Build major functions with assigned targets
+    const ipcrMajorFunctions: any[] = [];
     
     opcr.majorFunctions.forEach((mf) => {
+      console.log('Checking major function:', mf.title, 'Category:', mf.category);
+      
+      const assignedTargets: any[] = [];
+      
       mf.successIndicators.forEach((si) => {
         const accountableList = si.accountableUnits.toLowerCase();
         
@@ -96,39 +237,52 @@ export const DataProvider = ({ children }: { children: ReactNode }) => {
           accountableList.includes('all faculty') ||
           accountableList.includes('all personnel')
         ) {
+          console.log('✓ Match found in target:', si.code, '-', si.description.substring(0, 50));
+          
+          const requiredRatings = determineRequiredRatings(si.description, si.measures);
+          console.log('  Required ratings:', requiredRatings.join(', '));
+          
           assignedTargets.push({
             id: `target-${si.id}-${userId}`,
-            opcrTargetId: si.id,
+            parentOpIndicatorId: si.id,
             code: si.code,
-            kra: mf.title,
-            category: mf.category,
-            weight: mf.weight,
             description: si.description,
             measures: si.measures,
-            timeline: si.timeline,
             targetValue: si.targetValue,
-            actualValue: null,
-            accomplishment: '',
-            status: 'PENDING',
-            ratings: {
-              quantity: null,
-              efficiency: null,
-              timeliness: null,
-              average: null,
-            },
-            supportingDocs: [],
-            submittedAt: null,
-            reviewedAt: null,
-            reviewerComments: '',
+            q1Rating: null,
+            e2Rating: null,
+            t3Rating: null,
+            a4Rating: null,
+            actualAccomplishments: '',
+            remarks: '',
+            movFileUrls: [],
+            requiredRatings: requiredRatings,
           });
         }
       });
+
+      // Only add major function if it has assigned targets
+      if (assignedTargets.length > 0) {
+        ipcrMajorFunctions.push({
+          id: `mf-${mf.id}-${userId}`,
+          title: mf.title,
+          category: mf.category,
+          weight: mf.weight,
+          targets: assignedTargets,
+        });
+      }
     });
 
-    // If no targets assigned, return null
-    if (assignedTargets.length === 0) return null;
+    const totalTargets = ipcrMajorFunctions.reduce((sum, mf) => sum + mf.targets.length, 0);
+    console.log('Total targets assigned:', totalTargets);
 
-    // Create new IPCR
+    // If no targets assigned, return null
+    if (totalTargets === 0) {
+      console.log('No targets found for this faculty');
+      return null;
+    }
+
+    // Create new IPCR with proper structure
     const newIPCR: any = {
       id: `ipcr-${userId}-${Date.now()}`,
       facultyId: userId,
@@ -137,25 +291,16 @@ export const DataProvider = ({ children }: { children: ReactNode }) => {
       year: opcr.year,
       status: 'IN_PROGRESS',
       currentPhase: 'TARGET_SETTING',
-      targets: assignedTargets,
-      overallRating: null,
-      strategicRating: null,
-      coreRating: null,
-      supportRating: null,
+      majorFunctions: ipcrMajorFunctions,
       finalRating: null,
       adjectivalRating: null,
-      majorFunctions: [],
       notedByChairId: null,
       verifiedByVpaa: null,
       approvedByDeanId: null,
       createdAt: new Date().toISOString(),
-      submittedAt: null,
-      reviewedAt: null,
-      approvedAt: null,
-      reviewerId: null,
-      reviewerName: null,
-      reviewerComments: '',
     };
+
+    console.log('Created new IPCR:', newIPCR.id, 'with', totalTargets, 'targets across', ipcrMajorFunctions.length, 'major functions');
 
     // Add to state
     setIpcrs(prev => [...prev, newIPCR]);
@@ -168,6 +313,8 @@ export const DataProvider = ({ children }: { children: ReactNode }) => {
   };
 
   const updateOPCRTargets = async (newMajorFunctions: any[]) => {
+    console.log('Updating OPCR with new major functions:', newMajorFunctions.length);
+    
     // Merge new major functions with existing ones
     const updatedOPCR = {
       ...opcr,
@@ -179,6 +326,7 @@ export const DataProvider = ({ children }: { children: ReactNode }) => {
     // Save to AsyncStorage
     try {
       await AsyncStorage.setItem('opcr', JSON.stringify(updatedOPCR));
+      console.log('OPCR saved to AsyncStorage');
     } catch (error) {
       console.error('Error saving OPCR:', error);
     }

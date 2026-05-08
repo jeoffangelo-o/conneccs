@@ -9,6 +9,7 @@ interface AuthContextType {
   logout: () => Promise<void>;
   isAuthenticated: boolean;
   isLoading: boolean;
+  setAutoGenerateIPCR: (callback: (userId: string) => Promise<void>) => void;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -18,6 +19,7 @@ const AUTH_STORAGE_KEY = '@conneccs_auth_user';
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [autoGenerateIPCR, setAutoGenerateIPCRCallback] = useState<((userId: string) => Promise<void>) | null>(null);
 
   // Load user from storage on mount
   useEffect(() => {
@@ -37,6 +39,10 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     }
   };
 
+  const setAutoGenerateIPCR = (callback: (userId: string) => Promise<void>) => {
+    setAutoGenerateIPCRCallback(() => callback);
+  };
+
   const login = async (email: string, password: string): Promise<boolean> => {
     const foundUser = usersData.find(
       u => u.email === email && u.password === password
@@ -46,6 +52,16 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       setUser(foundUser as User);
       try {
         await AsyncStorage.setItem(AUTH_STORAGE_KEY, JSON.stringify(foundUser));
+        
+        // Auto-generate IPCR for faculty on login
+        if (foundUser.role === 'faculty' && autoGenerateIPCR) {
+          try {
+            await autoGenerateIPCR(foundUser.id);
+            console.log('Auto-generated IPCR for faculty:', foundUser.name);
+          } catch (error) {
+            console.error('Failed to auto-generate IPCR:', error);
+          }
+        }
       } catch (error) {
         console.error('Failed to save user to storage:', error);
       }
@@ -64,7 +80,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   };
 
   return (
-    <AuthContext.Provider value={{ user, login, logout, isAuthenticated: !!user, isLoading }}>
+    <AuthContext.Provider value={{ user, login, logout, isAuthenticated: !!user, isLoading, setAutoGenerateIPCR }}>
       {children}
     </AuthContext.Provider>
   );

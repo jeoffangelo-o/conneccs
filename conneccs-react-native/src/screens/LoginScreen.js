@@ -46,14 +46,33 @@ export default function LoginScreen({ navigation }) {
       <ScrollView f={1} contentContainerStyle={styles.scrollContent}>
         {/* Logo */}
         <YStack ai="center" mb={40}>
-          <YStack w={64} h={64} bg="$accent" borderRadius={16} ai="center" jc="center" mb={16}>
-            <TamaguiText color="#fff" fontSize={32} fontWeight="800">C</TamaguiText>
+          <YStack 
+            w={140} 
+            h={140} 
+            bg="$bg2" 
+            borderRadius={70} 
+            borderWidth={3}
+            borderColor="$accent"
+            ai="center" 
+            jc="center" 
+            mb={16}
+            style={{ 
+              shadowColor: '#000',
+              shadowOffset: { width: 0, height: 4 },
+              shadowOpacity: 0.1,
+              shadowRadius: 8,
+            }}
+          >
+            <TamaguiText color="$accent" fontSize={56} fontWeight="800">C</TamaguiText>
           </YStack>
-          <TamaguiText fontSize={28} fontWeight="800" color="$text" letterSpacing={-1} mb={4}>
+          <TamaguiText fontSize={32} fontWeight="800" color="$text" letterSpacing={-1} mb={4}>
             ConneCCS
           </TamaguiText>
-          <TamaguiText fontSize={14} color="$text3">
-            IPCR Management System
+          <TamaguiText fontSize={15} color="$text2" textAlign="center" fontWeight="600" mb={2}>
+            Target Monitoring & Management System
+          </TamaguiText>
+          <TamaguiText fontSize={12} color="$text3" textAlign="center">
+            College of Computer Studies
           </TamaguiText>
         </YStack>
 
@@ -72,7 +91,7 @@ export default function LoginScreen({ navigation }) {
             Sign In
           </TamaguiText>
           <TamaguiText fontSize={14} color="$text3" mb={24}>
-            Welcome back! Please sign in to continue.
+            Welcome to ConneCCS - Departmental Target Monitoring & Management System
           </TamaguiText>
 
           <YStack mb={16}>
@@ -134,31 +153,55 @@ export default function LoginScreen({ navigation }) {
               mb={12}
               textAlign="center"
             >
-              Quick Login
+              Quick Login (Demo)
             </TamaguiText>
             <XStack gap={8} flexWrap="wrap" jc="center">
               <TouchableOpacity 
                 style={styles.quickLoginBtn}
-                onPress={() => quickLogin('faculty1@cspc.edu.ph', 'faculty123')}
+                onPress={() => quickLogin('onesa@cspc.edu.ph', 'faculty123')}
               >
                 <TamaguiText fontSize={12} fontWeight="600" color="$accent">
-                  Faculty
+                  Dean (Onesa)
                 </TamaguiText>
               </TouchableOpacity>
               <TouchableOpacity 
                 style={styles.quickLoginBtn}
-                onPress={() => quickLogin('chair@cspc.edu.ph', 'chair123')}
+                onPress={() => quickLogin('colle@cspc.edu.ph', 'faculty123')}
               >
                 <TamaguiText fontSize={12} fontWeight="600" color="$accent">
-                  Chair
+                  Chair (Colle)
                 </TamaguiText>
               </TouchableOpacity>
               <TouchableOpacity 
                 style={styles.quickLoginBtn}
-                onPress={() => quickLogin('dean@cspc.edu.ph', 'dean123')}
+                onPress={() => quickLogin('gastilo@cspc.edu.ph', 'faculty123')}
               >
                 <TamaguiText fontSize={12} fontWeight="600" color="$accent">
-                  Dean
+                  Faculty (Gastilo)
+                </TamaguiText>
+              </TouchableOpacity>
+              <TouchableOpacity 
+                style={styles.quickLoginBtn}
+                onPress={() => quickLogin('otares@cspc.edu.ph', 'faculty123')}
+              >
+                <TamaguiText fontSize={12} fontWeight="600" color="$accent">
+                  Faculty (Otares)
+                </TamaguiText>
+              </TouchableOpacity>
+              <TouchableOpacity 
+                style={styles.quickLoginBtn}
+                onPress={() => quickLogin('bayta@cspc.edu.ph', 'faculty123')}
+              >
+                <TamaguiText fontSize={12} fontWeight="600" color="$accent">
+                  Faculty (Bayta)
+                </TamaguiText>
+              </TouchableOpacity>
+              <TouchableOpacity 
+                style={styles.quickLoginBtn}
+                onPress={() => quickLogin('jo@cspc.edu.ph', 'secretary123')}
+              >
+                <TamaguiText fontSize={12} fontWeight="600" color="$accent">
+                  Secretary (Jo)
                 </TamaguiText>
               </TouchableOpacity>
               <TouchableOpacity 
@@ -167,14 +210,6 @@ export default function LoginScreen({ navigation }) {
               >
                 <TamaguiText fontSize={12} fontWeight="600" color="$accent">
                   Admin
-                </TamaguiText>
-              </TouchableOpacity>
-              <TouchableOpacity 
-                style={styles.quickLoginBtn}
-                onPress={() => quickLogin('jo@cspc.edu.ph', 'secretary123')}
-              >
-                <TamaguiText fontSize={12} fontWeight="600" color="$accent">
-                  Secretary (JO)
                 </TamaguiText>
               </TouchableOpacity>
             </XStack>

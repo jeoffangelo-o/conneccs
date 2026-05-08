@@ -12,7 +12,6 @@ import { SvgIcon } from '../components/SvgIcon';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useData } from '../../context/DataContext';
 import * as XLSX from 'xlsx';
-// Note: PDF parsing uses basic text extraction from PDF bytes (web-only)
 
 type OPCRTarget = {
   id: string;
@@ -236,147 +235,20 @@ export default function SecretaryOPCRUploadScreen({ navigation }) {
   };
 
   const parsePDFFile = async (file: File): Promise<OPCRTarget[]> => {
-    try {
-      // For web platform, we'll use a simple text extraction approach
-      // Read the PDF as text using FileReader
-      const text = await new Promise<string>((resolve, reject) => {
-        const reader = new FileReader();
-        reader.onload = () => {
-          // Convert ArrayBuffer to text (basic extraction)
-          const arrayBuffer = reader.result as ArrayBuffer;
-          const uint8Array = new Uint8Array(arrayBuffer);
-          let text = '';
-          
-          // Simple text extraction from PDF bytes
-          // This is a basic approach - looks for readable text in the PDF structure
-          for (let i = 0; i < uint8Array.length; i++) {
-            const byte = uint8Array[i];
-            // Only include printable ASCII characters and common punctuation
-            if ((byte >= 32 && byte <= 126) || byte === 10 || byte === 13) {
-              text += String.fromCharCode(byte);
-            }
-          }
-          
-          resolve(text);
-        };
-        reader.onerror = () => reject(new Error('Failed to read PDF file'));
-        reader.readAsArrayBuffer(file);
-      });
-
-      // Parse the extracted text to find OPCR targets
-      const targets: OPCRTarget[] = [];
-      const lines = text.split(/[\n\r]+/).filter(line => line.trim().length > 3);
-
-      // Look for patterns that indicate OPCR targets
-      let currentTarget: Partial<OPCRTarget> | null = null;
-      
-      for (let i = 0; i < lines.length; i++) {
-        const line = lines[i].trim();
-        
-        // Look for ID pattern (e.g., "1.1.1", "2.3.4", "1.1", "2.3")
-        const idMatch = line.match(/^(\d+\.\d+\.?\d*)\s+/);
-        if (idMatch) {
-          // Save previous target if exists
-          if (currentTarget && currentTarget.id && currentTarget.indicator) {
-            targets.push({
-              id: currentTarget.id,
-              kra: currentTarget.kra || 'Extracted from PDF',
-              function: currentTarget.function || '',
-              indicator: currentTarget.indicator,
-              targetValue: currentTarget.targetValue || 'See document',
-              weight: currentTarget.weight || 'Core',
-              period: currentTarget.period || 'Jan-Dec',
-              accountable: currentTarget.accountable || [],
-              ratingDimensions: currentTarget.ratingDimensions || ['Q', 'E', 'T'],
-            });
-          }
-          
-          // Start new target
-          currentTarget = {
-            id: idMatch[1],
-            kra: '',
-            function: '',
-            indicator: line.replace(idMatch[0], '').trim(),
-            targetValue: '',
-            weight: 'Core',
-            period: 'Jan-Dec',
-            accountable: [],
-            ratingDimensions: ['Q', 'E', 'T'],
-          };
-        }
-        
-        // Look for KRA indicators
-        if (line.toUpperCase().includes('KRA') || line.toUpperCase().includes('INSTRUCTION') || 
-            line.toUpperCase().includes('RESEARCH') || line.toUpperCase().includes('EXTENSION') ||
-            line.toUpperCase().includes('COMMUNITY')) {
-          if (currentTarget) {
-            currentTarget.kra = line;
-          }
-        }
-        
-        // Look for Strategic/Core/Support
-        if (line.toUpperCase().includes('STRATEGIC')) {
-          if (currentTarget) currentTarget.weight = 'Strategic';
-        } else if (line.toUpperCase().includes('SUPPORT')) {
-          if (currentTarget) currentTarget.weight = 'Support';
-        }
-        
-        // Look for names (common Filipino surnames and first names)
-        const namePattern = /\b([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)\b/g;
-        const potentialNames = line.match(namePattern);
-        if (potentialNames && currentTarget) {
-          // Filter to likely names (2-3 words, capitalized)
-          const likelyNames = potentialNames.filter(name => {
-            const words = name.split(' ');
-            return words.length >= 1 && words.length <= 3 && 
-                   !['KRA', 'OPCR', 'IPCR', 'Strategic', 'Core', 'Support', 'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'].includes(name);
-          });
-          if (likelyNames.length > 0) {
-            currentTarget.accountable = [...new Set([...(currentTarget.accountable || []), ...likelyNames])];
-          }
-        }
-        
-        // Look for percentage or numeric targets
-        const targetMatch = line.match(/(\d+%|\d+\s*(?:trainings?|publications?|programs?|activities?|projects?))/i);
-        if (targetMatch && currentTarget && !currentTarget.targetValue) {
-          currentTarget.targetValue = targetMatch[1];
-        }
-        
-        // Look for time periods
-        const periodMatch = line.match(/(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)[-\s]+(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)/i);
-        if (periodMatch && currentTarget) {
-          currentTarget.period = periodMatch[0];
-        }
-      }
-      
-      // Add last target
-      if (currentTarget && currentTarget.id && currentTarget.indicator) {
-        targets.push({
-          id: currentTarget.id,
-          kra: currentTarget.kra || 'Extracted from PDF',
-          function: currentTarget.function || '',
-          indicator: currentTarget.indicator,
-          targetValue: currentTarget.targetValue || 'See document',
-          weight: currentTarget.weight || 'Core',
-          period: currentTarget.period || 'Jan-Dec',
-          accountable: currentTarget.accountable || [],
-          ratingDimensions: currentTarget.ratingDimensions || ['Q', 'E', 'T'],
-        });
-      }
-
-      // If no targets found, show helpful message
-      if (targets.length === 0) {
-        throw new Error('No OPCR targets found in PDF. For best results, please use Excel format (.xlsx or .xls).');
-      }
-
-      return targets;
-    } catch (error) {
-      console.error('PDF parsing error:', error);
-      if (error instanceof Error && error.message.includes('No OPCR targets found')) {
-        throw error;
-      }
-      throw new Error('Failed to parse PDF file. For best results, please use Excel format (.xlsx or .xls).');
-    }
+    // PDF parsing is complex due to compression and encoding
+    // For now, we'll show a helpful message directing users to use Excel
+    throw new Error(
+      'PDF parsing requires advanced text extraction that is not yet fully supported in the browser.\n\n' +
+      'Please convert your OPCR PDF to Excel format (.xlsx or .xls) for best results.\n\n' +
+      'How to convert:\n' +
+      '1. Open the PDF in Adobe Acrobat or a PDF reader\n' +
+      '2. Export/Save As Excel Workbook\n' +
+      '3. Upload the Excel file here\n\n' +
+      'Alternatively, you can use online converters like:\n' +
+      '• Adobe Acrobat Online\n' +
+      '• Smallpdf.com\n' +
+      '• ILovePDF.com'
+    );
   };
 
   const handleSaveTargets = async () => {
@@ -495,7 +367,7 @@ export default function SecretaryOPCRUploadScreen({ navigation }) {
           <YStack f={1}>
             <TamaguiText fontSize={18} fontWeight="700" color="$text">Upload OPCR</TamaguiText>
             <TamaguiText fontSize={11} color="$text3" mt={2}>
-              Office Performance Commitment Review
+              Departmental Target Monitoring & Management
             </TamaguiText>
           </YStack>
         </XStack>

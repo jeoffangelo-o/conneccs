@@ -17,6 +17,7 @@ import DashboardScreen from './src/screens/DashboardScreenNew';
 import IPCRDetailScreen from './src/screens/IPCRDetailScreen';
 import OPCRScreen from './src/screens/OPCRScreen';
 import CreateIPCRScreen from './src/screens/CreateIPCRScreen';
+import MyIPCRScreen from './src/screens/MyIPCRScreen';
 import NotificationsScreen from './src/screens/NotificationsScreen';
 import ProfileScreen from './src/screens/ProfileScreen';
 import ReviewQueueScreen from './src/screens/ReviewQueueScreen';
@@ -41,6 +42,7 @@ function DrawerNavigator() {
       }}
     >
       <Drawer.Screen name="Dashboard" component={DashboardScreen} />
+      <Drawer.Screen name="MyIPCR" component={MyIPCRScreen} />
       <Drawer.Screen name="OPCR" component={OPCRScreen} />
       <Drawer.Screen name="Calendar" component={CalendarScreen} />
       <Drawer.Screen name="ReviewQueue" component={ReviewQueueScreen} />

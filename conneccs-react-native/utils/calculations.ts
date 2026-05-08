@@ -63,11 +63,11 @@ export function clampRating(value: number): number {
 }
 
 /**
- * Validate rating input
+ * Validate rating input (whole numbers 1-5)
  */
 export function isValidRating(value: string): boolean {
-  const num = parseFloat(value);
-  return !isNaN(num) && num >= 1.0 && num <= 5.0;
+  const num = parseInt(value);
+  return !isNaN(num) && num >= 1 && num <= 5 && !value.includes('.');
 }
 
 /**
@@ -75,10 +75,16 @@ export function isValidRating(value: string): boolean {
  */
 export function countLinkedIPCRs(indicatorId: string, ipcrs: IPCR[]): number {
   let count = 0;
+  if (!ipcrs || !Array.isArray(ipcrs)) return 0;
+  
   ipcrs.forEach(ipcr => {
+    if (!ipcr || !ipcr.majorFunctions || !Array.isArray(ipcr.majorFunctions)) return;
+    
     ipcr.majorFunctions.forEach(mf => {
+      if (!mf || !mf.targets || !Array.isArray(mf.targets)) return;
+      
       mf.targets.forEach(target => {
-        if (target.parentOpIndicatorId === indicatorId) {
+        if (target && target.parentOpIndicatorId === indicatorId) {
           count++;
         }
       });
