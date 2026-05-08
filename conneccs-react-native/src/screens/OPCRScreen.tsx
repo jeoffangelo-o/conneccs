@@ -12,6 +12,7 @@ export default function OPCRScreen({ navigation }) {
   const { colors, isDark } = useTheme();
   const { opcr, ipcrs } = useData();
   const [expandedSections, setExpandedSections] = useState<string[]>([]);
+  const [showFacultyOverview, setShowFacultyOverview] = useState(true);
 
   const toggleSection = (id: string) => {
     setExpandedSections(prev =>
@@ -31,6 +32,40 @@ export default function OPCRScreen({ navigation }) {
         return colors.text3;
     }
   };
+
+  // Get faculty summary from IPCRs (remove duplicates by facultyId)
+  const getFacultySummary = () => {
+    const facultyMap = new Map();
+    
+    ipcrs.forEach(ipcr => {
+      // Skip if we already have this faculty (keep the first one)
+      if (facultyMap.has(ipcr.facultyId)) {
+        return;
+      }
+      
+      const totalTargets = ipcr.majorFunctions?.reduce((sum, mf) => sum + (mf.targets?.length || 0), 0) || 0;
+      const ratedTargets = ipcr.majorFunctions?.reduce(
+        (sum, mf) => sum + (mf.targets?.filter(t => t.a4Rating && t.a4Rating > 0).length || 0),
+        0
+      ) || 0;
+      const completionPercent = totalTargets > 0 ? Math.round((ratedTargets / totalTargets) * 100) : 0;
+      
+      facultyMap.set(ipcr.facultyId, {
+        id: ipcr.id,
+        facultyId: ipcr.facultyId,
+        name: ipcr.facultyName || 'Unknown',
+        status: ipcr.status,
+        totalTargets,
+        ratedTargets,
+        completionPercent,
+        finalRating: ipcr.finalRating,
+      });
+    });
+    
+    return Array.from(facultyMap.values());
+  };
+
+  const facultySummary = getFacultySummary();
 
   return (
     <YStack f={1} bg="$bg">
@@ -78,7 +113,7 @@ export default function OPCRScreen({ navigation }) {
           bw={1}
           bc="$border"
           p="$5"
-          mb="$5"
+          mb="$4"
         >
           <TamaguiText fontSize={20} fontWeight="800" color="$text" mb="$1">
             {opcr.officeName}
@@ -97,6 +132,157 @@ export default function OPCRScreen({ navigation }) {
               {opcr.status}
             </TamaguiText>
           </XStack>
+        </YStack>
+
+        {/* Faculty Overview Section */}
+        <YStack
+          bg="$bg2"
+          br="$4"
+          bw={1}
+          bc="$border"
+          mb="$4"
+          overflow="hidden"
+        >
+          {/* Section Header */}
+          <XStack
+            p="$4"
+            ai="center"
+            jc="space-between"
+            pressStyle={{ opacity: 0.7 }}
+            onPress={() => setShowFacultyOverview(!showFacultyOverview)}
+            cursor="pointer"
+          >
+            <XStack ai="center" gap="$3" f={1}>
+              <YStack
+                w={40}
+                h={40}
+                bg="$accent"
+                br={20}
+                ai="center"
+                jc="center"
+              >
+                <SvgIcon name="users" size={20} color="#fff" />
+              </YStack>
+              <YStack f={1}>
+                <TamaguiText fontSize={16} fontWeight="700" color="$text" mb={2}>
+                  Faculty IPCR Overview
+                </TamaguiText>
+                <TamaguiText fontSize={12} color="$text3">
+                  {facultySummary.length} faculty members
+                </TamaguiText>
+              </YStack>
+            </XStack>
+            <SvgIcon
+              name={showFacultyOverview ? 'chevronUp' : 'chevronDown'}
+              size={20}
+              color={colors.text3}
+            />
+          </XStack>
+
+          {/* Faculty List */}
+          {showFacultyOverview && (
+            <YStack
+              btw={1}
+              btc="$border"
+              p="$4"
+              gap="$3"
+              bg="$bg2"
+            >
+              {facultySummary.length === 0 ? (
+                <YStack ai="center" py="$5">
+                  <SvgIcon name="alertCircle" size={48} color={colors.text3} mb="$3" />
+                  <TamaguiText fontSize={14} color="$text3" textAlign="center">
+                    No faculty IPCRs generated yet
+                  </TamaguiText>
+                </YStack>
+              ) : (
+                facultySummary.map((faculty) => (
+                  <XStack
+                    key={faculty.id}
+                    bg="$bg3"
+                    br="$3"
+                    p="$3.5"
+                    ai="center"
+                    gap="$3"
+                    pressStyle={{ opacity: 0.7 }}
+                    onPress={() => navigation.navigate('IPCRDetail', { id: faculty.id })}
+                    cursor="pointer"
+                  >
+                    {/* Avatar */}
+                    <YStack
+                      w={48}
+                      h={48}
+                      bg="$accent"
+                      br={24}
+                      ai="center"
+                      jc="center"
+                    >
+                      <TamaguiText color="#fff" fontSize={18} fontWeight="800">
+                        {faculty.name.charAt(0)}
+                      </TamaguiText>
+                    </YStack>
+
+                    {/* Faculty Info */}
+                    <YStack f={1}>
+                      <TamaguiText fontSize={14} fontWeight="700" color="$text" mb={2}>
+                        {faculty.name}
+                      </TamaguiText>
+                      <XStack ai="center" gap="$2" mb="$2">
+                        <XStack
+                          bg={
+                            faculty.status === 'COMPLETED' ? 'rgba(34,197,94,0.15)' :
+                            faculty.status === 'PENDING_REVIEW' ? 'rgba(234,179,8,0.15)' :
+                            'rgba(156,163,175,0.15)'
+                          }
+                          px="$2"
+                          py="$1"
+                          br="$2"
+                        >
+                          <TamaguiText
+                            fontSize={10}
+                            fontWeight="600"
+                            color={
+                              faculty.status === 'COMPLETED' ? '$green' :
+                              faculty.status === 'PENDING_REVIEW' ? '$yellow' :
+                              '$text3'
+                            }
+                          >
+                            {faculty.status.replace('_', ' ')}
+                          </TamaguiText>
+                        </XStack>
+                        <TamaguiText fontSize={11} color="$text3">
+                          {faculty.ratedTargets}/{faculty.totalTargets} targets
+                        </TamaguiText>
+                      </XStack>
+                      
+                      {/* Progress Bar */}
+                      <YStack bg="$border" h={6} br="$2" overflow="hidden">
+                        <YStack
+                          bg="$accent"
+                          h={6}
+                          width={`${faculty.completionPercent}%`}
+                        />
+                      </YStack>
+                    </YStack>
+
+                    {/* Completion Percent */}
+                    <YStack ai="flex-end">
+                      <TamaguiText fontSize={20} fontWeight="800" color="$accent">
+                        {faculty.completionPercent}%
+                      </TamaguiText>
+                      {faculty.finalRating && (
+                        <TamaguiText fontSize={11} color="$text3">
+                          Rating: {faculty.finalRating.toFixed(2)}
+                        </TamaguiText>
+                      )}
+                    </YStack>
+
+                    <SvgIcon name="chevronRight" size={20} color={colors.text3} />
+                  </XStack>
+                ))
+              )}
+            </YStack>
+          )}
         </YStack>
 
         {/* Major Functions */}

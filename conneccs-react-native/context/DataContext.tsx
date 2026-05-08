@@ -41,6 +41,31 @@ export const DataProvider = ({ children }: { children: ReactNode }) => {
     saveIPCRs();
   }, [ipcrs]);
 
+  // Remove duplicate IPCRs (keep only the first one for each facultyId + period)
+  useEffect(() => {
+    const removeDuplicates = () => {
+      const seen = new Set();
+      const uniqueIPCRs = ipcrs.filter(ipcr => {
+        const key = `${ipcr.facultyId}-${ipcr.period}`;
+        if (seen.has(key)) {
+          console.log('Removing duplicate IPCR:', ipcr.id, 'for faculty:', ipcr.facultyName);
+          return false;
+        }
+        seen.add(key);
+        return true;
+      });
+      
+      if (uniqueIPCRs.length < ipcrs.length) {
+        console.log(`Removed ${ipcrs.length - uniqueIPCRs.length} duplicate IPCRs`);
+        setIpcrs(uniqueIPCRs);
+      }
+    };
+    
+    if (ipcrs.length > 0) {
+      removeDuplicates();
+    }
+  }, [ipcrs.length]);
+
   // Register auto-generate IPCR callback with AuthContext
   useEffect(() => {
     setAutoGenerateIPCR(async (userId: string) => {
@@ -127,7 +152,7 @@ export const DataProvider = ({ children }: { children: ReactNode }) => {
     return ratings;
   };
 
-  // Migrate existing IPCRs to add requiredRatings field
+  // Migrate existing IPCRs to add requiredRatings field AND facultyName field
   useEffect(() => {
     const migrateIPCRs = async () => {
       console.log('=== Starting IPCR Migration ===');
@@ -138,9 +163,22 @@ export const DataProvider = ({ children }: { children: ReactNode }) => {
       const migratedIPCRs = ipcrs.map(ipcr => {
         console.log(`Checking IPCR: ${ipcr.id}`);
         
+        let updatedIPCR = { ...ipcr };
+        
+        // Migration 1: Add facultyName if missing
+        if (!ipcr.facultyName && ipcr.facultyId) {
+          const user = usersData.find((u: any) => u.id === ipcr.facultyId);
+          if (user) {
+            updatedIPCR.facultyName = user.name;
+            needsMigration = true;
+            console.log(`  ✓ Added facultyName: ${user.name} for facultyId: ${ipcr.facultyId}`);
+          }
+        }
+        
+        // Migration 2: Add requiredRatings to targets
         if (!ipcr.majorFunctions) {
           console.log('  No major functions, skipping');
-          return ipcr;
+          return updatedIPCR;
         }
         
         const updatedMajorFunctions = ipcr.majorFunctions.map(mf => {
@@ -177,7 +215,7 @@ export const DataProvider = ({ children }: { children: ReactNode }) => {
         });
         
         return {
-          ...ipcr,
+          ...updatedIPCR,
           majorFunctions: updatedMajorFunctions,
         };
       });
@@ -205,7 +243,7 @@ export const DataProvider = ({ children }: { children: ReactNode }) => {
       return null;
     }
 
-    console.log('Found user:', user.name, 'Last name:', user.lastName);
+    console.log('Found user:', user.name, 'Last name:', user.lastName, 'Role:', user.role);
 
     // Check if IPCR already exists for this user and period
     const existingIPCR = ipcrs.find(
@@ -232,11 +270,14 @@ export const DataProvider = ({ children }: { children: ReactNode }) => {
         const accountableList = si.accountableUnits.toLowerCase();
         
         // Check if faculty name appears in accountable list
-        if (
-          accountableList.includes(facultyLastName) ||
+        // Use word boundary matching to avoid partial matches
+        const namePattern = new RegExp(`\\b${facultyLastName.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\b`, 'i');
+        const isAssigned = 
+          namePattern.test(accountableList) ||
           accountableList.includes('all faculty') ||
-          accountableList.includes('all personnel')
-        ) {
+          accountableList.includes('all personnel');
+        
+        if (isAssigned) {
           console.log('✓ Match found in target:', si.code, '-', si.description.substring(0, 50));
           
           const requiredRatings = determineRequiredRatings(si.description, si.measures);
@@ -338,6 +379,10 @@ export const DataProvider = ({ children }: { children: ReactNode }) => {
     );
   };
 
+  const deleteIPCR = (id: string) => {
+    setIpcrs(prev => prev.filter(ipcr => ipcr.id !== id));
+  };
+
   const addIPCR = (ipcr: IPCR) => {
     setIpcrs(prev => [...prev, ipcr]);
   };
@@ -359,6 +404,7 @@ export const DataProvider = ({ children }: { children: ReactNode }) => {
         opcr,
         notifications,
         updateIPCR,
+        deleteIPCR,
         addIPCR,
         markNotificationRead,
         getUnreadCount,

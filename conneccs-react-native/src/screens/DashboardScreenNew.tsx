@@ -116,6 +116,44 @@ export default function DashboardScreen({ navigation }) {
     };
   }, [visibleIPCRs]);
 
+  // Calculate progress based on user role
+  const progressData = useMemo(() => {
+    if (user?.role === 'FACULTY' || user?.role === 'CHAIR') {
+      // For faculty: show their own IPCR progress
+      const myIPCR = ipcrs.find(ipcr => ipcr.facultyId === user.id);
+      if (!myIPCR || !myIPCR.majorFunctions) {
+        return { totalTargets: 0, ratedTargets: 0, percentage: 0 };
+      }
+      
+      const totalTargets = myIPCR.majorFunctions.reduce((sum, mf) => sum + (mf.targets?.length || 0), 0);
+      const ratedTargets = myIPCR.majorFunctions.reduce(
+        (sum, mf) => sum + (mf.targets?.filter(t => t.a4Rating && t.a4Rating > 0).length || 0),
+        0
+      );
+      const percentage = totalTargets > 0 ? Math.round((ratedTargets / totalTargets) * 100) : 0;
+      
+      return { totalTargets, ratedTargets, percentage };
+    } else {
+      // For secretary/dean/admin: show overall faculty progress
+      let totalTargets = 0;
+      let ratedTargets = 0;
+      
+      ipcrs.forEach(ipcr => {
+        if (ipcr.majorFunctions) {
+          totalTargets += ipcr.majorFunctions.reduce((sum, mf) => sum + (mf.targets?.length || 0), 0);
+          ratedTargets += ipcr.majorFunctions.reduce(
+            (sum, mf) => sum + (mf.targets?.filter(t => t.a4Rating && t.a4Rating > 0).length || 0),
+            0
+          );
+        }
+      });
+      
+      const percentage = totalTargets > 0 ? Math.round((ratedTargets / totalTargets) * 100) : 0;
+      
+      return { totalTargets, ratedTargets, percentage };
+    }
+  }, [ipcrs, user]);
+
   const filters: FilterType[] = ['All', 'Completed', 'In Progress', 'Revision Required'];
 
   return (
@@ -166,6 +204,29 @@ export default function DashboardScreen({ navigation }) {
         keyboardShouldPersistTaps="handled"
         showsVerticalScrollIndicator={false}
       >
+        {/* Progress Card */}
+        <View style={styles.progressCard}>
+          <View style={styles.progressHeader}>
+            <View style={styles.progressIcon}>
+              <SvgIcon name="target" size={20} color="#fff" style={{}} />
+            </View>
+            <View style={styles.progressInfo}>
+              <Text style={styles.progressTitle}>
+                {user?.role === 'FACULTY' || user?.role === 'CHAIR' 
+                  ? 'My IPCR Progress' 
+                  : 'Overall Faculty Progress'}
+              </Text>
+              <Text style={styles.progressSubtitle}>
+                {progressData.ratedTargets} of {progressData.totalTargets} targets rated
+              </Text>
+            </View>
+            <Text style={styles.progressPercentage}>{progressData.percentage}%</Text>
+          </View>
+          <View style={styles.progressBarContainer}>
+            <View style={[styles.progressBarFill, { width: `${progressData.percentage}%` }]} />
+          </View>
+        </View>
+
         {/* Stats Grid */}
         <View style={styles.statsGrid}>
           <View style={styles.statCard}>
@@ -325,6 +386,57 @@ const createStyles = (colors) => StyleSheet.create({
   content: {
     padding: 16,
     paddingBottom: 32,
+  },
+  progressCard: {
+    backgroundColor: colors.bg2,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: colors.border,
+    padding: 20,
+    marginBottom: 20,
+  },
+  progressHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 16,
+  },
+  progressIcon: {
+    width: 40,
+    height: 40,
+    backgroundColor: colors.accent,
+    borderRadius: 20,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: 12,
+  },
+  progressInfo: {
+    flex: 1,
+  },
+  progressTitle: {
+    fontSize: 16,
+    fontWeight: '700',
+    color: colors.text,
+    marginBottom: 4,
+  },
+  progressSubtitle: {
+    fontSize: 13,
+    color: colors.text3,
+  },
+  progressPercentage: {
+    fontSize: 24,
+    fontWeight: '800',
+    color: colors.accent,
+  },
+  progressBarContainer: {
+    height: 8,
+    backgroundColor: colors.border,
+    borderRadius: 4,
+    overflow: 'hidden',
+  },
+  progressBarFill: {
+    height: '100%',
+    backgroundColor: colors.accent,
+    borderRadius: 4,
   },
   statsGrid: {
     flexDirection: 'row',

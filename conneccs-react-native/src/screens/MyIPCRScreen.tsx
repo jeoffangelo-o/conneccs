@@ -14,11 +14,14 @@ import * as ImagePicker from 'expo-image-picker';
 export default function MyIPCRScreen({ navigation }) {
   const { colors, isDark } = useTheme();
   const { user } = useAuth();
-  const { ipcrs, updateIPCR, generateIPCRForFaculty } = useData();
+  const { ipcrs, updateIPCR, deleteIPCR, generateIPCRForFaculty } = useData();
   const [myIPCR, setMyIPCR] = useState<IPCR | null>(null);
   const [expandedSections, setExpandedSections] = useState<string[]>([]);
   const [editingTarget, setEditingTarget] = useState<string | null>(null);
   const [showRatingGuide, setShowRatingGuide] = useState(false);
+  const [showImageChoice, setShowImageChoice] = useState(false);
+  const [currentTargetId, setCurrentTargetId] = useState<string | null>(null);
+  const [isRegenerating, setIsRegenerating] = useState(false);
   const [ratingInputs, setRatingInputs] = useState<{
     q1: string;
     e2: string;
@@ -30,6 +33,57 @@ export default function MyIPCRScreen({ navigation }) {
     t3: '',
     accomplishments: '',
   });
+
+  const handleRegenerateIPCR = async () => {
+    if (!user || !myIPCR) return;
+    
+    Alert.alert(
+      'Regenerate IPCR',
+      'This will refresh your IPCR with the latest targets from OPCR. Any unsaved ratings will be lost. Continue?',
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Regenerate',
+          style: 'destructive',
+          onPress: async () => {
+            setIsRegenerating(true);
+            try {
+              console.log('=== Starting IPCR Regeneration ===');
+              console.log('Deleting old IPCR:', myIPCR.id);
+              
+              // Delete the old IPCR
+              deleteIPCR(myIPCR.id);
+              setMyIPCR(null);
+              
+              // Wait longer for the deletion to fully process and save to AsyncStorage
+              await new Promise(resolve => setTimeout(resolve, 500));
+              
+              console.log('Generating new IPCR for user:', user.id);
+              
+              // Generate new IPCR - force it by checking if it was deleted
+              const newIPCR = await generateIPCRForFaculty(user.id);
+              
+              console.log('New IPCR generated:', newIPCR?.id);
+              
+              if (newIPCR) {
+                setMyIPCR(newIPCR);
+                const targetCount = newIPCR.majorFunctions?.reduce((sum: number, mf: any) => sum + (mf.targets?.length || 0), 0) || 0;
+                console.log('Total targets in new IPCR:', targetCount);
+                Alert.alert('Success', `IPCR regenerated with ${targetCount} targets!`);
+              } else {
+                Alert.alert('No Targets', 'No targets found for you in the current OPCR.');
+              }
+            } catch (error) {
+              console.error('Regeneration error:', error);
+              Alert.alert('Error', 'Failed to regenerate IPCR');
+            } finally {
+              setIsRegenerating(false);
+            }
+          },
+        },
+      ]
+    );
+  };
 
   useEffect(() => {
     // Find the IPCR for the current user
@@ -243,143 +297,24 @@ export default function MyIPCRScreen({ navigation }) {
   };
 
   const handleUploadImage = async (targetId: string) => {
-    // Show choice dialog for mobile, direct file picker for web
+    setCurrentTargetId(targetId);
+    
     if (Platform.OS === 'web') {
-      // On web, show a simple choice using window.confirm or create a custom dialog
-      const useCamera = window.confirm('Would you like to take a photo with your camera?\n\nClick OK to use camera, or Cancel to choose from files.');
-      
-      const input = document.createElement('input');
-      input.type = 'file';
-      input.accept = 'image/*';
-      
-      // If user wants camera, add capture attribute
-      if (useCamera) {
-        input.capture = 'environment'; // Use rear camera
-      }
-      
-      input.onchange = (e: any) => {
-        const file = e.target.files[0];
-        if (file && myIPCR) {
-          // Create object URL for preview
-          const imageUrl = URL.createObjectURL(file);
-          
-          // Update the target with the image URL
-          const updatedIPCR = {
-            ...myIPCR,
-            majorFunctions: myIPCR.majorFunctions.map(mf => ({
-              ...mf,
-              targets: mf.targets.map(t => {
-                if (t.id === targetId) {
-                  return {
-                    ...t,
-                    movFileUrls: [...(t.movFileUrls || []), imageUrl],
-                  };
-                }
-                return t;
-              }),
-            })),
-          };
-          
-          setMyIPCR(updatedIPCR);
-          updateIPCR(updatedIPCR.id, updatedIPCR);
-          Alert.alert('Success', `Image uploaded: ${file.name}`);
-        }
-      };
-      input.click();
+      // On web, show custom modal
+      setShowImageChoice(true);
     } else {
-      // On mobile, show choice dialog
+      // On mobile, show native dialog
       Alert.alert(
         'Add Image',
         'Choose an option',
         [
           {
             text: 'Take Photo',
-            onPress: async () => {
-              try {
-                const permissionResult = await ImagePicker.requestCameraPermissionsAsync();
-                
-                if (permissionResult.granted === false) {
-                  Alert.alert('Permission Required', 'Permission to access camera is required!');
-                  return;
-                }
-
-                const result = await ImagePicker.launchCameraAsync({
-                  allowsEditing: true,
-                  quality: 0.8,
-                });
-
-                if (!result.canceled && result.assets && result.assets.length > 0 && myIPCR) {
-                  const imageUrl = result.assets[0].uri;
-                  
-                  const updatedIPCR = {
-                    ...myIPCR,
-                    majorFunctions: myIPCR.majorFunctions.map(mf => ({
-                      ...mf,
-                      targets: mf.targets.map(t => {
-                        if (t.id === targetId) {
-                          return {
-                            ...t,
-                            movFileUrls: [...(t.movFileUrls || []), imageUrl],
-                          };
-                        }
-                        return t;
-                      }),
-                    })),
-                  };
-                  
-                  setMyIPCR(updatedIPCR);
-                  updateIPCR(updatedIPCR.id, updatedIPCR);
-                  Alert.alert('Success', 'Photo captured successfully!');
-                }
-              } catch (error) {
-                Alert.alert('Error', 'Failed to take photo');
-              }
-            },
+            onPress: () => handleTakePhoto(targetId),
           },
           {
             text: 'Choose from Gallery',
-            onPress: async () => {
-              try {
-                const permissionResult = await ImagePicker.requestMediaLibraryPermissionsAsync();
-                
-                if (permissionResult.granted === false) {
-                  Alert.alert('Permission Required', 'Permission to access gallery is required!');
-                  return;
-                }
-
-                const result = await ImagePicker.launchImageLibraryAsync({
-                  mediaTypes: ImagePicker.MediaTypeOptions.Images,
-                  allowsEditing: true,
-                  quality: 0.8,
-                });
-
-                if (!result.canceled && result.assets && result.assets.length > 0 && myIPCR) {
-                  const imageUrl = result.assets[0].uri;
-                  
-                  const updatedIPCR = {
-                    ...myIPCR,
-                    majorFunctions: myIPCR.majorFunctions.map(mf => ({
-                      ...mf,
-                      targets: mf.targets.map(t => {
-                        if (t.id === targetId) {
-                          return {
-                            ...t,
-                            movFileUrls: [...(t.movFileUrls || []), imageUrl],
-                          };
-                        }
-                        return t;
-                      }),
-                    })),
-                  };
-                  
-                  setMyIPCR(updatedIPCR);
-                  updateIPCR(updatedIPCR.id, updatedIPCR);
-                  Alert.alert('Success', 'Image uploaded successfully!');
-                }
-              } catch (error) {
-                Alert.alert('Error', 'Failed to pick image');
-              }
-            },
+            onPress: () => handleChooseFromGallery(targetId),
           },
           {
             text: 'Cancel',
@@ -388,6 +323,115 @@ export default function MyIPCRScreen({ navigation }) {
         ]
       );
     }
+  };
+
+  const handleTakePhoto = async (targetId: string) => {
+    setShowImageChoice(false);
+    
+    if (Platform.OS === 'web') {
+      // On web, use file input with capture
+      const input = document.createElement('input');
+      input.type = 'file';
+      input.accept = 'image/*';
+      input.capture = 'environment';
+      input.onchange = (e: any) => {
+        const file = e.target.files[0];
+        if (file && myIPCR) {
+          const imageUrl = URL.createObjectURL(file);
+          updateTargetWithImage(targetId, imageUrl);
+          Alert.alert('Success', 'Photo captured!');
+        }
+      };
+      input.click();
+    } else {
+      // On mobile, use camera
+      try {
+        const permissionResult = await ImagePicker.requestCameraPermissionsAsync();
+        
+        if (permissionResult.granted === false) {
+          Alert.alert('Permission Required', 'Permission to access camera is required!');
+          return;
+        }
+
+        const result = await ImagePicker.launchCameraAsync({
+          allowsEditing: true,
+          quality: 0.8,
+        });
+
+        if (!result.canceled && result.assets && result.assets.length > 0) {
+          updateTargetWithImage(targetId, result.assets[0].uri);
+          Alert.alert('Success', 'Photo captured successfully!');
+        }
+      } catch (error) {
+        Alert.alert('Error', 'Failed to take photo');
+      }
+    }
+  };
+
+  const handleChooseFromGallery = async (targetId: string) => {
+    setShowImageChoice(false);
+    
+    if (Platform.OS === 'web') {
+      // On web, use file input
+      const input = document.createElement('input');
+      input.type = 'file';
+      input.accept = 'image/*';
+      input.onchange = (e: any) => {
+        const file = e.target.files[0];
+        if (file && myIPCR) {
+          const imageUrl = URL.createObjectURL(file);
+          updateTargetWithImage(targetId, imageUrl);
+          Alert.alert('Success', `Image uploaded: ${file.name}`);
+        }
+      };
+      input.click();
+    } else {
+      // On mobile, use gallery
+      try {
+        const permissionResult = await ImagePicker.requestMediaLibraryPermissionsAsync();
+        
+        if (permissionResult.granted === false) {
+          Alert.alert('Permission Required', 'Permission to access gallery is required!');
+          return;
+        }
+
+        const result = await ImagePicker.launchImageLibraryAsync({
+          mediaTypes: ImagePicker.MediaTypeOptions.Images,
+          allowsEditing: true,
+          quality: 0.8,
+        });
+
+        if (!result.canceled && result.assets && result.assets.length > 0) {
+          updateTargetWithImage(targetId, result.assets[0].uri);
+          Alert.alert('Success', 'Image uploaded successfully!');
+        }
+      } catch (error) {
+        Alert.alert('Error', 'Failed to pick image');
+      }
+    }
+  };
+
+  const updateTargetWithImage = (targetId: string, imageUrl: string) => {
+    if (!myIPCR) return;
+    
+    const updatedIPCR = {
+      ...myIPCR,
+      majorFunctions: myIPCR.majorFunctions.map(mf => ({
+        ...mf,
+        targets: mf.targets.map(t => {
+          if (t.id === targetId) {
+            return {
+              ...t,
+              movFileUrls: [...(t.movFileUrls || []), imageUrl],
+            };
+          }
+          return t;
+        }),
+      })),
+    };
+    
+    setMyIPCR(updatedIPCR);
+    updateIPCR(updatedIPCR.id, updatedIPCR);
   };
 
   const handleSubmitIPCR = () => {
@@ -458,8 +502,26 @@ export default function MyIPCRScreen({ navigation }) {
               Individual Performance Commitment Review
             </TamaguiText>
           </YStack>
-          <XStack pressStyle={{ opacity: 0.7 }} cursor="pointer">
-            <SvgIcon name="bell" size={22} color={colors.text2} />
+          <XStack gap="$2">
+            <XStack
+              pressStyle={{ opacity: 0.7 }}
+              onPress={handleRegenerateIPCR}
+              cursor="pointer"
+              bg="$bg3"
+              px="$3"
+              py="$2"
+              br="$2"
+              ai="center"
+              gap="$1.5"
+            >
+              <SvgIcon name="refresh" size={18} color={colors.accent} />
+              <TamaguiText fontSize={12} fontWeight="600" color="$accent">
+                Refresh Targets
+              </TamaguiText>
+            </XStack>
+            <XStack pressStyle={{ opacity: 0.7 }} cursor="pointer">
+              <SvgIcon name="bell" size={22} color={colors.text2} />
+            </XStack>
           </XStack>
         </XStack>
 
@@ -560,8 +622,26 @@ export default function MyIPCRScreen({ navigation }) {
             Individual Performance Commitment Review
           </TamaguiText>
         </YStack>
-        <XStack pressStyle={{ opacity: 0.7 }} cursor="pointer">
-          <SvgIcon name="bell" size={22} color={colors.text2} />
+        <XStack gap="$2" ai="center">
+          <XStack
+            pressStyle={{ opacity: 0.7 }}
+            onPress={handleRegenerateIPCR}
+            cursor="pointer"
+            bg="$bg3"
+            px="$3"
+            py="$2"
+            br="$2"
+            ai="center"
+            gap="$1.5"
+          >
+            <SvgIcon name="refresh" size={18} color={colors.accent} />
+            <TamaguiText fontSize={12} fontWeight="600" color="$accent">
+              Refresh
+            </TamaguiText>
+          </XStack>
+          <XStack pressStyle={{ opacity: 0.7 }} cursor="pointer">
+            <SvgIcon name="bell" size={22} color={colors.text2} />
+          </XStack>
         </XStack>
       </XStack>
 
@@ -1406,6 +1486,140 @@ export default function MyIPCRScreen({ navigation }) {
               >
                 <TamaguiText fontSize={14} fontWeight="700" color="#fff">
                   Got it!
+                </TamaguiText>
+              </XStack>
+            </YStack>
+          </TouchableOpacity>
+        </TouchableOpacity>
+      </Modal>
+
+      {/* Image Choice Modal */}
+      <Modal
+        visible={showImageChoice}
+        transparent={true}
+        animationType="fade"
+        onRequestClose={() => setShowImageChoice(false)}
+      >
+        <TouchableOpacity
+          style={{
+            flex: 1,
+            backgroundColor: 'rgba(0,0,0,0.5)',
+            justifyContent: 'center',
+            alignItems: 'center',
+            padding: 16,
+          }}
+          activeOpacity={1}
+          onPress={() => setShowImageChoice(false)}
+        >
+          <TouchableOpacity
+            activeOpacity={1}
+            onPress={(e) => e.stopPropagation()}
+            style={{ width: '100%', maxWidth: 400 }}
+          >
+            <YStack bg="$bg2" br="$4" p="$5" maxWidth={400} width="100%">
+              {/* Modal Header */}
+              <XStack jc="space-between" ai="center" mb="$4">
+                <TamaguiText fontSize={20} fontWeight="800" color="$text">
+                  Add Image
+                </TamaguiText>
+                <XStack
+                  w={32}
+                  h={32}
+                  bg="$bg3"
+                  br={16}
+                  ai="center"
+                  jc="center"
+                  pressStyle={{ opacity: 0.7 }}
+                  onPress={() => setShowImageChoice(false)}
+                  cursor="pointer"
+                >
+                  <SvgIcon name="x" size={18} color={colors.text} />
+                </XStack>
+              </XStack>
+
+              <TamaguiText fontSize={14} color="$text3" mb="$4">
+                Choose how you want to add an image
+              </TamaguiText>
+
+              {/* Take Photo Button */}
+              <XStack
+                bg="$accent"
+                p="$4"
+                br="$3"
+                ai="center"
+                gap="$3"
+                mb="$3"
+                pressStyle={{ opacity: 0.8 }}
+                onPress={() => currentTargetId && handleTakePhoto(currentTargetId)}
+                cursor="pointer"
+              >
+                <YStack
+                  w={48}
+                  h={48}
+                  bg="rgba(255,255,255,0.2)"
+                  br={24}
+                  ai="center"
+                  jc="center"
+                >
+                  <SvgIcon name="camera" size={24} color="#fff" />
+                </YStack>
+                <YStack f={1}>
+                  <TamaguiText fontSize={16} fontWeight="700" color="#fff" mb={2}>
+                    Take Photo
+                  </TamaguiText>
+                  <TamaguiText fontSize={12} color="rgba(255,255,255,0.8)">
+                    Use your camera to capture a photo
+                  </TamaguiText>
+                </YStack>
+              </XStack>
+
+              {/* Choose from Files Button */}
+              <XStack
+                bg="$bg3"
+                p="$4"
+                br="$3"
+                ai="center"
+                gap="$3"
+                bw={1}
+                bc="$border"
+                pressStyle={{ opacity: 0.7 }}
+                onPress={() => currentTargetId && handleChooseFromGallery(currentTargetId)}
+                cursor="pointer"
+              >
+                <YStack
+                  w={48}
+                  h={48}
+                  bg="$accent"
+                  br={24}
+                  ai="center"
+                  jc="center"
+                >
+                  <SvgIcon name="image" size={24} color="#fff" />
+                </YStack>
+                <YStack f={1}>
+                  <TamaguiText fontSize={16} fontWeight="700" color="$text" mb={2}>
+                    Choose from Files
+                  </TamaguiText>
+                  <TamaguiText fontSize={12} color="$text3">
+                    Select an existing image from your device
+                  </TamaguiText>
+                </YStack>
+              </XStack>
+
+              {/* Cancel Button */}
+              <XStack
+                bg="$border"
+                p="$3.5"
+                br="$3"
+                ai="center"
+                jc="center"
+                mt="$4"
+                pressStyle={{ opacity: 0.8 }}
+                onPress={() => setShowImageChoice(false)}
+                cursor="pointer"
+              >
+                <TamaguiText fontSize={14} fontWeight="700" color="$text">
+                  Cancel
                 </TamaguiText>
               </XStack>
             </YStack>

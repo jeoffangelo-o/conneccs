@@ -56,7 +56,7 @@ export default function CustomDrawer(props) {
       icon: 'pulse-outline', 
       route: 'OPCR', 
       section: 'Main',
-      roles: ['FACULTY', 'CHAIR', 'DEAN', 'ADMIN', 'SECRETARY']
+      roles: ['DEAN', 'ADMIN', 'SECRETARY']
     },
     { 
       name: 'Upload OPCR', 
