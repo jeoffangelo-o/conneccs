@@ -174,7 +174,8 @@ export default function SecretaryOPCRUploadScreen({ navigation }) {
           const targets: OPCRTarget[] = [];
           
           // Parse the Excel data
-          // Assuming format: ID | KRA | Function | Indicator | Target | Weight | Period | Accountable | Ratings
+          // Expected format: ID | KRA | Function | Indicator | Target | Weight | Period | Accountable | Q³ | E² | T³
+          // Q³, E², T³ columns should contain 'x' marks to indicate which ratings are required
           for (let i = 1; i < jsonData.length; i++) {
             const row: any = jsonData[i];
             console.log(`Processing row ${i}:`, row);
@@ -193,10 +194,28 @@ export default function SecretaryOPCRUploadScreen({ navigation }) {
             const period = row[6]?.toString().trim() || 'Jan-Dec';
             const accountableStr = row[7]?.toString().trim() || '';
             const accountable = accountableStr ? accountableStr.split(',').map((s: string) => s.trim()).filter(Boolean) : [];
-            const ratingsStr = row[8]?.toString().trim() || 'Q,E,T';
-            const ratings = ratingsStr.split(',').map((s: string) => s.trim()).filter(Boolean);
+            
+            // Parse Q³, E², T³ columns (columns 8, 9, 10)
+            // Look for 'x' marks to determine required ratings
+            const qCol = row[8]?.toString().trim().toLowerCase() || '';
+            const eCol = row[9]?.toString().trim().toLowerCase() || '';
+            const tCol = row[10]?.toString().trim().toLowerCase() || '';
+            
+            const ratings: string[] = [];
+            if (qCol === 'x' || qCol === 'X') ratings.push('Q');
+            if (eCol === 'x' || eCol === 'X') ratings.push('E');
+            if (tCol === 'x' || tCol === 'X') ratings.push('T');
+            
+            // If no ratings specified, default to all three
+            const ratingDimensions = ratings.length > 0 ? ratings : ['Q', 'E', 'T'];
 
-            console.log(`Row ${i} parsed:`, { id, kra, indicator, hasData: !!(id && indicator) });
+            console.log(`Row ${i} parsed:`, { 
+              id, 
+              kra, 
+              indicator, 
+              ratingDimensions,
+              hasData: !!(id && indicator) 
+            });
 
             if (id && indicator) {
               targets.push({
@@ -208,7 +227,7 @@ export default function SecretaryOPCRUploadScreen({ navigation }) {
                 weight: weight as 'Strategic' | 'Core' | 'Support',
                 period,
                 accountable,
-                ratingDimensions: ratings.length > 0 ? ratings : ['Q', 'E', 'T'],
+                ratingDimensions,
               });
               console.log(`Added target ${targets.length}:`, targets[targets.length - 1]);
             } else {
@@ -266,6 +285,7 @@ export default function SecretaryOPCRUploadScreen({ navigation }) {
         actualValue: null,
         percentAccomplished: 0,
         accountableUnits: target.accountable.join(', '),
+        requiredRatings: target.ratingDimensions as ('Q' | 'E' | 'T')[], // Include required ratings from Excel
       }));
 
       // Group by weight category

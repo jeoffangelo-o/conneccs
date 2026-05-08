@@ -42,14 +42,14 @@ export default function CustomDrawer(props) {
       icon: 'grid-outline', 
       route: 'Dashboard', 
       section: 'Main',
-      roles: ['FACULTY', 'CHAIR', 'DEAN', 'ADMIN', 'SECRETARY']
+      roles: ['FACULTY', 'CHAIR', 'DEAN', 'ADMIN', 'SECRETARY', 'COORDINATOR']
     },
     { 
       name: 'My IPCR', 
       icon: 'document-text-outline', 
       route: 'MyIPCR', 
       section: 'IPCR',
-      roles: ['FACULTY', 'CHAIR', 'DEAN', 'SECRETARY']
+      roles: ['FACULTY', 'CHAIR', 'DEAN', 'SECRETARY', 'COORDINATOR']
     },
     { 
       name: 'OPCR', 
@@ -66,32 +66,53 @@ export default function CustomDrawer(props) {
       roles: ['SECRETARY', 'ADMIN']
     },
     { 
+      name: 'Rating Queue', 
+      icon: 'clipboard-outline', 
+      route: 'ReviewQueue', 
+      section: 'Secretary',
+      roles: ['SECRETARY', 'ADMIN']
+    },
+    { 
+      name: 'Verification Queue', 
+      icon: 'clipboard-outline', 
+      route: 'CoordinatorQueue', 
+      section: 'Coordinator',
+      roles: ['COORDINATOR', 'ADMIN']
+    },
+    { 
+      name: 'Approval Queue', 
+      icon: 'clipboard-outline', 
+      route: 'ReviewQueue', 
+      section: 'Dean',
+      roles: ['DEAN']
+    },
+    { 
+      name: 'OPCR Consolidation', 
+      icon: 'pulse-outline', 
+      route: 'DeanOPCRConsolidation', 
+      section: 'Dean',
+      roles: ['DEAN', 'ADMIN']
+    },
+    { 
       name: 'Calendar', 
       icon: 'calendar-outline', 
       route: 'Calendar', 
       section: 'IPCR',
-      roles: ['FACULTY', 'CHAIR', 'DEAN', 'ADMIN', 'SECRETARY']
-    },
-    { 
-      name: 'Review Queue', 
-      icon: 'clipboard-outline', 
-      route: 'ReviewQueue', 
-      section: 'Main',
-      roles: ['CHAIR', 'DEAN', 'ADMIN', 'SECRETARY']
+      roles: ['FACULTY', 'CHAIR', 'DEAN', 'ADMIN', 'SECRETARY', 'COORDINATOR']
     },
     { 
       name: 'Reportorial Requirements', 
       icon: 'folder-outline', 
       route: 'ReportorialRequirements', 
       section: 'Documents',
-      roles: ['FACULTY', 'CHAIR', 'DEAN', 'ADMIN', 'SECRETARY']
+      roles: ['FACULTY', 'CHAIR', 'DEAN', 'ADMIN', 'SECRETARY', 'COORDINATOR']
     },
     { 
       name: 'Messages', 
       icon: 'chatbubble-outline', 
       route: 'Messages', 
       section: 'Communication',
-      roles: ['FACULTY', 'CHAIR', 'DEAN', 'ADMIN', 'SECRETARY']
+      roles: ['FACULTY', 'CHAIR', 'DEAN', 'ADMIN', 'SECRETARY', 'COORDINATOR']
     },
     { 
       name: 'Notifications', 
@@ -99,14 +120,14 @@ export default function CustomDrawer(props) {
       route: 'Notifications', 
       section: 'Account',
       badge: unreadCount > 0 ? unreadCount : null,
-      roles: ['FACULTY', 'CHAIR', 'DEAN', 'ADMIN', 'SECRETARY']
+      roles: ['FACULTY', 'CHAIR', 'DEAN', 'ADMIN', 'SECRETARY', 'COORDINATOR']
     },
     { 
       name: 'Profile', 
       icon: 'user-outline', 
       route: 'Profile', 
       section: 'Account',
-      roles: ['FACULTY', 'CHAIR', 'DEAN', 'ADMIN', 'SECRETARY']
+      roles: ['FACULTY', 'CHAIR', 'DEAN', 'ADMIN', 'SECRETARY', 'COORDINATOR']
     },
   ];
 
@@ -177,6 +198,8 @@ export default function CustomDrawer(props) {
       <ScrollView style={styles.navContainer} showsVerticalScrollIndicator={false}>
         {renderSection('Main')}
         {renderSection('Secretary')}
+        {renderSection('Coordinator')}
+        {renderSection('Dean')}
         {renderSection('IPCR')}
         {renderSection('Documents')}
         {renderSection('Communication')}

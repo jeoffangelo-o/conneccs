@@ -19,6 +19,7 @@ export default function MyIPCRScreen({ navigation }) {
   const [myIPCR, setMyIPCR] = useState<IPCR | null>(null);
   const [expandedSections, setExpandedSections] = useState<string[]>([]);
   const [selectedCategory, setSelectedCategory] = useState<string>('ALL');
+  const [completionFilter, setCompletionFilter] = useState<'ALL' | 'COMPLETED' | 'NOT_COMPLETED'>('ALL');
   const [editingTarget, setEditingTarget] = useState<string | null>(null);
   const [showRatingGuide, setShowRatingGuide] = useState(false);
   const [showImageChoice, setShowImageChoice] = useState(false);
@@ -193,8 +194,12 @@ export default function MyIPCRScreen({ navigation }) {
       return;
     }
 
-    // Calculate A4 based on available ratings
-    const ratings = [q1, e2, t3].filter(r => r !== null) as number[];
+    // Calculate A4 based on REQUIRED ratings only
+    const ratings: number[] = [];
+    if (requiredRatings.includes('Q') && q1) ratings.push(q1);
+    if (requiredRatings.includes('E') && e2) ratings.push(e2);
+    if (requiredRatings.includes('T') && t3) ratings.push(t3);
+    
     const a4 = ratings.length > 0 
       ? parseFloat((ratings.reduce((sum, r) => sum + r, 0) / ratings.length).toFixed(2))
       : 0;
@@ -214,6 +219,10 @@ export default function MyIPCRScreen({ navigation }) {
                   e2Rating: e2,
                   t3Rating: t3,
                   a4Rating: a4,
+                  selfRatingQ: q1,
+                  selfRatingE: e2,
+                  selfRatingT: t3,
+                  selfRatingAvg: a4,
                   actualAccomplishments: ratingInputs.accomplishments,
                 };
               }
@@ -234,6 +243,57 @@ export default function MyIPCRScreen({ navigation }) {
   const handleCancelEdit = () => {
     setEditingTarget(null);
     setRatingInputs({ q1: '', e2: '', t3: '', accomplishments: '' });
+  };
+
+  const handleResubmitTarget = (targetId: string) => {
+    if (!myIPCR) return;
+    
+    if (Platform.OS === 'web') {
+      const confirmed = window.confirm('Resubmit this target for review?');
+      if (confirmed) {
+        performResubmit(targetId);
+      }
+    } else {
+      Alert.alert(
+        'Resubmit Target',
+        'Resubmit this target for review?',
+        [
+          { text: 'Cancel', style: 'cancel' },
+          { text: 'Resubmit', onPress: () => performResubmit(targetId) },
+        ]
+      );
+    }
+  };
+
+  const performResubmit = (targetId: string) => {
+    if (!myIPCR) return;
+    
+    const updatedIPCR = {
+      ...myIPCR,
+      majorFunctions: myIPCR.majorFunctions.map(mf => ({
+        ...mf,
+        targets: mf.targets.map(t => {
+          if (t.id === targetId) {
+            return {
+              ...t,
+              status: 'SUBMITTED' as const,
+              incompleteNote: undefined,
+              submittedAt: new Date().toISOString(),
+            };
+          }
+          return t;
+        }),
+      })),
+    };
+    
+    setMyIPCR(updatedIPCR);
+    updateIPCR(updatedIPCR.id, updatedIPCR);
+    
+    if (Platform.OS === 'web') {
+      window.alert('Target resubmitted successfully!');
+    } else {
+      Alert.alert('Success', 'Target resubmitted successfully!');
+    }
   };
 
   const handleUploadDocument = async (targetId: string) => {
@@ -449,39 +509,98 @@ export default function MyIPCRScreen({ navigation }) {
   const handleSubmitIPCR = () => {
     if (!myIPCR) return;
 
-    // Check if all targets have ratings
-    const allRated = myIPCR.majorFunctions.every(mf =>
-      mf.targets.every(t => t.a4Rating && t.a4Rating > 0)
-    );
+    console.log('=== SUBMIT IPCR DEBUG ===');
+    console.log('My IPCR:', myIPCR);
+    console.log('Major Functions:', myIPCR.majorFunctions);
+
+    // Check if all targets have ratings (check both a4Rating and selfRatingAvg for compatibility)
+    const allRated = myIPCR.majorFunctions.every(mf => {
+      console.log(`Checking function: ${mf.title}`);
+      return mf.targets.every(t => {
+        const hasRating = (t.a4Rating && t.a4Rating > 0) || (t.selfRatingAvg && t.selfRatingAvg > 0);
+        console.log(`  Target ${t.id}: a4Rating=${t.a4Rating}, selfRatingAvg=${t.selfRatingAvg}, hasRating=${hasRating}`);
+        return hasRating;
+      });
+    });
+
+    console.log('All targets rated?', allRated);
 
     if (!allRated) {
-      Alert.alert(
-        'Incomplete IPCR',
-        'Please rate all targets before submitting.',
-        [{ text: 'OK' }]
-      );
+      if (Platform.OS === 'web') {
+        window.alert('Please rate all targets before submitting.');
+      } else {
+        Alert.alert(
+          'Incomplete IPCR',
+          'Please rate all targets before submitting.',
+          [{ text: 'OK' }]
+        );
+      }
       return;
     }
 
-    Alert.alert(
-      'Submit IPCR',
-      'Are you sure you want to submit your IPCR for review?',
-      [
-        { text: 'Cancel', style: 'cancel' },
-        {
-          text: 'Submit',
-          onPress: () => {
-            const updatedIPCR = {
-              ...myIPCR,
-              status: 'PENDING_REVIEW' as const,
-            };
-            setMyIPCR(updatedIPCR);
-            updateIPCR(updatedIPCR);
-            Alert.alert('Success', 'IPCR submitted for review!');
+    // Web-compatible confirmation
+    if (Platform.OS === 'web') {
+      const confirmed = window.confirm('Are you sure you want to submit your IPCR for review?');
+      if (confirmed) {
+        console.log('Submitting IPCR...');
+        
+        // Update IPCR status AND set each target status to SUBMITTED
+        const updatedIPCR = {
+          ...myIPCR,
+          status: 'SUBMITTED' as const,
+          overallStatus: 'SUBMITTED' as const,
+          submittedAt: new Date().toISOString(),
+          majorFunctions: myIPCR.majorFunctions.map(mf => ({
+            ...mf,
+            targets: mf.targets.map(t => ({
+              ...t,
+              status: 'SUBMITTED' as const, // Set target status to SUBMITTED
+            })),
+          })),
+        };
+        
+        console.log('Updated IPCR:', updatedIPCR);
+        setMyIPCR(updatedIPCR);
+        updateIPCR(updatedIPCR.id, updatedIPCR);
+        console.log('IPCR submitted successfully!');
+        window.alert('Success! Your IPCR has been submitted for review. Status updated to SUBMITTED.');
+      }
+    } else {
+      Alert.alert(
+        'Submit IPCR',
+        'Are you sure you want to submit your IPCR for review?',
+        [
+          { text: 'Cancel', style: 'cancel' },
+          {
+            text: 'Submit',
+            onPress: () => {
+              console.log('Submitting IPCR...');
+              
+              // Update IPCR status AND set each target status to SUBMITTED
+              const updatedIPCR = {
+                ...myIPCR,
+                status: 'SUBMITTED' as const,
+                overallStatus: 'SUBMITTED' as const,
+                submittedAt: new Date().toISOString(),
+                majorFunctions: myIPCR.majorFunctions.map(mf => ({
+                  ...mf,
+                  targets: mf.targets.map(t => ({
+                    ...t,
+                    status: 'SUBMITTED' as const, // Set target status to SUBMITTED
+                  })),
+                })),
+              };
+              
+              console.log('Updated IPCR:', updatedIPCR);
+              setMyIPCR(updatedIPCR);
+              updateIPCR(updatedIPCR.id, updatedIPCR);
+              console.log('IPCR submitted successfully!');
+              Alert.alert('Success', 'IPCR submitted for review! Your status has been updated to SUBMITTED.');
+            },
           },
-        },
-      ]
-    );
+        ]
+      );
+    }
   };
 
   if (!myIPCR) {
@@ -600,7 +719,7 @@ export default function MyIPCRScreen({ navigation }) {
   };
   const totalTargets = myIPCR.majorFunctions ? myIPCR.majorFunctions.reduce((sum, mf) => sum + mf.targets.length, 0) : 0;
   const ratedTargets = myIPCR.majorFunctions ? myIPCR.majorFunctions.reduce(
-    (sum, mf) => sum + mf.targets.filter(t => t.a4Rating && t.a4Rating > 0).length,
+    (sum, mf) => sum + mf.targets.filter(t => (t.a4Rating && t.a4Rating > 0) || (t.selfRatingAvg && t.selfRatingAvg > 0)).length,
     0
   ) : 0;
   const completionPercent = totalTargets > 0 ? Math.round((ratedTargets / totalTargets) * 100) : 0;
@@ -693,7 +812,13 @@ export default function MyIPCRScreen({ navigation }) {
                 {myIPCR.period}
               </TamaguiText>
               <XStack
-                bg={myIPCR.status === 'COMPLETED' ? 'rgba(34,197,94,0.15)' : 'rgba(234,179,8,0.15)'}
+                bg={
+                  myIPCR.status === 'COMPLETED' || myIPCR.status === 'APPROVED' 
+                    ? 'rgba(34,197,94,0.15)' 
+                    : myIPCR.status === 'SUBMITTED' || myIPCR.overallStatus === 'SUBMITTED'
+                    ? 'rgba(59,130,246,0.15)'
+                    : 'rgba(234,179,8,0.15)'
+                }
                 px="$2.5"
                 py="$1"
                 br="$2"
@@ -703,9 +828,15 @@ export default function MyIPCRScreen({ navigation }) {
                 <TamaguiText
                   fontSize={11}
                   fontWeight="600"
-                  color={myIPCR.status === 'COMPLETED' ? '$green' : '$yellow'}
+                  color={
+                    myIPCR.status === 'COMPLETED' || myIPCR.status === 'APPROVED'
+                      ? '$green'
+                      : myIPCR.status === 'SUBMITTED' || myIPCR.overallStatus === 'SUBMITTED'
+                      ? '$accent'
+                      : '$yellow'
+                  }
                 >
-                  {myIPCR.status.replace('_', ' ')}
+                  {(myIPCR.overallStatus || myIPCR.status).replace('_', ' ')}
                 </TamaguiText>
               </XStack>
             </YStack>
@@ -754,8 +885,8 @@ export default function MyIPCRScreen({ navigation }) {
           )}
         </YStack>
 
-        {/* Submit Button */}
-        {myIPCR.status === 'IN_PROGRESS' && ratedTargets > 0 && (
+        {/* Submit Button - Show only when IN_PROGRESS and has rated targets */}
+        {myIPCR.status === 'IN_PROGRESS' && myIPCR.overallStatus !== 'SUBMITTED' && ratedTargets > 0 && (
           <XStack
             bg="$accent"
             p="$4"
@@ -773,6 +904,24 @@ export default function MyIPCRScreen({ navigation }) {
               Submit IPCR for Review
             </TamaguiText>
           </XStack>
+        )}
+
+        {/* Submitted Message - Show after submission */}
+        {(myIPCR.status === 'SUBMITTED' || myIPCR.overallStatus === 'SUBMITTED') && (
+          <YStack bg="rgba(59,130,246,0.1)" br="$4" bw={1} bc="$accent" p="$5" mb="$4" ai="center">
+            <SvgIcon name="checkCircle" size={48} color={colors.accent} mb="$3" />
+            <TamaguiText fontSize={16} fontWeight="700" color="$accent" mb="$2" textAlign="center">
+              IPCR Submitted Successfully!
+            </TamaguiText>
+            <TamaguiText fontSize={14} color="$text3" textAlign="center" px="$4">
+              Your IPCR has been submitted for review. You will be notified once it has been reviewed by the secretary.
+            </TamaguiText>
+            {myIPCR.submittedAt && (
+              <TamaguiText fontSize={12} color="$text3" mt="$3">
+                Submitted on: {new Date(myIPCR.submittedAt).toLocaleString()}
+              </TamaguiText>
+            )}
+          </YStack>
         )}
 
         {/* Regenerate Button - Show when no targets */}
@@ -999,11 +1148,160 @@ export default function MyIPCRScreen({ navigation }) {
           </YStack>
         )}
 
+        {/* Completion Status Filter */}
+        {myIPCR && myIPCR.majorFunctions && myIPCR.majorFunctions.length > 0 && (
+          <YStack mb="$4">
+            <TamaguiText fontSize={13} fontWeight="600" color="$text3" mb="$3">
+              Filter by Status
+            </TamaguiText>
+            <XStack gap="$2.5" flexWrap="wrap">
+              {/* All Status Button */}
+              <XStack
+                bg={completionFilter === 'ALL' ? '$accent' : '$bg2'}
+                bw={1}
+                bc={completionFilter === 'ALL' ? '$accent' : '$border'}
+                px="$4"
+                py="$2.5"
+                br="$3"
+                ai="center"
+                gap="$2"
+                pressStyle={{ opacity: 0.7 }}
+                onPress={() => setCompletionFilter('ALL')}
+                cursor="pointer"
+              >
+                <TamaguiText
+                  fontSize={13}
+                  fontWeight="600"
+                  color={completionFilter === 'ALL' ? '#fff' : '$text'}
+                >
+                  All Targets
+                </TamaguiText>
+                <YStack
+                  bg={completionFilter === 'ALL' ? 'rgba(255,255,255,0.25)' : '$bg3'}
+                  px="$2"
+                  py="$0.5"
+                  br="$2"
+                  minWidth={24}
+                  ai="center"
+                >
+                  <TamaguiText
+                    fontSize={11}
+                    fontWeight="700"
+                    color={completionFilter === 'ALL' ? '#fff' : '$text3'}
+                  >
+                    {totalTargets}
+                  </TamaguiText>
+                </YStack>
+              </XStack>
+
+              {/* Completed Button */}
+              <XStack
+                bg={completionFilter === 'COMPLETED' ? '$green' : '$bg2'}
+                bw={1}
+                bc={completionFilter === 'COMPLETED' ? '$green' : '$border'}
+                px="$4"
+                py="$2.5"
+                br="$3"
+                ai="center"
+                gap="$2"
+                pressStyle={{ opacity: 0.7 }}
+                onPress={() => setCompletionFilter('COMPLETED')}
+                cursor="pointer"
+              >
+                <SvgIcon 
+                  name="checkCircle" 
+                  size={16} 
+                  color={completionFilter === 'COMPLETED' ? '#fff' : colors.green} 
+                />
+                <TamaguiText
+                  fontSize={13}
+                  fontWeight="600"
+                  color={completionFilter === 'COMPLETED' ? '#fff' : '$text'}
+                >
+                  Completed
+                </TamaguiText>
+                <YStack
+                  bg={completionFilter === 'COMPLETED' ? 'rgba(255,255,255,0.25)' : '$bg3'}
+                  px="$2"
+                  py="$0.5"
+                  br="$2"
+                  minWidth={24}
+                  ai="center"
+                >
+                  <TamaguiText
+                    fontSize={11}
+                    fontWeight="700"
+                    color={completionFilter === 'COMPLETED' ? '#fff' : '$text3'}
+                  >
+                    {ratedTargets}
+                  </TamaguiText>
+                </YStack>
+              </XStack>
+
+              {/* Not Completed Button */}
+              <XStack
+                bg={completionFilter === 'NOT_COMPLETED' ? colors.orange : '$bg2'}
+                bw={1}
+                bc={completionFilter === 'NOT_COMPLETED' ? colors.orange : '$border'}
+                px="$4"
+                py="$2.5"
+                br="$3"
+                ai="center"
+                gap="$2"
+                pressStyle={{ opacity: 0.7 }}
+                onPress={() => setCompletionFilter('NOT_COMPLETED')}
+                cursor="pointer"
+              >
+                <SvgIcon 
+                  name="alertCircle" 
+                  size={16} 
+                  color={completionFilter === 'NOT_COMPLETED' ? '#fff' : colors.orange} 
+                />
+                <TamaguiText
+                  fontSize={13}
+                  fontWeight="600"
+                  color={completionFilter === 'NOT_COMPLETED' ? '#fff' : '$text'}
+                >
+                  Not Completed
+                </TamaguiText>
+                <YStack
+                  bg={completionFilter === 'NOT_COMPLETED' ? 'rgba(255,255,255,0.25)' : '$bg3'}
+                  px="$2"
+                  py="$0.5"
+                  br="$2"
+                  minWidth={24}
+                  ai="center"
+                >
+                  <TamaguiText
+                    fontSize={11}
+                    fontWeight="700"
+                    color={completionFilter === 'NOT_COMPLETED' ? '#fff' : '$text3'}
+                  >
+                    {totalTargets - ratedTargets}
+                  </TamaguiText>
+                </YStack>
+              </XStack>
+            </XStack>
+          </YStack>
+        )}
+
         {/* Major Functions */}
         {myIPCR.majorFunctions && (() => {
-          const filteredFunctions = myIPCR.majorFunctions.filter(mf => 
-            selectedCategory === 'ALL' || mf.category === selectedCategory
-          );
+          const filteredFunctions = myIPCR.majorFunctions
+            .filter(mf => selectedCategory === 'ALL' || mf.category === selectedCategory)
+            .map(mf => {
+              // Filter targets based on completion status
+              let filteredTargets = mf.targets;
+              
+              if (completionFilter === 'COMPLETED') {
+                filteredTargets = mf.targets.filter(t => (t.a4Rating && t.a4Rating > 0) || (t.selfRatingAvg && t.selfRatingAvg > 0));
+              } else if (completionFilter === 'NOT_COMPLETED') {
+                filteredTargets = mf.targets.filter(t => (!t.a4Rating || t.a4Rating === 0) && (!t.selfRatingAvg || t.selfRatingAvg === 0));
+              }
+              
+              return { ...mf, targets: filteredTargets };
+            })
+            .filter(mf => mf.targets.length > 0); // Only show functions with targets
           
           if (filteredFunctions.length === 0) {
             return (
@@ -1017,7 +1315,8 @@ export default function MyIPCRScreen({ navigation }) {
               >
                 <SvgIcon name="alertCircle" size={48} color={colors.text3} mb="$3" />
                 <TamaguiText fontSize={14} color="$text3" textAlign="center">
-                  No {selectedCategory.toLowerCase()} functions found
+                  No {completionFilter === 'COMPLETED' ? 'completed' : completionFilter === 'NOT_COMPLETED' ? 'incomplete' : ''} targets found
+                  {selectedCategory !== 'ALL' && ` in ${selectedCategory.toLowerCase()} category`}
                 </TamaguiText>
               </YStack>
             );
@@ -1026,7 +1325,7 @@ export default function MyIPCRScreen({ navigation }) {
           return filteredFunctions.map((mf) => {
           const isExpanded = expandedSections.includes(mf.id);
           const categoryColor = getCategoryColor(mf.category);
-          const completedTargets = mf.targets.filter(t => t.a4Rating && t.a4Rating > 0).length;
+          const completedTargets = mf.targets.filter(t => (t.a4Rating && t.a4Rating > 0) || (t.selfRatingAvg && t.selfRatingAvg > 0)).length;
           const totalTargets = mf.targets.length;
 
           return (
@@ -1093,14 +1392,62 @@ export default function MyIPCRScreen({ navigation }) {
                       >
                         {/* Target Header */}
                         <XStack jc="space-between" ai="center" mb="$2">
-                          <TamaguiText
-                            fontSize={12}
-                            fontWeight="700"
-                            color="$accent"
-                            textTransform="uppercase"
-                          >
-                            Target {target.id}
-                          </TamaguiText>
+                          <XStack ai="center" gap="$2">
+                            <TamaguiText
+                              fontSize={12}
+                              fontWeight="700"
+                              color="$accent"
+                              textTransform="uppercase"
+                            >
+                              Target {target.id}
+                            </TamaguiText>
+                            {/* Status Indicators */}
+                            {target.status === 'RATED' && (
+                              <XStack
+                                bg="#d1fae5"
+                                px="$2"
+                                py="$1"
+                                br="$2"
+                                ai="center"
+                                gap="$1"
+                              >
+                                <SvgIcon name="checkCircle" size={10} color="#10b981" style={{}} />
+                                <TamaguiText fontSize={10} fontWeight="600" color="#10b981">
+                                  APPROVED
+                                </TamaguiText>
+                              </XStack>
+                            )}
+                            {target.status === 'INCOMPLETE' && (
+                              <XStack
+                                bg="#fee2e2"
+                                px="$2"
+                                py="$1"
+                                br="$2"
+                                ai="center"
+                                gap="$1"
+                              >
+                                <SvgIcon name="alertCircle" size={10} color="#ef4444" style={{}} />
+                                <TamaguiText fontSize={10} fontWeight="600" color="#ef4444">
+                                  INCOMPLETE
+                                </TamaguiText>
+                              </XStack>
+                            )}
+                            {target.status === 'SUBMITTED' && (
+                              <XStack
+                                bg="#fef3c7"
+                                px="$2"
+                                py="$1"
+                                br="$2"
+                                ai="center"
+                                gap="$1"
+                              >
+                                <SvgIcon name="clock" size={10} color="#f59e0b" style={{}} />
+                                <TamaguiText fontSize={10} fontWeight="600" color="#f59e0b">
+                                  UNDER REVIEW
+                                </TamaguiText>
+                              </XStack>
+                            )}
+                          </XStack>
                           {hasRating && !isEditing && (
                             <XStack
                               bg="$bg"
@@ -1121,6 +1468,69 @@ export default function MyIPCRScreen({ navigation }) {
                         <TamaguiText fontSize={14} color="$text" mb="$2.5" lineHeight={20}>
                           {target.description}
                         </TamaguiText>
+
+                        {/* Secretary Rating Display (if approved) */}
+                        {target.status === 'RATED' && target.secretaryRatingAvg && (
+                          <YStack bg="#d1fae5" br="$2" p="$3" mb="$2.5" borderWidth={2} borderColor="#10b981">
+                            <TamaguiText fontSize={12} fontWeight="700" color="#10b981" mb="$2">
+                              Secretary Rating (Approved):
+                            </TamaguiText>
+                            <XStack gap="$3">
+                              {target.secretaryQ && (
+                                <TamaguiText fontSize={13} color="$text">
+                                  Q: {target.secretaryQ}
+                                </TamaguiText>
+                              )}
+                              {target.secretaryE && (
+                                <TamaguiText fontSize={13} color="$text">
+                                  E: {target.secretaryE}
+                                </TamaguiText>
+                              )}
+                              {target.secretaryT && (
+                                <TamaguiText fontSize={13} color="$text">
+                                  T: {target.secretaryT}
+                                </TamaguiText>
+                              )}
+                              <TamaguiText fontSize={13} fontWeight="700" color="#10b981">
+                                Avg: {target.secretaryRatingAvg.toFixed(2)}
+                              </TamaguiText>
+                            </XStack>
+                          </YStack>
+                        )}
+
+                        {/* Incomplete Note Display */}
+                        {target.status === 'INCOMPLETE' && target.incompleteNote && (
+                          <YStack bg="#fee2e2" br="$2" p="$3" mb="$2.5" borderWidth={1} borderColor="#ef4444">
+                            <TamaguiText fontSize={12} fontWeight="700" color="#ef4444" mb="$2">
+                              Reason for Incomplete:
+                            </TamaguiText>
+                            <TamaguiText fontSize={13} color="$text" lineHeight={18}>
+                              {target.incompleteNote}
+                            </TamaguiText>
+                            <TamaguiText fontSize={11} color="$text3" mt="$2" fontStyle="italic">
+                              Please revise and resubmit this target.
+                            </TamaguiText>
+                            
+                            {/* Resubmit Button */}
+                            <XStack
+                              mt="$3"
+                              bg="#ef4444"
+                              py="$2.5"
+                              br="$2"
+                              ai="center"
+                              jc="center"
+                              gap="$2"
+                              pressStyle={{ opacity: 0.7 }}
+                              onPress={() => handleResubmitTarget(target.id)}
+                              cursor="pointer"
+                            >
+                              <SvgIcon name="upload" size={16} color="#fff" style={{}} />
+                              <TamaguiText fontSize={13} fontWeight="600" color="#fff">
+                                Resubmit Target
+                              </TamaguiText>
+                            </XStack>
+                          </YStack>
+                        )}
 
                         {/* Editing Mode */}
                         {isEditing ? (

@@ -47,23 +47,39 @@ export default function CreateIPCRScreen({ navigation }) {
   const handleNext = () => {
     if (step === 1) {
       if (hasDuplicateIPCR()) {
-        Alert.alert('Error', 'You already have an active IPCR for this period.');
+        if (Platform.OS === 'web') {
+          window.alert('You already have an active IPCR for this period.');
+        } else {
+          Alert.alert('Error', 'You already have an active IPCR for this period.');
+        }
         return;
       }
       setStep(2);
     } else if (step === 2) {
       if (!selectedMajorFunction) {
-        Alert.alert('Error', 'Please select a major function');
+        if (Platform.OS === 'web') {
+          window.alert('Please select a major function');
+        } else {
+          Alert.alert('Error', 'Please select a major function');
+        }
         return;
       }
       if (!selectedIndicator) {
-        Alert.alert('Error', 'Please select a success indicator');
+        if (Platform.OS === 'web') {
+          window.alert('Please select a success indicator');
+        } else {
+          Alert.alert('Error', 'Please select a success indicator');
+        }
         return;
       }
       setStep(3);
     } else if (step === 3) {
       if (!targetDescription || !targetMeasures) {
-        Alert.alert('Error', 'Please fill in all fields');
+        if (Platform.OS === 'web') {
+          window.alert('Please fill in all fields');
+        } else {
+          Alert.alert('Error', 'Please fill in all fields');
+        }
         return;
       }
       setStep(4);
@@ -112,9 +128,15 @@ export default function CreateIPCRScreen({ navigation }) {
     };
 
     addIPCR(newIPCR);
-    Alert.alert('Success', 'IPCR created successfully!', [
-      { text: 'OK', onPress: () => navigation.goBack() },
-    ]);
+    
+    if (Platform.OS === 'web') {
+      window.alert('IPCR created successfully!');
+      navigation.goBack();
+    } else {
+      Alert.alert('Success', 'IPCR created successfully!', [
+        { text: 'OK', onPress: () => navigation.goBack() },
+      ]);
+    }
   };
 
   const selectedMF = opcr.majorFunctions.find(m => m.id === selectedMajorFunction);
@@ -150,6 +172,7 @@ export default function CreateIPCRScreen({ navigation }) {
       </View>
 
       <WebScrollView 
+        style={styles.scrollView}
         contentContainerStyle={styles.content}
         keyboardShouldPersistTaps="handled"
         showsVerticalScrollIndicator={false}
@@ -342,6 +365,9 @@ const createStyles = (colors) => StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: colors.bg,
+  },
+  scrollView: {
+    flex: 1,
   },
   topbar: {
     backgroundColor: colors.bg2,

@@ -5,216 +5,28 @@ import {
   ScrollView,
   TouchableOpacity,
   StyleSheet,
+  Alert,
+  Platform,
 } from 'react-native';
 import { useTheme } from '../context/ThemeContext';
 import { useAuth } from '../../context/AuthContext';
+import { useReportorial } from '../../context/ReportorialContext';
 import { StatusBar } from 'expo-status-bar';
 import { SvgIcon } from '../components/SvgIcon';
 import { getTimelinessStatus } from '../../utils/timeliness';
-
-type Requirement = {
-  no: string;
-  requirement: string;
-  template: string;
-  copies: string;
-  fileSize: string;
-  deadline: string;
-  remarks: string;
-  staff: string;
-};
-
-type Submission = {
-  requirementNo: string;
-  submittedAt: Date;
-  fileUri: string;
-  fileName: string;
-  qualityRating: number;
-  timelinessRating: number;
-  accomplishments: string;
-};
-
-const requirements: Requirement[] = [
-  {
-    no: '1',
-    requirement: 'LETTER OF INTENT',
-    template: 'Letter of Intent',
-    copies: '3 COPIES',
-    fileSize: 'LONG',
-    deadline: 'May 2026',
-    remarks: 'ALL COS AND ADMIN PART-TIME',
-    staff: 'JO',
-  },
-  {
-    no: '2',
-    requirement: 'PERMIT TO TEACH',
-    template: 'Permit to Teach COS Full-Time / Part-Time / Admin Part-Time',
-    copies: '3 COPIES',
-    fileSize: 'LONG',
-    deadline: 'Effective upon the approval of Letter of Intent',
-    remarks: 'COS FULL-TIME / COS PART-TIME / ADMIN PART-TIME',
-    staff: 'JO',
-  },
-  {
-    no: '3',
-    requirement: 'WORKLOAD SCHEDULE OF FACULTY',
-    template: 'Workload Schedule',
-    copies: '1 COPY',
-    fileSize: 'LONG',
-    deadline: 'Effective upon the approval and signing of Subject Load Notice',
-    remarks: 'ALL FACULTY MEMBERS',
-    staff: 'JO',
-  },
-  {
-    no: '4',
-    requirement: 'APPROVED SYLLABUS',
-    template: 'DRIVE FOLDER: Syllabus 25-2',
-    copies: 'SOFT COPY',
-    fileSize: 'LONG',
-    deadline: '',
-    remarks: 'ALL FACULTY MEMBERS',
-    staff: 'STEPH',
-  },
-  {
-    no: '5',
-    requirement: 'CLASS MONITORING CHECKLIST',
-    template: 'DRIVE FOLDER: CMC Template',
-    copies: '1 COPY',
-    fileSize: 'LONG',
-    deadline: '1st Week of the following month',
-    remarks: 'All Faculty Members handling Non-Laboratory Subjects/courses',
-    staff: 'JO',
-  },
-  {
-    no: '6',
-    requirement: 'COMPUTATION OF MIDTERM GRADES',
-    template: '',
-    copies: '1 COPY',
-    fileSize: 'LONG',
-    deadline: 'March 25, 2026',
-    remarks: 'ALL FACULTY MEMBERS',
-    staff: 'CHEN',
-  },
-  {
-    no: '7',
-    requirement: 'LIST OF DROPPED STUDENT',
-    template: 'List of Dropped Student',
-    copies: '1 COPY',
-    fileSize: 'LONG',
-    deadline: 'March 24, 2026',
-    remarks: 'ALL FACULTY MEMBERS',
-    staff: 'CHEN',
-  },
-  {
-    no: '8',
-    requirement: 'CLASS OBSERVATION',
-    template: 'Class Observation',
-    copies: 'SOFT COPY',
-    fileSize: 'LONG',
-    deadline: 'March 31, 2026',
-    remarks: 'PROGRAM CHAIRS',
-    staff: 'CHEN',
-  },
-  {
-    no: '9',
-    requirement: 'APPROVED TOS W/ Test Question & KEY to correction',
-    template: 'DRIVE FOLDER: TOS/RUBRIC 25-2',
-    copies: 'SOFT COPY',
-    fileSize: 'LONG',
-    deadline: 'March 13, 2026',
-    remarks: 'ALL FACULTY MEMBERS',
-    staff: 'STEPH',
-  },
-  {
-    no: '10',
-    requirement: 'APPROVED RUBRIC OF ASSESSMENT W/ ATTACHED PROBLEM/ SAMPLE OUTPUT',
-    template: 'DRIVE FOLDER: TOS/RUBRIC 25-2',
-    copies: 'SOFT COPY',
-    fileSize: 'LONG',
-    deadline: 'March 13, 2026',
-    remarks: 'ALL FACULTY MEMBERS',
-    staff: 'STEPH',
-  },
-  {
-    no: '11',
-    requirement: 'SIAS GRADE SHEET',
-    template: '',
-    copies: '3 COPIES',
-    fileSize: 'LONG',
-    deadline: 'Graduate 5/20/2026 / Undergrad 5/27/2026',
-    remarks: 'ALL FACULTY MEMBERS',
-    staff: 'CHEN',
-  },
-  {
-    no: '12',
-    requirement: 'LIST OF TOP TEN',
-    template: 'List of Top Ten',
-    copies: '1 COPY',
-    fileSize: 'LONG',
-    deadline: 'May 27, 2026',
-    remarks: 'All Class Advisers',
-    staff: 'JO',
-  },
-  {
-    no: '13',
-    requirement: 'DELIQUENCY REPORT',
-    template: 'Delinquency Report',
-    copies: '1 COPY',
-    fileSize: 'LONG',
-    deadline: 'May 27, 2026',
-    remarks: 'All Class Advisers',
-    staff: 'JO',
-  },
-  {
-    no: '14',
-    requirement: 'DEAN\'S & PRESIDENT LIST',
-    template: 'DRIVE FOLDER: Dean\'s List 25-2',
-    copies: 'SOFTCOPY',
-    fileSize: 'LONG',
-    deadline: 'May 27, 2026',
-    remarks: 'All Class Advisers',
-    staff: 'JO',
-  },
-  {
-    no: '15',
-    requirement: 'APPROVED CLASS RECORD',
-    template: '',
-    copies: '1 COPY',
-    fileSize: 'LONG',
-    deadline: 'Graduate 5/20/2026 / Undergrad 5/27/2026',
-    remarks: 'All Class Advisers',
-    staff: 'STEPH',
-  },
-];
-
-const otherDocuments: Requirement[] = [
-  {
-    no: '1',
-    requirement: 'MAKE UP CLASS REQUEST',
-    template: 'Attachments: Class and Faculty Plotting; Proof of Agreement with Students on the Make-Up Class Schedule',
-    copies: 'Two (2) COPIES of the Request form; One (1) copy of the supporting attachments',
-    fileSize: 'LONG',
-    deadline: 'AS REQUIRED',
-    remarks: 'AS REQUESTED BY FACULTY',
-    staff: 'JO',
-  },
-  {
-    no: '2',
-    requirement: 'LEAVE FORM',
-    template: 'STANDARD FORMS AVAILABLE AT DEANS OFFICE',
-    copies: '',
-    fileSize: '',
-    deadline: 'AS NEEDED',
-    remarks: 'WHEN APPLICABLE/FILED BY FACULTY',
-    staff: 'JO',
-  },
-];
+import { clearReportorialCache, debugReportorialData } from '../../utils/clearReportorialCache';
 
 export default function ReportorialRequirementsScreen({ navigation }) {
   const { colors, isDark } = useTheme();
   const { user } = useAuth();
+  const { requirements, submissions, getSubmissionsForRequirement } = useReportorial();
   const styles = createStyles(colors);
   const [activeTab, setActiveTab] = useState<'requirements' | 'other'>('requirements');
-  const [submissions, setSubmissions] = useState<Submission[]>([]);
+
+  console.log('=== REPORTORIAL DEBUG ===');
+  console.log('Total requirements:', requirements.length);
+  console.log('User:', user?.name, 'Role:', user?.role);
+  console.log('Requirements:', requirements.map(r => ({ id: r.id, name: r.requirement, category: r.category, staff: r.staff })));
 
   // Map secretary names to staff codes
   const getSecretaryStaffCode = (userName: string): string | null => {
@@ -228,33 +40,81 @@ export default function ReportorialRequirementsScreen({ navigation }) {
   // Get the staff code for the current user
   const userStaffCode = user ? getSecretaryStaffCode(user.name) : null;
 
+  console.log('User staff code:', userStaffCode);
+
   // Filter requirements based on secretary assignment
-  const filterRequirementsBySecretary = (reqs: Requirement[]) => {
-    // If not a secretary or staff code not found, show all (for admin/dean)
-    if (!user || user.role !== 'SECRETARY' || !userStaffCode) {
-      return reqs;
-    }
+  const filterRequirementsBySecretary = (reqs: any[]) => {
+    // Show all requirements for now (remove filtering)
+    return reqs;
     
-    // Filter to show only requirements assigned to this secretary
-    return reqs.filter(req => req.staff === userStaffCode);
+    // Original filtering code (commented out):
+    // if (!user || user.role !== 'SECRETARY' || !userStaffCode) {
+    //   return reqs;
+    // }
+    // return reqs.filter(req => req.staff === userStaffCode);
   };
 
-  const filteredRequirements = filterRequirementsBySecretary(requirements);
-  const filteredOtherDocuments = filterRequirementsBySecretary(otherDocuments);
+  const filteredRequirements = filterRequirementsBySecretary(
+    requirements.filter(req => req.category === 'REPORTORIAL')
+  );
+  const filteredOtherDocuments = filterRequirementsBySecretary(
+    requirements.filter(req => req.category === 'OTHER_DOCUMENTS')
+  );
 
-  const renderRequirementCard = (req: Requirement) => {
-    const submission = submissions.find(s => s.requirementNo === req.no);
+  console.log('Filtered REPORTORIAL requirements:', filteredRequirements.length);
+  console.log('Filtered REPORTORIAL items:', filteredRequirements.map(r => r.requirement));
+  console.log('Filtered OTHER_DOCUMENTS:', filteredOtherDocuments.length);
+  console.log('Filtered OTHER_DOCUMENTS items:', filteredOtherDocuments.map(r => r.requirement));
+  console.log('Active tab:', activeTab);
+
+  // Debug function to clear cache
+  const handleClearCache = async () => {
+    if (Platform.OS === 'web') {
+      const confirmed = window.confirm('Clear reportorial cache and reload data?');
+      if (confirmed) {
+        await clearReportorialCache();
+        window.alert('Cache cleared! Please refresh the page (Ctrl+Shift+R)');
+      }
+    } else {
+      Alert.alert(
+        'Clear Cache',
+        'Clear reportorial cache and reload data?',
+        [
+          { text: 'Cancel', style: 'cancel' },
+          {
+            text: 'Clear',
+            onPress: async () => {
+              await clearReportorialCache();
+              Alert.alert('Success', 'Cache cleared! Please restart the app.');
+            },
+          },
+        ]
+      );
+    }
+  };
+
+  const handleDebugData = async () => {
+    await debugReportorialData();
+    if (Platform.OS === 'web') {
+      window.alert('Check console for debug data');
+    } else {
+      Alert.alert('Debug', 'Check console for debug data');
+    }
+  };
+
+  const renderRequirementCard = (req: any) => {
+    const requirementSubmissions = getSubmissionsForRequirement(req.id);
+    const submission = requirementSubmissions.find(s => s.facultyId === user?.id);
     const status = getTimelinessStatus(req.deadline, submission?.submittedAt);
     
     return (
       <TouchableOpacity 
-        key={req.no} 
+        key={req.id} 
         style={styles.card}
         onPress={() => {
           // Navigate to folder view to see all submissions
           navigation.navigate('ReportorialFolder', { 
-            requirement: req,
-            submissions: submissions.filter(s => s.requirementNo === req.no)
+            requirementId: req.id,
           });
         }}
       >
@@ -334,6 +194,22 @@ export default function ReportorialRequirementsScreen({ navigation }) {
             <Text style={styles.topbarTitleText}>Reportorial Requirements</Text>
             <Text style={styles.topbarBreadcrumb}>CCS Faculty Portal › Reportorial Requirements</Text>
           </View>
+        </View>
+        
+        {/* Debug buttons - TEMPORARY */}
+        <View style={{ flexDirection: 'row', gap: 8 }}>
+          <TouchableOpacity
+            onPress={handleDebugData}
+            style={{ padding: 8, backgroundColor: colors.bg3, borderRadius: 6 }}
+          >
+            <Text style={{ fontSize: 11, color: colors.text3 }}>Debug</Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            onPress={handleClearCache}
+            style={{ padding: 8, backgroundColor: colors.orange, borderRadius: 6 }}
+          >
+            <Text style={{ fontSize: 11, color: '#fff', fontWeight: '600' }}>Clear Cache</Text>
+          </TouchableOpacity>
         </View>
       </View>
 
@@ -437,11 +313,12 @@ const createStyles = (colors: any) => StyleSheet.create({
     flexDirection: 'row',
     flexWrap: 'wrap',
     gap: 16,
+    justifyContent: 'flex-start',
   },
   card: {
     width: '100%',
-    maxWidth: 400,
-    minWidth: 300,
+    maxWidth: 380,
+    minWidth: 280,
     backgroundColor: colors.bg2,
     borderWidth: 1,
     borderColor: colors.border,

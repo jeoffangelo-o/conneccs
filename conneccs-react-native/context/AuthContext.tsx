@@ -53,11 +53,11 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       try {
         await AsyncStorage.setItem(AUTH_STORAGE_KEY, JSON.stringify(foundUser));
         
-        // Auto-generate IPCR for faculty and secretaries on login
-        if ((foundUser.role === 'FACULTY' || foundUser.role === 'SECRETARY') && autoGenerateIPCR) {
+        // Auto-generate IPCR for faculty, secretaries, and coordinators on login
+        if ((foundUser.role === 'FACULTY' || foundUser.role === 'SECRETARY' || foundUser.role === 'COORDINATOR' || foundUser.role === 'CHAIR') && autoGenerateIPCR) {
           try {
             await autoGenerateIPCR(foundUser.id);
-            console.log('Auto-generated IPCR for faculty:', foundUser.name);
+            console.log('Auto-generated IPCR for user:', foundUser.name);
           } catch (error) {
             console.error('Failed to auto-generate IPCR:', error);
           }

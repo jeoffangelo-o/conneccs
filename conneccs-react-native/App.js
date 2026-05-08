@@ -8,6 +8,7 @@ import config from './tamagui.config';
 import { ThemeProvider, useTheme } from './src/context/ThemeContext';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { DataProvider } from './context/DataContext';
+import { ReportorialProvider } from './context/ReportorialContext';
 import CustomDrawer from './src/components/CustomDrawer';
 
 // Screens
@@ -26,6 +27,8 @@ import ReportorialRequirementsScreen from './src/screens/ReportorialRequirements
 import ReportorialFolderScreen from './src/screens/ReportorialFolderScreen';
 import CalendarScreen from './src/screens/CalendarScreen';
 import SecretaryOPCRUploadScreen from './src/screens/SecretaryOPCRUploadScreen';
+import CoordinatorQueueScreen from './src/screens/CoordinatorQueueScreen';
+import DeanOPCRConsolidationScreen from './src/screens/DeanOPCRConsolidationScreen';
 
 const Stack = createStackNavigator();
 const Drawer = createDrawerNavigator();
@@ -46,6 +49,7 @@ function DrawerNavigator() {
       <Drawer.Screen name="OPCR" component={OPCRScreen} />
       <Drawer.Screen name="Calendar" component={CalendarScreen} />
       <Drawer.Screen name="ReviewQueue" component={ReviewQueueScreen} />
+      <Drawer.Screen name="CoordinatorQueue" component={CoordinatorQueueScreen} />
       <Drawer.Screen name="ReportorialRequirements" component={ReportorialRequirementsScreen} />
       <Drawer.Screen name="Messages" component={MessagesScreen} />
       <Drawer.Screen name="Notifications" component={NotificationsScreen} />
@@ -58,9 +62,11 @@ export default function App() {
   return (
     <AuthProvider>
       <DataProvider>
-        <ThemeProvider>
-          <TamaguiWrapper />
-        </ThemeProvider>
+        <ReportorialProvider>
+          <ThemeProvider>
+            <TamaguiWrapper />
+          </ThemeProvider>
+        </ReportorialProvider>
       </DataProvider>
     </AuthProvider>
   );
@@ -98,8 +104,9 @@ function TamaguiWrapper() {
               <Stack.Screen name="Main" component={DrawerNavigator} />
               <Stack.Screen name="IPCRDetail" component={IPCRDetailScreen} />
               <Stack.Screen name="CreateIPCR" component={CreateIPCRScreen} />
-              <Stack.Screen name="ReportorialFolder" component={ReportorialFolderScreen} />
               <Stack.Screen name="SecretaryOPCRUpload" component={SecretaryOPCRUploadScreen} />
+              <Stack.Screen name="ReportorialFolder" component={ReportorialFolderScreen} />
+              <Stack.Screen name="DeanOPCRConsolidation" component={DeanOPCRConsolidationScreen} />
             </>
           )}
         </Stack.Navigator>

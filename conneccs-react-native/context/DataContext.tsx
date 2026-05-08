@@ -1,11 +1,13 @@
 import React, { createContext, useState, useContext, ReactNode, useEffect } from 'react';
-import { IPCR, OPCR, Notification } from '../types';
+import { IPCR, OPCR, Notification, NotificationType, IPCRTarget, IPCROverallStatus } from '../types';
 import ipcrData from '../assets/data/ipcr.json';
 import opcrData from '../assets/data/opcr.json';
 import notificationsData from '../assets/data/notifications.json';
 import usersData from '../assets/data/users.json';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useAuth } from './AuthContext';
+import { calculateA4, calculateFinalRating } from '../utils/calculations';
+import { isTargetSubmissionLate, getTargetKRAType } from '../utils/businessRules';
 
 interface DataContextType {
   ipcrs: IPCR[];
@@ -19,6 +21,27 @@ interface DataContextType {
   generateIPCRForFaculty: (userId: string) => Promise<IPCR | null>;
   getFacultyIPCRs: (userId: string) => IPCR[];
   updateOPCRTargets: (newMajorFunctions: any[]) => Promise<void>;
+  
+  // Workflow actions
+  submitTargetEntry: (ipcrId: string, targetId: string, selfData: any) => Promise<void>;
+  coordinatorEndorseTarget: (ipcrId: string, targetId: string, note: string) => Promise<void>;
+  coordinatorReturnTarget: (ipcrId: string, targetId: string, note: string) => Promise<void>;
+  secretaryRateTarget: (ipcrId: string, targetId: string, q: number, e: number, t: number) => Promise<void>;
+  secretaryReturnTarget: (ipcrId: string, targetId: string, note: string) => Promise<void>;
+  deanApproveTarget: (ipcrId: string, targetId: string) => Promise<void>;
+  deanOverrideTarget: (ipcrId: string, targetId: string, q: number, e: number, t: number, remarks: string) => Promise<void>;
+  deanReturnTarget: (ipcrId: string, targetId: string, remarks: string) => Promise<void>;
+  computeIPCRFinalRating: (ipcrId: string) => Promise<void>;
+  markDeanIPCRExternal: (ipcrId: string) => Promise<void>;
+  
+  // Queue getters
+  getSecretaryQueue: () => any[];
+  getDeanQueue: () => IPCR[];
+  getCoordinatorQueue: (type: 'RESEARCH' | 'EXTENSION') => any[];
+  getComplianceDashboard: () => any[];
+  
+  // Notifications
+  addNotification: (userId: string, type: any, title: string, message: string, relatedIpcrId?: string, relatedTargetId?: string) => void;
 }
 
 const DataContext = createContext<DataContextType | undefined>(undefined);
@@ -411,6 +434,593 @@ export const DataProvider = ({ children }: { children: ReactNode }) => {
     return notifications.filter(n => n.userId === userId && !n.isRead).length;
   };
 
+  // ─── WORKFLOW ACTIONS ─────────────────────────────────────────────────────
+
+  /**
+   * Add a notification to the system
+   */
+  const addNotification = (
+    userId: string,
+    type: NotificationType,
+    title: string,
+    message: string,
+    relatedIpcrId?: string,
+    relatedTargetId?: string
+  ) => {
+    const newNotif: Notification = {
+      id: `notif-${Date.now()}-${Math.random()}`,
+      userId,
+      type,
+      title,
+      message,
+      isRead: false,
+      createdAt: new Date().toISOString(),
+      relatedIpcrId,
+      relatedTargetId,
+    };
+    setNotifications(prev => [newNotif, ...prev]);
+  };
+
+  /**
+   * Faculty submits a target entry with self-ratings
+   */
+  const submitTargetEntry = async (
+    ipcrId: string,
+    targetId: string,
+    selfData: {
+      actualAccomplishments: string;
+      actualValue?: number;
+      selfRatingQ?: number;
+      selfRatingE?: number;
+      selfRatingT?: number;
+      movFileUrls?: string[];
+    }
+  ) => {
+    const ipcr = ipcrs.find(i => i.id === ipcrId);
+    if (!ipcr) return;
+
+    const submittedAt = new Date().toISOString();
+    const period = ipcr.targetsPeriod || 'MIDYEAR';
+    const isLate = isTargetSubmissionLate(submittedAt, period);
+
+    setIpcrs(prev =>
+      prev.map(i => {
+        if (i.id !== ipcrId) return i;
+        return {
+          ...i,
+          majorFunctions: i.majorFunctions.map(mf => ({
+            ...mf,
+            targets: mf.targets.map(t => {
+              if (t.id !== targetId) return t;
+              
+              const selfRatingAvg = calculateA4(
+                selfData.selfRatingQ ?? null,
+                selfData.selfRatingE ?? null,
+                selfData.selfRatingT ?? null
+              );
+
+              // Determine KRA type if not set
+              const kraType = t.kraType || getTargetKRAType(t, mf.title);
+
+              return {
+                ...t,
+                ...selfData,
+                selfRatingAvg,
+                kraType,
+                status: 'SUBMITTED' as any,
+                submittedAt,
+                isLate,
+              };
+            }),
+          })),
+        };
+      })
+    );
+
+    // Notify secretary
+    const secretaries = usersData.filter((u: any) => u.role === 'SECRETARY');
+    secretaries.forEach((sec: any) => {
+      addNotification(
+        sec.id,
+        'IPCR_SUBMITTED',
+        'New Target Submitted',
+        `${ipcr.facultyName} submitted a target for review`,
+        ipcrId,
+        targetId
+      );
+    });
+  };
+
+  /**
+   * Coordinator endorses a KRA2/KRA3 target
+   */
+  const coordinatorEndorseTarget = async (
+    ipcrId: string,
+    targetId: string,
+    note: string
+  ) => {
+    const ipcr = ipcrs.find(i => i.id === ipcrId);
+    if (!ipcr) return;
+
+    setIpcrs(prev =>
+      prev.map(i => {
+        if (i.id !== ipcrId) return i;
+        return {
+          ...i,
+          majorFunctions: i.majorFunctions.map(mf => ({
+            ...mf,
+            targets: mf.targets.map(t => {
+              if (t.id !== targetId) return t;
+              return {
+                ...t,
+                status: 'ENDORSED' as any,
+                coordinatorVerifiedAt: new Date().toISOString(),
+                coordinatorNote: note,
+              };
+            }),
+          })),
+        };
+      })
+    );
+
+    // Notify secretary
+    const secretaries = usersData.filter((u: any) => u.role === 'SECRETARY');
+    secretaries.forEach((sec: any) => {
+      addNotification(
+        sec.id,
+        'IPCR_ENDORSED',
+        'Target Endorsed by Coordinator',
+        `${ipcr.facultyName}'s target has been endorsed and is ready for rating`,
+        ipcrId,
+        targetId
+      );
+    });
+  };
+
+  /**
+   * Coordinator returns a target to faculty
+   */
+  const coordinatorReturnTarget = async (
+    ipcrId: string,
+    targetId: string,
+    note: string
+  ) => {
+    const ipcr = ipcrs.find(i => i.id === ipcrId);
+    if (!ipcr) return;
+
+    setIpcrs(prev =>
+      prev.map(i => {
+        if (i.id !== ipcrId) return i;
+        return {
+          ...i,
+          majorFunctions: i.majorFunctions.map(mf => ({
+            ...mf,
+            targets: mf.targets.map(t => {
+              if (t.id !== targetId) return t;
+              return {
+                ...t,
+                status: 'RETURNED' as any,
+                returnNote: note,
+                returnedBy: 'COORDINATOR' as any,
+              };
+            }),
+          })),
+        };
+      })
+    );
+
+    // Notify faculty
+    addNotification(
+      ipcr.facultyId,
+      'IPCR_RETURNED',
+      'Target Returned by Coordinator',
+      `Your target was returned: ${note}`,
+      ipcrId,
+      targetId
+    );
+  };
+
+  /**
+   * Secretary rates a target
+   */
+  const secretaryRateTarget = async (
+    ipcrId: string,
+    targetId: string,
+    q: number,
+    e: number,
+    t: number
+  ) => {
+    const ipcr = ipcrs.find(i => i.id === ipcrId);
+    if (!ipcr) return;
+
+    const secretaryRatingAvg = calculateA4(q, e, t);
+
+    setIpcrs(prev =>
+      prev.map(i => {
+        if (i.id !== ipcrId) return i;
+        return {
+          ...i,
+          majorFunctions: i.majorFunctions.map(mf => ({
+            ...mf,
+            targets: mf.targets.map(target => {
+              if (target.id !== targetId) return target;
+              return {
+                ...target,
+                status: 'RATED' as any,
+                secretaryQ: q,
+                secretaryE: e,
+                secretaryT: t,
+                secretaryRatingAvg,
+                secretaryRatedAt: new Date().toISOString(),
+              };
+            }),
+          })),
+        };
+      })
+    );
+
+    // Notify Dean
+    const dean = usersData.find((u: any) => u.role === 'DEAN');
+    if (dean) {
+      addNotification(
+        dean.id,
+        'IPCR_RATED',
+        'Target Rated by Secretary',
+        `${ipcr.facultyName}'s target has been rated and awaits your review`,
+        ipcrId,
+        targetId
+      );
+    }
+  };
+
+  /**
+   * Secretary marks target as incomplete
+   */
+  const secretaryReturnTarget = async (
+    ipcrId: string,
+    targetId: string,
+    note: string
+  ) => {
+    const ipcr = ipcrs.find(i => i.id === ipcrId);
+    if (!ipcr) return;
+
+    setIpcrs(prev =>
+      prev.map(i => {
+        if (i.id !== ipcrId) return i;
+        return {
+          ...i,
+          majorFunctions: i.majorFunctions.map(mf => ({
+            ...mf,
+            targets: mf.targets.map(t => {
+              if (t.id !== targetId) return t;
+              return {
+                ...t,
+                status: 'INCOMPLETE' as any,
+                incompleteNote: note,
+                returnNote: note,
+                returnedBy: 'SECRETARY' as any,
+              };
+            }),
+          })),
+        };
+      })
+    );
+
+    // Notify faculty
+    addNotification(
+      ipcr.facultyId,
+      'IPCR_INCOMPLETE',
+      'Target Marked Incomplete',
+      `Your target needs revision: ${note}`,
+      ipcrId,
+      targetId
+    );
+  };
+
+  /**
+   * Dean approves target (locks secretary rating as official)
+   */
+  const deanApproveTarget = async (ipcrId: string, targetId: string) => {
+    const ipcr = ipcrs.find(i => i.id === ipcrId);
+    if (!ipcr) return;
+
+    setIpcrs(prev =>
+      prev.map(i => {
+        if (i.id !== ipcrId) return i;
+        return {
+          ...i,
+          majorFunctions: i.majorFunctions.map(mf => ({
+            ...mf,
+            targets: mf.targets.map(t => {
+              if (t.id !== targetId) return t;
+              return {
+                ...t,
+                status: 'APPROVED' as any,
+                officialQ: t.secretaryQ,
+                officialE: t.secretaryE,
+                officialT: t.secretaryT,
+                officialRatingAvg: t.secretaryRatingAvg,
+                deanReviewedAt: new Date().toISOString(),
+              };
+            }),
+          })),
+        };
+      })
+    );
+
+    // Notify faculty
+    addNotification(
+      ipcr.facultyId,
+      'IPCR_APPROVED',
+      'Target Approved',
+      `Your target has been approved by the Dean`,
+      ipcrId,
+      targetId
+    );
+  };
+
+  /**
+   * Dean overrides secretary rating
+   */
+  const deanOverrideTarget = async (
+    ipcrId: string,
+    targetId: string,
+    q: number,
+    e: number,
+    t: number,
+    remarks: string
+  ) => {
+    const ipcr = ipcrs.find(i => i.id === ipcrId);
+    if (!ipcr) return;
+
+    const deanRatingAvg = calculateA4(q, e, t);
+
+    setIpcrs(prev =>
+      prev.map(i => {
+        if (i.id !== ipcrId) return i;
+        return {
+          ...i,
+          majorFunctions: i.majorFunctions.map(mf => ({
+            ...mf,
+            targets: mf.targets.map(target => {
+              if (target.id !== targetId) return target;
+              return {
+                ...target,
+                status: 'APPROVED_OVERRIDE' as any,
+                deanQ: q,
+                deanE: e,
+                deanT: t,
+                deanRatingAvg,
+                officialQ: q,
+                officialE: e,
+                officialT: t,
+                officialRatingAvg: deanRatingAvg,
+                deanRemarks: remarks,
+                deanReviewedAt: new Date().toISOString(),
+              };
+            }),
+          })),
+        };
+      })
+    );
+
+    // Notify faculty
+    addNotification(
+      ipcr.facultyId,
+      'IPCR_OVERRIDE',
+      'Target Rating Overridden',
+      `Dean has overridden your target rating. Remarks: ${remarks}`,
+      ipcrId,
+      targetId
+    );
+  };
+
+  /**
+   * Dean returns target to faculty
+   */
+  const deanReturnTarget = async (
+    ipcrId: string,
+    targetId: string,
+    remarks: string
+  ) => {
+    const ipcr = ipcrs.find(i => i.id === ipcrId);
+    if (!ipcr) return;
+
+    setIpcrs(prev =>
+      prev.map(i => {
+        if (i.id !== ipcrId) return i;
+        return {
+          ...i,
+          majorFunctions: i.majorFunctions.map(mf => ({
+            ...mf,
+            targets: mf.targets.map(t => {
+              if (t.id !== targetId) return t;
+              return {
+                ...t,
+                status: 'RETURNED' as any,
+                returnNote: remarks,
+                returnedBy: 'DEAN' as any,
+              };
+            }),
+          })),
+        };
+      })
+    );
+
+    // Notify faculty
+    addNotification(
+      ipcr.facultyId,
+      'IPCR_RETURNED',
+      'Target Returned by Dean',
+      `Your target was returned: ${remarks}`,
+      ipcrId,
+      targetId
+    );
+  };
+
+  /**
+   * Compute final IPCR rating once all targets approved
+   */
+  const computeIPCRFinalRating = async (ipcrId: string) => {
+    const ipcr = ipcrs.find(i => i.id === ipcrId);
+    if (!ipcr) return;
+
+    const calculation = calculateFinalRating(ipcr);
+
+    setIpcrs(prev =>
+      prev.map(i => {
+        if (i.id !== ipcrId) return i;
+        return {
+          ...i,
+          finalRating: calculation.final,
+          adjectivalRating: calculation.adjectival,
+          overallStatus: 'APPROVED' as IPCROverallStatus,
+          deanApprovedAt: new Date().toISOString(),
+        };
+      })
+    );
+
+    // Notify faculty
+    addNotification(
+      ipcr.facultyId,
+      'IPCR_APPROVED',
+      'IPCR Finalized',
+      `Your IPCR has been finalized with a rating of ${calculation.final} (${calculation.adjectival})`,
+      ipcrId
+    );
+  };
+
+  /**
+   * Mark Dean's IPCR as submitted to VPAA (external rating)
+   */
+  const markDeanIPCRExternal = async (ipcrId: string) => {
+    setIpcrs(prev =>
+      prev.map(i => {
+        if (i.id !== ipcrId) return i;
+        return {
+          ...i,
+          externalVpaaFlag: true,
+          submittedToVpaaAt: new Date().toISOString(),
+          overallStatus: 'SUBMITTED' as IPCROverallStatus,
+        };
+      })
+    );
+  };
+
+  // ─── QUEUE GETTERS ────────────────────────────────────────────────────────
+
+  /**
+   * Get Secretary's rating queue
+   */
+  const getSecretaryQueue = () => {
+    const queue: any[] = [];
+    ipcrs.forEach(ipcr => {
+      // Skip Dean's IPCR
+      if (ipcr.isDeanIPCR) return;
+      
+      ipcr.majorFunctions.forEach(mf => {
+        mf.targets.forEach(target => {
+          // Targets that are SUBMITTED (KRA1/4/Strategic/Support) or ENDORSED (KRA2/3)
+          if (target.status === 'SUBMITTED' || target.status === 'ENDORSED') {
+            queue.push({
+              ipcr,
+              target,
+              majorFunction: mf,
+            });
+          }
+        });
+      });
+    });
+    return queue;
+  };
+
+  /**
+   * Get Dean's approval queue
+   */
+  const getDeanQueue = () => {
+    return ipcrs.filter(ipcr => {
+      // Check if any targets are RATED (awaiting Dean review)
+      return ipcr.majorFunctions.some(mf =>
+        mf.targets.some(t => t.status === 'RATED')
+      );
+    });
+  };
+
+  /**
+   * Get Coordinator's verification queue
+   */
+  const getCoordinatorQueue = (type: 'RESEARCH' | 'EXTENSION') => {
+    const kraType = type === 'RESEARCH' ? 'KRA2' : 'KRA3';
+    const queue: any[] = [];
+    
+    ipcrs.forEach(ipcr => {
+      ipcr.majorFunctions.forEach(mf => {
+        mf.targets.forEach(target => {
+          if (target.kraType === kraType && target.status === 'SUBMITTED') {
+            queue.push({
+              ipcr,
+              target,
+              majorFunction: mf,
+            });
+          }
+        });
+      });
+    });
+    
+    return queue;
+  };
+
+  /**
+   * Get compliance dashboard data
+   */
+  const getComplianceDashboard = () => {
+    const facultyList = usersData.filter(
+      (u: any) => u.role === 'FACULTY' || u.role === 'COORDINATOR' || u.role === 'CHAIR'
+    );
+
+    return facultyList.map((faculty: any) => {
+      const facultyIPCRs = ipcrs.filter(i => i.facultyId === faculty.id);
+      const currentIPCR = facultyIPCRs[0]; // Assuming one IPCR per period
+
+      if (!currentIPCR) {
+        return {
+          facultyId: faculty.id,
+          facultyName: faculty.name,
+          totalTargets: 0,
+          submitted: 0,
+          pending: 0,
+          overdue: 0,
+          status: 'NOT_STARTED',
+        };
+      }
+
+      let totalTargets = 0;
+      let submitted = 0;
+      let pending = 0;
+
+      currentIPCR.majorFunctions.forEach(mf => {
+        mf.targets.forEach(t => {
+          totalTargets++;
+          if (t.status === 'SUBMITTED' || t.status === 'ENDORSED' || t.status === 'RATED' || t.status === 'APPROVED' || t.status === 'APPROVED_OVERRIDE') {
+            submitted++;
+          } else {
+            pending++;
+          }
+        });
+      });
+
+      return {
+        facultyId: faculty.id,
+        facultyName: faculty.name,
+        totalTargets,
+        submitted,
+        pending,
+        overdue: currentIPCR.isDelinquent ? pending : 0,
+        status: currentIPCR.overallStatus || currentIPCR.status,
+      };
+    });
+  };
+
   return (
     <DataContext.Provider
       value={{
@@ -425,6 +1035,24 @@ export const DataProvider = ({ children }: { children: ReactNode }) => {
         generateIPCRForFaculty,
         getFacultyIPCRs,
         updateOPCRTargets,
+        // Workflow actions
+        submitTargetEntry,
+        coordinatorEndorseTarget,
+        coordinatorReturnTarget,
+        secretaryRateTarget,
+        secretaryReturnTarget,
+        deanApproveTarget,
+        deanOverrideTarget,
+        deanReturnTarget,
+        computeIPCRFinalRating,
+        markDeanIPCRExternal,
+        // Queue getters
+        getSecretaryQueue,
+        getDeanQueue,
+        getCoordinatorQueue,
+        getComplianceDashboard,
+        // Notifications
+        addNotification,
       }}
     >
       {children}
