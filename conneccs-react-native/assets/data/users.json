@@ -36,20 +36,20 @@
     "department": "College of Computer Studies",
     "position": "Faculty",
     "initials": "GA",
-    "avatarColor": "#f97316"
+    "avatarColor": "#93c5fd"
   },
   {
     "id": "u4",
     "email": "otares@cspc.edu.ph",
-    "password": "faculty123",
+    "password": "secretary123",
     "name": "Otares",
     "firstName": "",
     "lastName": "Otares",
-    "role": "FACULTY",
+    "role": "SECRETARY",
     "department": "College of Computer Studies",
-    "position": "Faculty",
+    "position": "Secretary",
     "initials": "OT",
-    "avatarColor": "#3b82f6"
+    "avatarColor": "#a5b4fc"
   },
   {
     "id": "u5",
@@ -62,7 +62,7 @@
     "department": "College of Computer Studies",
     "position": "Faculty",
     "initials": "TA",
-    "avatarColor": "#06b6d4"
+    "avatarColor": "#67e8f9"
   },
   {
     "id": "u6",
@@ -75,7 +75,7 @@
     "department": "College of Computer Studies",
     "position": "Faculty",
     "initials": "BA",
-    "avatarColor": "#ec4899"
+    "avatarColor": "#f9a8d4"
   },
   {
     "id": "u7",
@@ -88,7 +88,7 @@
     "department": "College of Computer Studies",
     "position": "Faculty",
     "initials": "BG",
-    "avatarColor": "#10b981"
+    "avatarColor": "#86efac"
   },
   {
     "id": "u8",
@@ -101,7 +101,7 @@
     "department": "College of Computer Studies",
     "position": "Faculty",
     "initials": "BL",
-    "avatarColor": "#f59e0b"
+    "avatarColor": "#fcd34d"
   },
   {
     "id": "u9",
@@ -114,7 +114,7 @@
     "department": "College of Computer Studies",
     "position": "Faculty",
     "initials": "BE",
-    "avatarColor": "#14b8a6"
+    "avatarColor": "#5eead4"
   },
   {
     "id": "u10",
@@ -127,7 +127,7 @@
     "department": "College of Computer Studies",
     "position": "Faculty",
     "initials": "BN",
-    "avatarColor": "#a855f7"
+    "avatarColor": "#c4b5fd"
   },
   {
     "id": "u11",
@@ -140,7 +140,7 @@
     "department": "College of Computer Studies",
     "position": "Faculty",
     "initials": "BR",
-    "avatarColor": "#ef4444"
+    "avatarColor": "#fca5a5"
   },
   {
     "id": "u12",
@@ -154,7 +154,7 @@
     "program": "BSIT",
     "position": "Program Chair",
     "initials": "CO",
-    "avatarColor": "#f97316"
+    "avatarColor": "#fdba74"
   },
   {
     "id": "u13",
@@ -167,7 +167,7 @@
     "department": "College of Computer Studies",
     "position": "Faculty",
     "initials": "CV",
-    "avatarColor": "#3b82f6"
+    "avatarColor": "#7dd3fc"
   },
   {
     "id": "u14",
@@ -180,7 +180,7 @@
     "department": "College of Computer Studies",
     "position": "Faculty",
     "initials": "CR",
-    "avatarColor": "#06b6d4"
+    "avatarColor": "#22d3ee"
   },
   {
     "id": "u15",
@@ -193,7 +193,7 @@
     "department": "College of Computer Studies",
     "position": "Faculty",
     "initials": "DE",
-    "avatarColor": "#ec4899"
+    "avatarColor": "#f0abfc"
   },
   {
     "id": "u16",
@@ -206,7 +206,7 @@
     "department": "College of Computer Studies",
     "position": "Faculty",
     "initials": "FO",
-    "avatarColor": "#10b981"
+    "avatarColor": "#6ee7b7"
   },
   {
     "id": "u17",
@@ -219,7 +219,7 @@
     "department": "College of Computer Studies",
     "position": "Faculty",
     "initials": "IB",
-    "avatarColor": "#f59e0b"
+    "avatarColor": "#fde047"
   },
   {
     "id": "u18",
@@ -232,7 +232,7 @@
     "department": "College of Computer Studies",
     "position": "Faculty",
     "initials": "LI",
-    "avatarColor": "#14b8a6"
+    "avatarColor": "#2dd4bf"
   },
   {
     "id": "u19",
@@ -245,7 +245,7 @@
     "department": "College of Computer Studies",
     "position": "Faculty",
     "initials": "LL",
-    "avatarColor": "#a855f7"
+    "avatarColor": "#d8b4fe"
   },
   {
     "id": "u20",
@@ -258,7 +258,7 @@
     "department": "College of Computer Studies",
     "position": "Faculty",
     "initials": "MA",
-    "avatarColor": "#ef4444"
+    "avatarColor": "#fb923c"
   },
   {
     "id": "u21",
@@ -272,7 +272,7 @@
     "program": "BSCS",
     "position": "Program Chair",
     "initials": "MO",
-    "avatarColor": "#f97316"
+    "avatarColor": "#fbbf24"
   },
   {
     "id": "u22",
@@ -285,7 +285,7 @@
     "department": "College of Computer Studies",
     "position": "Faculty",
     "initials": "NE",
-    "avatarColor": "#3b82f6"
+    "avatarColor": "#60a5fa"
   },
   {
     "id": "u23",
@@ -298,7 +298,7 @@
     "department": "College of Computer Studies",
     "position": "Faculty",
     "initials": "OM",
-    "avatarColor": "#06b6d4"
+    "avatarColor": "#38bdf8"
   },
   {
     "id": "u24",
@@ -311,7 +311,7 @@
     "department": "College of Computer Studies",
     "position": "Faculty",
     "initials": "ON",
-    "avatarColor": "#ec4899"
+    "avatarColor": "#e879f9"
   },
   {
     "id": "u25",
@@ -325,7 +325,7 @@
     "program": "BLIS",
     "position": "Program Chair",
     "initials": "PA",
-    "avatarColor": "#10b981"
+    "avatarColor": "#4ade80"
   },
   {
     "id": "u26",
@@ -338,7 +338,7 @@
     "department": "College of Computer Studies",
     "position": "Faculty",
     "initials": "PR",
-    "avatarColor": "#f59e0b"
+    "avatarColor": "#facc15"
   },
   {
     "id": "u27",
@@ -365,7 +365,7 @@
     "department": "College of Computer Studies",
     "position": "Faculty",
     "initials": "RA",
-    "avatarColor": "#a855f7"
+    "avatarColor": "#a78bfa"
   },
   {
     "id": "u29",
@@ -378,7 +378,7 @@
     "department": "College of Computer Studies",
     "position": "Faculty",
     "initials": "JS",
-    "avatarColor": "#ef4444"
+    "avatarColor": "#f87171"
   },
   {
     "id": "u30",
@@ -391,20 +391,7 @@
     "department": "College of Computer Studies",
     "position": "Faculty",
     "initials": "GO",
-    "avatarColor": "#f97316"
-  },
-  {
-    "id": "u30",
-    "email": "gonowon@cspc.edu.ph",
-    "password": "faculty123",
-    "name": "Gonowon",
-    "firstName": "",
-    "lastName": "Gonowon",
-    "role": "FACULTY",
-    "department": "College of Computer Studies",
-    "position": "Faculty",
-    "initials": "GO",
-    "avatarColor": "#f97316"
+    "avatarColor": "#fb7185"
   },
   {
     "id": "u31",
@@ -417,7 +404,7 @@
     "department": "College of Computer Studies",
     "position": "Secretary",
     "initials": "JO",
-    "avatarColor": "#f59e0b"
+    "avatarColor": "#fbbf24"
   },
   {
     "id": "u32",
@@ -430,7 +417,7 @@
     "department": "College of Computer Studies",
     "position": "Secretary",
     "initials": "ST",
-    "avatarColor": "#14b8a6"
+    "avatarColor": "#5eead4"
   },
   {
     "id": "u33",
@@ -443,6 +430,6 @@
     "department": "College of Computer Studies",
     "position": "Secretary",
     "initials": "CH",
-    "avatarColor": "#a855f7"
+    "avatarColor": "#c4b5fd"
   }
 ]

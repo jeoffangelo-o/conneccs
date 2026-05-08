@@ -182,10 +182,10 @@ export default function LoginScreen({ navigation }) {
               </TouchableOpacity>
               <TouchableOpacity 
                 style={styles.quickLoginBtn}
-                onPress={() => quickLogin('otares@cspc.edu.ph', 'faculty123')}
+                onPress={() => quickLogin('otares@cspc.edu.ph', 'secretary123')}
               >
                 <TamaguiText fontSize={12} fontWeight="600" color="$accent">
-                  Faculty (Otares)
+                  Secretary (Otares)
                 </TamaguiText>
               </TouchableOpacity>
               <TouchableOpacity 

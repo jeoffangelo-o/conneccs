@@ -12,6 +12,7 @@ interface DataContextType {
   opcr: OPCR;
   notifications: Notification[];
   updateIPCR: (id: string, updates: Partial<IPCR>) => void;
+  deleteIPCR: (id: string) => void;
   addIPCR: (ipcr: IPCR) => void;
   markNotificationRead: (id: string) => void;
   getUnreadCount: (userId: string) => number;

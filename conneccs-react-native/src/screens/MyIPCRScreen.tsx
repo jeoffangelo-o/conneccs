@@ -10,6 +10,7 @@ import { calculateFinalRating, calculateA4, isValidRating } from '../../utils/ca
 import { IPCR, IPCRTarget } from '../../types';
 import * as DocumentPicker from 'expo-document-picker';
 import * as ImagePicker from 'expo-image-picker';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 export default function MyIPCRScreen({ navigation }) {
   const { colors, isDark } = useTheme();
@@ -35,7 +36,7 @@ export default function MyIPCRScreen({ navigation }) {
   });
 
   const handleRegenerateIPCR = async () => {
-    if (!user || !myIPCR) return;
+    if (!user) return;
     
     Alert.alert(
       'Regenerate IPCR',
@@ -49,18 +50,28 @@ export default function MyIPCRScreen({ navigation }) {
             setIsRegenerating(true);
             try {
               console.log('=== Starting IPCR Regeneration ===');
-              console.log('Deleting old IPCR:', myIPCR.id);
               
-              // Delete the old IPCR
-              deleteIPCR(myIPCR.id);
+              // Step 1: Delete ALL IPCRs for this user from state
+              const userIPCRs = ipcrs.filter(ipcr => ipcr.facultyId === user.id);
+              console.log(`Found ${userIPCRs.length} IPCRs for user ${user.id}`);
+              
+              userIPCRs.forEach(ipcr => {
+                console.log('Deleting IPCR:', ipcr.id);
+                deleteIPCR(ipcr.id);
+              });
+              
               setMyIPCR(null);
               
-              // Wait longer for the deletion to fully process and save to AsyncStorage
+              // Step 2: Clear AsyncStorage to remove cached IPCRs
+              console.log('Clearing AsyncStorage...');
+              await AsyncStorage.removeItem('ipcrs');
+              
+              // Step 3: Wait for state to update
               await new Promise(resolve => setTimeout(resolve, 500));
               
               console.log('Generating new IPCR for user:', user.id);
               
-              // Generate new IPCR - force it by checking if it was deleted
+              // Step 4: Generate fresh IPCR
               const newIPCR = await generateIPCRForFaculty(user.id);
               
               console.log('New IPCR generated:', newIPCR?.id);
