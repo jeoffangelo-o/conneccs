@@ -255,9 +255,10 @@ export const DataProvider = ({ children }: { children: ReactNode }) => {
       return existingIPCR;
     }
 
-    // Extract faculty last name for matching
-    const facultyLastName = user.lastName.toLowerCase();
-    console.log('Searching for targets with accountable:', facultyLastName);
+    // Extract user last name for matching
+    const userLastName = user.lastName.toLowerCase();
+    const userRole = user.role;
+    console.log('Searching for targets with accountable:', userLastName, 'Role:', userRole);
 
     // Build major functions with assigned targets
     const ipcrMajorFunctions: any[] = [];
@@ -270,13 +271,25 @@ export const DataProvider = ({ children }: { children: ReactNode }) => {
       mf.successIndicators.forEach((si) => {
         const accountableList = si.accountableUnits.toLowerCase();
         
-        // Check if faculty name appears in accountable list
+        // Check if user name appears in accountable list
         // Use word boundary matching to avoid partial matches
-        const namePattern = new RegExp(`\\b${facultyLastName.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\b`, 'i');
+        const namePattern = new RegExp(`\\b${userLastName.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\b`, 'i');
         const isAssigned = 
           namePattern.test(accountableList) ||
           accountableList.includes('all faculty') ||
-          accountableList.includes('all personnel');
+          accountableList.includes('all personnel') ||
+          accountableList.includes('all staff') ||
+          (userRole === 'SECRETARY' && (
+            accountableList.includes('secretary') ||
+            accountableList.includes('secretaries') ||
+            accountableList.includes('administrative staff') ||
+            accountableList.includes('admin staff') ||
+            accountableList.includes('support staff')
+          )) ||
+          (userRole === 'DEAN' && (
+            accountableList.includes('dean') ||
+            accountableList.includes('office of the dean')
+          ));
         
         if (isAssigned) {
           console.log('✓ Match found in target:', si.code, '-', si.description.substring(0, 50));

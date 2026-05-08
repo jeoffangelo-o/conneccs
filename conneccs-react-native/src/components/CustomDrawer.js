@@ -49,7 +49,7 @@ export default function CustomDrawer(props) {
       icon: 'document-text-outline', 
       route: 'MyIPCR', 
       section: 'IPCR',
-      roles: ['FACULTY', 'CHAIR', 'DEAN']
+      roles: ['FACULTY', 'CHAIR', 'DEAN', 'SECRETARY']
     },
     { 
       name: 'OPCR', 

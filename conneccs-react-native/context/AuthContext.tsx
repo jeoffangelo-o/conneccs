@@ -53,8 +53,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       try {
         await AsyncStorage.setItem(AUTH_STORAGE_KEY, JSON.stringify(foundUser));
         
-        // Auto-generate IPCR for faculty on login
-        if (foundUser.role === 'faculty' && autoGenerateIPCR) {
+        // Auto-generate IPCR for faculty and secretaries on login
+        if ((foundUser.role === 'FACULTY' || foundUser.role === 'SECRETARY') && autoGenerateIPCR) {
           try {
             await autoGenerateIPCR(foundUser.id);
             console.log('Auto-generated IPCR for faculty:', foundUser.name);

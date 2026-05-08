@@ -31,7 +31,7 @@ export default function DashboardScreen({ navigation }) {
   // Auto-generate IPCR for faculty on first login
   useEffect(() => {
     const autoGenerateIPCR = async () => {
-      if (user && (user.role === 'FACULTY' || user.role === 'CHAIR')) {
+      if (user && (user.role === 'FACULTY' || user.role === 'CHAIR' || user.role === 'SECRETARY')) {
         setIsGenerating(true);
         try {
           const generatedIPCR = await generateIPCRForFaculty(user.id);
@@ -80,7 +80,7 @@ export default function DashboardScreen({ navigation }) {
     let filtered = ipcrs;
     
     // Role-based filtering
-    if (user?.role === 'FACULTY') {
+    if (user?.role === 'FACULTY' || user?.role === 'SECRETARY') {
       filtered = filtered.filter(ipcr => ipcr.facultyId === user.id);
     }
     
@@ -118,7 +118,7 @@ export default function DashboardScreen({ navigation }) {
 
   // Calculate progress based on user role
   const progressData = useMemo(() => {
-    if (user?.role === 'FACULTY' || user?.role === 'CHAIR') {
+    if (user?.role === 'FACULTY' || user?.role === 'CHAIR' || user?.role === 'SECRETARY') {
       // For faculty: show their own IPCR progress
       const myIPCR = ipcrs.find(ipcr => ipcr.facultyId === user.id);
       if (!myIPCR || !myIPCR.majorFunctions) {
@@ -172,7 +172,7 @@ export default function DashboardScreen({ navigation }) {
           </View>
         </View>
         <View style={styles.topbarRight}>
-          {user?.role === 'FACULTY' && (
+          {(user?.role === 'FACULTY' || user?.role === 'SECRETARY') && (
             <TouchableOpacity 
               style={styles.btnPrimary}
               onPress={() => navigation.navigate('CreateIPCR')}
@@ -212,7 +212,7 @@ export default function DashboardScreen({ navigation }) {
             </View>
             <View style={styles.progressInfo}>
               <Text style={styles.progressTitle}>
-                {user?.role === 'FACULTY' || user?.role === 'CHAIR' 
+                {user?.role === 'FACULTY' || user?.role === 'CHAIR' || user?.role === 'SECRETARY' 
                   ? 'My IPCR Progress' 
                   : 'Overall Faculty Progress'}
               </Text>
