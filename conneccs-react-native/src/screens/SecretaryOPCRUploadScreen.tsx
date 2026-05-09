@@ -1,17 +1,18 @@
 import React, { useState } from 'react';
 import {
+  View,
+  Text,
   TouchableOpacity,
   StyleSheet,
   Platform,
   Alert,
 } from 'react-native';
-import { ScrollView, YStack, XStack, Text as TamaguiText } from 'tamagui';
+import { ScrollView } from 'tamagui';
 import { useTheme } from '../context/ThemeContext';
 import { StatusBar } from 'expo-status-bar';
 import { SvgIcon } from '../components/SvgIcon';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useData } from '../../context/DataContext';
-import * as XLSX from 'xlsx';
 
 type OPCRTarget = {
   id: string;
@@ -28,11 +29,14 @@ type OPCRTarget = {
 export default function SecretaryOPCRUploadScreen({ navigation }) {
   const { colors, isDark } = useTheme();
   const { updateOPCRTargets } = useData();
-  const styles = createStyles(colors);
+  const styles = React.useMemo(() => createStyles(colors), [colors]);
+  
   const [uploadedFile, setUploadedFile] = useState<any>(null);
   const [extractedTargets, setExtractedTargets] = useState<OPCRTarget[]>([]);
-  const [isProcessing, setIsProcessing] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
+  const [selectedYear, setSelectedYear] = useState(2026);
+
+  const availableYears = [2024, 2025, 2026, 2027, 2028];
 
   const handleFileSelect = () => {
     if (Platform.OS === 'web') {
@@ -54,227 +58,73 @@ export default function SecretaryOPCRUploadScreen({ navigation }) {
     }
   };
 
-  const extractOPCRData = async () => {
-    if (!uploadedFile) return;
+  const loadSampleData = () => {
+    const sampleTargets: OPCRTarget[] = [
+      {
+        id: 'KRA1-SF1',
+        kra: 'KRA 1: Strategic Direction and Leadership',
+        function: 'Strategic Planning and Policy Development',
+        indicator: 'Number of strategic plans developed and implemented',
+        targetValue: '100% implementation',
+        weight: 'Strategic',
+        period: `Jan-Dec ${selectedYear}`,
+        accountable: ['Dean Onesa', 'Chair Colle', 'Chair Benitez'],
+        ratingDimensions: ['Q', 'E', 'T'],
+      },
+      {
+        id: 'KRA2-CF1',
+        kra: 'KRA 2: Instruction and Learning',
+        function: 'Curriculum Development and Enhancement',
+        indicator: 'Percentage of updated course syllabi aligned with industry standards',
+        targetValue: '100% of courses',
+        weight: 'Core',
+        period: `Jan-Jun ${selectedYear}`,
+        accountable: ['Chair Colle', 'Chair Pandes', 'Chair Mortel', 'Chair Prianes'],
+        ratingDimensions: ['Q', 'E'],
+      },
+      {
+        id: 'KRA3-CF3',
+        kra: 'KRA 3: Research and Innovation',
+        function: 'Research Output and Publication',
+        indicator: 'Number of research papers published in indexed journals',
+        targetValue: '5 publications',
+        weight: 'Core',
+        period: `Jan-Dec ${selectedYear}`,
+        accountable: ['Benosa', 'Omorog', 'Onate', 'Serrano'],
+        ratingDimensions: ['Q', 'E', 'T'],
+      },
+      {
+        id: 'KRA5-SF1',
+        kra: 'KRA 5: Resource Management',
+        function: 'Laboratory and Facility Management',
+        indicator: 'Percentage of functional laboratory equipment',
+        targetValue: '95% operational',
+        weight: 'Support',
+        period: `Jan-Dec ${selectedYear}`,
+        accountable: ['Bagaporo', 'Fortuno', 'Prades', 'Lipata'],
+        ratingDimensions: ['Q', 'T'],
+      },
+    ];
 
-    // Validate file type
-    const validExtensions = ['.pdf', '.xlsx', '.xls'];
-    const fileName = uploadedFile.name.toLowerCase();
-    const isValidType = validExtensions.some(ext => fileName.endsWith(ext));
-
-    if (!isValidType) {
-      if (Platform.OS === 'web') {
-        window.alert('Invalid file type. Please upload a PDF or Excel file.');
-      } else {
-        Alert.alert('Invalid File', 'Please upload a PDF or Excel file.');
-      }
-      return;
-    }
-
-    // Strictly check if filename contains "opcr" - REQUIRED
-    if (!fileName.includes('opcr')) {
-      if (Platform.OS === 'web') {
-        window.alert(
-          'Invalid OPCR Document\n\nThis file does not appear to be an OPCR document. The filename must contain "OPCR".\n\nPlease upload a valid OPCR document.'
-        );
-      } else {
-        Alert.alert(
-          'Invalid OPCR Document',
-          'This file does not appear to be an OPCR document. The filename must contain "OPCR". Please upload a valid OPCR document.',
-          [{ text: 'OK' }]
-        );
-      }
-      return;
-    }
-
-    processExtraction();
-  };
-
-  const processExtraction = async () => {
-    setIsProcessing(true);
-
-    try {
-      const file = uploadedFile.file;
-      const fileName = uploadedFile.name.toLowerCase();
-      
-      console.log('Starting extraction for file:', fileName);
-      console.log('File type:', file.type);
-      console.log('File size:', file.size);
-      
-      let extractedData: OPCRTarget[] = [];
-
-      if (fileName.endsWith('.xlsx') || fileName.endsWith('.xls')) {
-        console.log('Parsing as Excel file...');
-        extractedData = await parseExcelFile(file);
-      } else if (fileName.endsWith('.pdf')) {
-        console.log('Parsing as PDF file...');
-        extractedData = await parsePDFFile(file);
-      }
-
-      console.log('Extracted data:', extractedData);
-      console.log('Number of targets extracted:', extractedData.length);
-
-      if (extractedData.length === 0) {
-        setIsProcessing(false);
-        if (Platform.OS === 'web') {
-          window.alert('No OPCR targets found in the document. Please check the file format.');
-        } else {
-          Alert.alert('No Data Found', 'No OPCR targets found in the document. Please check the file format.');
-        }
-        return;
-      }
-
-      setExtractedTargets(extractedData);
-      setIsProcessing(false);
-      
-      if (Platform.OS === 'web') {
-        window.alert(`Successfully extracted ${extractedData.length} OPCR targets from the document.`);
-      } else {
-        Alert.alert(
-          'Extraction Complete',
-          `Successfully extracted ${extractedData.length} OPCR targets from the document.`,
-          [{ text: 'OK' }]
-        );
-      }
-    } catch (error) {
-      setIsProcessing(false);
-      console.error('Extraction error details:', error);
-      console.error('Error message:', error.message);
-      console.error('Error stack:', error.stack);
-      if (Platform.OS === 'web') {
-        window.alert(`Error extracting data: ${error.message}\n\nPlease check the browser console for details.`);
-      } else {
-        Alert.alert('Extraction Error', `Error: ${error.message}`);
-      }
-    }
-  };
-
-  const parseExcelFile = async (file: File): Promise<OPCRTarget[]> => {
-    return new Promise((resolve, reject) => {
-      const reader = new FileReader();
-      
-      reader.onload = (e) => {
-        try {
-          console.log('FileReader loaded successfully');
-          const data = e.target?.result;
-          console.log('Data type:', typeof data);
-          console.log('Data length:', data ? (typeof data === 'string' ? data.length : 'ArrayBuffer') : 'null');
-          
-          const workbook = XLSX.read(data, { type: 'binary' });
-          console.log('Workbook loaded, sheets:', workbook.SheetNames);
-          
-          const sheetName = workbook.SheetNames[0];
-          console.log('Using sheet:', sheetName);
-          
-          const worksheet = workbook.Sheets[sheetName];
-          const jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1 });
-          console.log('Total rows in sheet:', jsonData.length);
-          console.log('First 3 rows:', jsonData.slice(0, 3));
-
-          const targets: OPCRTarget[] = [];
-          
-          // Parse the Excel data
-          // Expected format: ID | KRA | Function | Indicator | Target | Weight | Period | Accountable | Q³ | E² | T³
-          // Q³, E², T³ columns should contain 'x' marks to indicate which ratings are required
-          for (let i = 1; i < jsonData.length; i++) {
-            const row: any = jsonData[i];
-            console.log(`Processing row ${i}:`, row);
-            
-            if (!row || row.length < 4) {
-              console.log(`Skipping row ${i}: insufficient columns`);
-              continue;
-            }
-
-            const id = row[0]?.toString().trim() || '';
-            const kra = row[1]?.toString().trim() || '';
-            const func = row[2]?.toString().trim() || '';
-            const indicator = row[3]?.toString().trim() || '';
-            const targetValue = row[4]?.toString().trim() || '';
-            const weight = row[5]?.toString().trim() || 'Core';
-            const period = row[6]?.toString().trim() || 'Jan-Dec';
-            const accountableStr = row[7]?.toString().trim() || '';
-            const accountable = accountableStr ? accountableStr.split(',').map((s: string) => s.trim()).filter(Boolean) : [];
-            
-            // Parse Q³, E², T³ columns (columns 8, 9, 10)
-            // Look for 'x' marks to determine required ratings
-            const qCol = row[8]?.toString().trim().toLowerCase() || '';
-            const eCol = row[9]?.toString().trim().toLowerCase() || '';
-            const tCol = row[10]?.toString().trim().toLowerCase() || '';
-            
-            const ratings: string[] = [];
-            if (qCol === 'x' || qCol === 'X') ratings.push('Q');
-            if (eCol === 'x' || eCol === 'X') ratings.push('E');
-            if (tCol === 'x' || tCol === 'X') ratings.push('T');
-            
-            // If no ratings specified, default to all three
-            const ratingDimensions = ratings.length > 0 ? ratings : ['Q', 'E', 'T'];
-
-            console.log(`Row ${i} parsed:`, { 
-              id, 
-              kra, 
-              indicator, 
-              ratingDimensions,
-              hasData: !!(id && indicator) 
-            });
-
-            if (id && indicator) {
-              targets.push({
-                id,
-                kra,
-                function: func,
-                indicator,
-                targetValue,
-                weight: weight as 'Strategic' | 'Core' | 'Support',
-                period,
-                accountable,
-                ratingDimensions,
-              });
-              console.log(`Added target ${targets.length}:`, targets[targets.length - 1]);
-            } else {
-              console.log(`Skipping row ${i}: missing required fields (id or indicator)`);
-            }
-          }
-
-          console.log('Total targets extracted:', targets.length);
-          resolve(targets);
-        } catch (error) {
-          console.error('Error in parseExcelFile:', error);
-          reject(error);
-        }
-      };
-
-      reader.onerror = () => {
-        console.error('FileReader error');
-        reject(new Error('Failed to read file'));
-      };
-      
-      console.log('Starting to read file as binary string...');
-      reader.readAsBinaryString(file);
+    setExtractedTargets(sampleTargets);
+    setUploadedFile({
+      name: `OPCR_CCS_${selectedYear}_Sample.xlsx`,
+      size: '0.15 MB',
+      type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+      file: null,
     });
-  };
 
-  const parsePDFFile = async (file: File): Promise<OPCRTarget[]> => {
-    // PDF parsing is complex due to compression and encoding
-    // For now, we'll show a helpful message directing users to use Excel
-    throw new Error(
-      'PDF parsing requires advanced text extraction that is not yet fully supported in the browser.\n\n' +
-      'Please convert your OPCR PDF to Excel format (.xlsx or .xls) for best results.\n\n' +
-      'How to convert:\n' +
-      '1. Open the PDF in Adobe Acrobat or a PDF reader\n' +
-      '2. Export/Save As Excel Workbook\n' +
-      '3. Upload the Excel file here\n\n' +
-      'Alternatively, you can use online converters like:\n' +
-      '• Adobe Acrobat Online\n' +
-      '• Smallpdf.com\n' +
-      '• ILovePDF.com'
-    );
+    if (Platform.OS === 'web') {
+      window.alert(`Successfully loaded ${sampleTargets.length} sample OPCR targets for ${selectedYear}.`);
+    } else {
+      Alert.alert('Sample Data Loaded', `Successfully loaded ${sampleTargets.length} sample OPCR targets for ${selectedYear}.`);
+    }
   };
 
   const handleSaveTargets = async () => {
     setIsSaving(true);
     
     try {
-      // Convert extracted targets to OPCR format
       const newSuccessIndicators = extractedTargets.map((target, index) => ({
         id: `si-uploaded-${Date.now()}-${index}`,
         code: target.id,
@@ -285,15 +135,13 @@ export default function SecretaryOPCRUploadScreen({ navigation }) {
         actualValue: null,
         percentAccomplished: 0,
         accountableUnits: target.accountable.join(', '),
-        requiredRatings: target.ratingDimensions as ('Q' | 'E' | 'T')[], // Include required ratings from Excel
+        requiredRatings: target.ratingDimensions as ('Q' | 'E' | 'T')[],
       }));
 
-      // Group by weight category
       const strategicTargets = newSuccessIndicators.filter((_, i) => extractedTargets[i].weight === 'Strategic');
       const coreTargets = newSuccessIndicators.filter((_, i) => extractedTargets[i].weight === 'Core');
       const supportTargets = newSuccessIndicators.filter((_, i) => extractedTargets[i].weight === 'Support');
 
-      // Create new major functions
       const newMajorFunctions = [];
       
       if (strategicTargets.length > 0) {
@@ -326,41 +174,28 @@ export default function SecretaryOPCRUploadScreen({ navigation }) {
         });
       }
 
-      // Save to AsyncStorage
       await AsyncStorage.setItem('uploaded_opcr_targets', JSON.stringify(newMajorFunctions));
-      
-      // Update DataContext
+      await AsyncStorage.setItem('uploaded_opcr_year', selectedYear.toString());
       await updateOPCRTargets(newMajorFunctions);
 
       setIsSaving(false);
       
       if (Platform.OS === 'web') {
         const confirmed = window.confirm(
-          `${extractedTargets.length} OPCR targets have been saved to the system. Faculty IPCRs will be auto-generated when they log in. Click OK to return.`
+          `${extractedTargets.length} OPCR targets for ${selectedYear} have been saved. Faculty IPCRs will be auto-generated. Click OK to return.`
         );
-        if (confirmed) {
-          navigation.goBack();
-        }
+        if (confirmed) navigation.goBack();
       } else {
-        Alert.alert(
-          'Save Successful',
-          `${extractedTargets.length} OPCR targets have been saved to the system. Faculty IPCRs will be auto-generated when they log in.`,
-          [
-            {
-              text: 'OK',
-              onPress: () => navigation.goBack(),
-            },
-          ]
-        );
+        Alert.alert('Save Successful', `${extractedTargets.length} OPCR targets saved.`, [
+          { text: 'OK', onPress: () => navigation.goBack() },
+        ]);
       }
     } catch (error) {
       setIsSaving(false);
-      console.error('Error saving OPCR targets:', error);
-      
       if (Platform.OS === 'web') {
         window.alert('Error saving OPCR targets. Please try again.');
       } else {
-        Alert.alert('Error', 'Failed to save OPCR targets. Please try again.');
+        Alert.alert('Error', 'Failed to save OPCR targets.');
       }
     }
   };
@@ -375,269 +210,260 @@ export default function SecretaryOPCRUploadScreen({ navigation }) {
   };
 
   return (
-    <YStack f={1} bg="$bg">
+    <View style={styles.container}>
       <StatusBar style={isDark ? 'light' : 'dark'} />
       
       {/* Topbar */}
-      <XStack bg="$bg2" borderBottomWidth={1} borderBottomColor="$border" px="$4" py="$3" pt={48} ai="center" jc="space-between">
-        <XStack ai="center" gap="$3" f={1}>
-          <TouchableOpacity onPress={() => navigation.goBack()}>
+      <View style={styles.topbar}>
+        <View style={styles.topbarLeft}>
+          <TouchableOpacity 
+            onPress={() => navigation.navigate('Main')}
+            style={{ padding: 10 }}
+          >
             <SvgIcon name="arrowBack" size={24} color={colors.text} style={{}} />
           </TouchableOpacity>
-          <YStack f={1}>
-            <TamaguiText fontSize={18} fontWeight="700" color="$text">Upload OPCR</TamaguiText>
-            <TamaguiText fontSize={11} color="$text3" mt={2}>
-              Departmental Target Monitoring & Management
-            </TamaguiText>
-          </YStack>
-        </XStack>
-        <TouchableOpacity onPress={() => navigation.navigate('Notifications')}>
-          <SvgIcon name="bell" size={22} color={colors.text2} style={{}} />
-        </TouchableOpacity>
-      </XStack>
+          <View style={styles.topbarTitle}>
+            <Text style={styles.topbarTitleText}>Upload OPCR</Text>
+            <Text style={styles.topbarBreadcrumb}>Departmental Target Monitoring & Management</Text>
+          </View>
+        </View>
+      </View>
 
-      <ScrollView f={1} contentContainerStyle={styles.contentContainer}>
+      <ScrollView 
+        flex={1}
+        backgroundColor={colors.bg}
+        contentContainerStyle={{ padding: 16, paddingBottom: 32 }}
+      >
+        {/* Year Selection */}
+        <View style={styles.card}>
+          <Text style={styles.cardTitle}>Select Academic Year</Text>
+          <Text style={styles.cardSubtitle}>Choose the year for this OPCR document</Text>
+          <View style={styles.yearGrid}>
+            {availableYears.map((year) => (
+              <TouchableOpacity
+                key={year}
+                style={[styles.yearCard, selectedYear === year && styles.yearCardActive]}
+                onPress={() => setSelectedYear(year)}
+              >
+                <Text style={[styles.yearText, selectedYear === year && styles.yearTextActive]}>
+                  {year}
+                </Text>
+                {selectedYear === year && (
+                  <View style={styles.yearCheck}>
+                    <SvgIcon name="checkCircle" size={20} color={colors.accent} style={{}} />
+                  </View>
+                )}
+              </TouchableOpacity>
+            ))}
+          </View>
+        </View>
+
         {/* Upload Section */}
-        <YStack style={styles.section}>
-          <TamaguiText style={styles.sectionTitle}>Step 1: Upload OPCR Document</TamaguiText>
-          <TamaguiText style={styles.sectionDescription}>
-            Upload the official OPCR document (PDF or Excel format). The system will automatically extract targets and accountable persons.
-          </TamaguiText>
-
-          <TouchableOpacity 
-            style={styles.uploadArea}
-            onPress={handleFileSelect}
-          >
+        <View style={styles.card}>
+          <Text style={styles.cardTitle}>Step 1: Upload OPCR Document</Text>
+          <Text style={styles.cardSubtitle}>Upload PDF or Excel format</Text>
+          
+          <TouchableOpacity style={styles.uploadArea} onPress={handleFileSelect}>
             <SvgIcon name="document" size={48} color={colors.accent} style={{}} />
-            <TamaguiText style={styles.uploadText}>
+            <Text style={styles.uploadText}>
               {uploadedFile ? uploadedFile.name : 'Click to select OPCR file'}
-            </TamaguiText>
-            {uploadedFile && (
-              <TamaguiText style={styles.uploadSize}>{uploadedFile.size}</TamaguiText>
-            )}
-            <TamaguiText style={styles.uploadHint}>
-              Supported formats: PDF, Excel (.xlsx, .xls)
-            </TamaguiText>
+            </Text>
+            {uploadedFile && <Text style={styles.uploadSize}>{uploadedFile.size}</Text>}
+            <Text style={styles.uploadHint}>Supported: PDF, Excel (.xlsx, .xls)</Text>
           </TouchableOpacity>
 
-          {uploadedFile && !isProcessing && extractedTargets.length === 0 && (
-            <TouchableOpacity 
-              style={styles.extractBtn}
-              onPress={extractOPCRData}
-            >
-              <SvgIcon name="settings" size={20} color="#fff" style={{}} />
-              <TamaguiText style={styles.extractBtnText}>Extract OPCR Data</TamaguiText>
-            </TouchableOpacity>
-          )}
+          <TouchableOpacity style={styles.sampleBtn} onPress={loadSampleData}>
+            <SvgIcon name="zap" size={18} color={colors.accent} style={{}} />
+            <Text style={styles.sampleBtnText}>Load Sample Data (Demo)</Text>
+          </TouchableOpacity>
+        </View>
 
-          {isProcessing && (
-            <YStack style={styles.processingCard}>
-              <TamaguiText style={styles.processingText}>Processing document...</TamaguiText>
-              <TamaguiText style={styles.processingSubtext}>
-                Extracting targets, KRAs, and accountable persons
-              </TamaguiText>
-            </YStack>
-          )}
-        </YStack>
+        {/* Extracted Targets */}
+        {extractedTargets.length > 0 && (
+          <>
+            <View style={styles.card}>
+              <View style={styles.cardHeader}>
+                <Text style={styles.cardTitle}>Step 2: Review Extracted Targets ({extractedTargets.length})</Text>
+                <TouchableOpacity 
+                  style={[styles.saveBtn, isSaving && styles.saveBtnDisabled]}
+                  onPress={handleSaveTargets}
+                  disabled={isSaving}
+                >
+                  <SvgIcon name="checkCircle" size={18} color="#fff" style={{}} />
+                  <Text style={styles.saveBtnText}>{isSaving ? 'Saving...' : 'Save to System'}</Text>
+                </TouchableOpacity>
+              </View>
 
-        {/* Extracted Data Section - Always visible */}
-        <YStack style={styles.section}>
-          <XStack style={styles.sectionHeader}>
-            <TamaguiText style={styles.sectionTitle}>
-              Step 2: Review Extracted Targets ({extractedTargets.length})
-            </TamaguiText>
-            {extractedTargets.length > 0 && (
-              <TouchableOpacity 
-                style={[styles.saveBtn, isSaving && styles.saveBtnDisabled]}
-                onPress={handleSaveTargets}
-                disabled={isSaving}
-              >
-                <SvgIcon name="checkCircle" size={18} color="#fff" style={{}} />
-                <TamaguiText style={styles.saveBtnText}>
-                  {isSaving ? 'Saving...' : 'Save to System'}
-                </TamaguiText>
-              </TouchableOpacity>
-            )}
-          </XStack>
+              {/* Summary Stats */}
+              <View style={styles.statsRow}>
+                <View style={styles.statItem}>
+                  <Text style={styles.statValue}>{extractedTargets.filter(t => t.weight === 'Strategic').length}</Text>
+                  <Text style={styles.statLabel}>Strategic</Text>
+                </View>
+                <View style={styles.statItem}>
+                  <Text style={styles.statValue}>{extractedTargets.filter(t => t.weight === 'Core').length}</Text>
+                  <Text style={styles.statLabel}>Core</Text>
+                </View>
+                <View style={styles.statItem}>
+                  <Text style={styles.statValue}>{extractedTargets.filter(t => t.weight === 'Support').length}</Text>
+                  <Text style={styles.statLabel}>Support</Text>
+                </View>
+              </View>
+            </View>
 
-          {/* Summary Cards - Always visible */}
-          <XStack style={styles.summaryGrid}>
-            <YStack style={styles.summaryCard}>
-              <YStack style={styles.summaryIcon}>
-                <SvgIcon name="document" size={24} color={colors.accent} style={{}} />
-              </YStack>
-              <TamaguiText style={styles.summaryValue}>{extractedTargets.length}</TamaguiText>
-              <TamaguiText style={styles.summaryLabel}>Total Targets</TamaguiText>
-            </YStack>
-
-            <YStack style={styles.summaryCard}>
-              <YStack style={[styles.summaryIcon, { backgroundColor: `${colors.red}20` }]}>
-                <SvgIcon name="star" size={24} color={colors.red} style={{}} />
-              </YStack>
-              <TamaguiText style={styles.summaryValue}>
-                {extractedTargets.filter(t => t.weight === 'Strategic').length}
-              </TamaguiText>
-              <TamaguiText style={styles.summaryLabel}>Strategic</TamaguiText>
-            </YStack>
-
-            <YStack style={styles.summaryCard}>
-              <YStack style={[styles.summaryIcon, { backgroundColor: `${colors.accent}20` }]}>
-                <SvgIcon name="briefcase" size={24} color={colors.accent} style={{}} />
-              </YStack>
-              <TamaguiText style={styles.summaryValue}>
-                {extractedTargets.filter(t => t.weight === 'Core').length}
-              </TamaguiText>
-              <TamaguiText style={styles.summaryLabel}>Core</TamaguiText>
-            </YStack>
-
-            <YStack style={styles.summaryCard}>
-              <YStack style={[styles.summaryIcon, { backgroundColor: `${colors.teal}20` }]}>
-                <SvgIcon name="settings" size={24} color={colors.teal} style={{}} />
-              </YStack>
-              <TamaguiText style={styles.summaryValue}>
-                {extractedTargets.filter(t => t.weight === 'Support').length}
-              </TamaguiText>
-              <TamaguiText style={styles.summaryLabel}>Support</TamaguiText>
-            </YStack>
-
-            <YStack style={styles.summaryCard}>
-              <YStack style={[styles.summaryIcon, { backgroundColor: `${colors.green}20` }]}>
-                <SvgIcon name="people" size={24} color={colors.green} style={{}} />
-              </YStack>
-              <TamaguiText style={styles.summaryValue}>
-                {extractedTargets.length > 0 ? [...new Set(extractedTargets.flatMap(t => t.accountable))].length : 0}
-              </TamaguiText>
-              <TamaguiText style={styles.summaryLabel}>Unique Faculty</TamaguiText>
-            </YStack>
-
-            <YStack style={styles.summaryCard}>
-              <YStack style={[styles.summaryIcon, { backgroundColor: `${colors.blue}20` }]}>
-                <SvgIcon name="calendar" size={24} color={colors.blue} style={{}} />
-              </YStack>
-              <TamaguiText style={styles.summaryValue}>
-                {extractedTargets.length > 0 ? [...new Set(extractedTargets.map(t => t.period))].length : 0}
-              </TamaguiText>
-              <TamaguiText style={styles.summaryLabel}>Time Periods</TamaguiText>
-            </YStack>
-          </XStack>
-
-          {extractedTargets.length > 0 && (
-            <>
-              <XStack style={styles.infoCard}>
-                <SvgIcon name="alertCircle" size={20} color={colors.accent} style={{}} />
-                <YStack style={styles.infoContent}>
-                  <TamaguiText style={styles.infoTitle}>Auto-Generation Ready</TamaguiText>
-                  <TamaguiText style={styles.infoText}>
-                    Once saved, the system will automatically generate individual IPCRs for each faculty member based on their names in the "Accountable" column.
-                  </TamaguiText>
-                </YStack>
-              </XStack>
-
-              {extractedTargets.map((target, index) => (
-                <YStack key={index} style={styles.targetCard}>
-                  <XStack style={styles.targetHeader}>
-                    <YStack style={styles.targetId}>
-                      <TamaguiText style={styles.targetIdText}>{target.id}</TamaguiText>
-                    </YStack>
-                    <YStack style={[styles.weightBadge, { backgroundColor: `${getWeightColor(target.weight)}20` }]}>
-                      <TamaguiText style={[styles.weightText, { color: getWeightColor(target.weight) }]}>
-                        {target.weight}
-                      </TamaguiText>
-                    </YStack>
-                  </XStack>
-
-                  <TamaguiText style={styles.targetKRA}>{target.kra}</TamaguiText>
-                  <TamaguiText style={styles.targetFunction}>{target.function}</TamaguiText>
-                  <TamaguiText style={styles.targetIndicator}>{target.indicator}</TamaguiText>
-
-                  <XStack style={styles.targetMeta}>
-                    <XStack style={styles.metaItem}>
-                      <TamaguiText style={styles.metaLabel}>Target:</TamaguiText>
-                      <TamaguiText style={styles.metaValue}>{target.targetValue}</TamaguiText>
-                    </XStack>
-                    <XStack style={styles.metaItem}>
-                      <TamaguiText style={styles.metaLabel}>Period:</TamaguiText>
-                      <TamaguiText style={styles.metaValue}>{target.period}</TamaguiText>
-                    </XStack>
-                    <XStack style={styles.metaItem}>
-                      <TamaguiText style={styles.metaLabel}>Ratings:</TamaguiText>
-                      <TamaguiText style={styles.metaValue}>{target.ratingDimensions.join(', ')}</TamaguiText>
-                    </XStack>
-                  </XStack>
-
-                  <YStack style={styles.accountableSection}>
-                    <TamaguiText style={styles.accountableLabel}>
-                      Accountable ({target.accountable.length}):
-                    </TamaguiText>
-                    <XStack style={styles.accountableList}>
-                      {target.accountable.map((person, idx) => (
-                        <YStack key={idx} style={styles.accountableBadge}>
-                          <TamaguiText style={styles.accountableName}>{person}</TamaguiText>
-                        </YStack>
-                      ))}
-                    </XStack>
-                  </YStack>
-                </YStack>
-              ))}
-            </>
-          )}
-
-          {extractedTargets.length === 0 && (
-            <YStack style={styles.emptyState}>
-              <SvgIcon name="document" size={64} color={colors.text3} style={{}} />
-              <TamaguiText style={styles.emptyStateText}>No targets extracted yet</TamaguiText>
-              <TamaguiText style={styles.emptyStateSubtext}>
-                Upload and extract an OPCR document to see the targets here
-              </TamaguiText>
-            </YStack>
-          )}
-        </YStack>
+            {/* Target Cards */}
+            {extractedTargets.map((target, index) => (
+              <View key={index} style={styles.targetCard}>
+                <View style={styles.targetHeader}>
+                  <View style={styles.targetId}>
+                    <Text style={styles.targetIdText}>{target.id}</Text>
+                  </View>
+                  <View style={[styles.weightBadge, { backgroundColor: `${getWeightColor(target.weight)}20` }]}>
+                    <Text style={[styles.weightText, { color: getWeightColor(target.weight) }]}>
+                      {target.weight}
+                    </Text>
+                  </View>
+                </View>
+                <Text style={styles.targetKRA}>{target.kra}</Text>
+                <Text style={styles.targetFunction}>{target.function}</Text>
+                <Text style={styles.targetIndicator}>{target.indicator}</Text>
+                <View style={styles.targetMeta}>
+                  <Text style={styles.metaText}>Target: {target.targetValue}</Text>
+                  <Text style={styles.metaText}>Period: {target.period}</Text>
+                  <Text style={styles.metaText}>Ratings: {target.ratingDimensions.join(', ')}</Text>
+                </View>
+                <View style={styles.accountableSection}>
+                  <Text style={styles.accountableLabel}>Accountable ({target.accountable.length}):</Text>
+                  <View style={styles.accountableList}>
+                    {target.accountable.map((person, idx) => (
+                      <View key={idx} style={styles.accountableBadge}>
+                        <Text style={styles.accountableName}>{person}</Text>
+                      </View>
+                    ))}
+                  </View>
+                </View>
+              </View>
+            ))}
+          </>
+        )}
       </ScrollView>
-    </YStack>
+    </View>
   );
 }
 
 const createStyles = (colors: any) => StyleSheet.create({
-  contentContainer: {
+  container: {
+    flex: 1,
+    backgroundColor: colors.bg,
+  },
+  topbar: {
+    backgroundColor: colors.bg2,
+    borderBottomWidth: 1,
+    borderBottomColor: colors.border,
+    paddingHorizontal: 24,
+    paddingVertical: 16,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingTop: 48,
+  },
+  topbarLeft: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 16,
+    flex: 1,
+  },
+  topbarTitle: {
+    flex: 1,
+  },
+  topbarTitleText: {
+    fontSize: 18,
+    fontWeight: '700',
+    color: colors.text,
+  },
+  topbarBreadcrumb: {
+    fontSize: 11,
+    color: colors.text3,
+    marginTop: 2,
+  },
+  content: {
+    padding: 16,
+    paddingBottom: 32,
+  },
+  card: {
+    backgroundColor: colors.bg2,
+    borderRadius: 12,
     padding: 20,
-    paddingBottom: 40,
+    marginBottom: 16,
+    borderWidth: 1,
+    borderColor: colors.border,
   },
-  section: {
-    marginBottom: 24,
-  },
-  sectionHeader: {
+  cardHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
     marginBottom: 16,
   },
-  sectionTitle: {
+  cardTitle: {
     fontSize: 18,
     fontWeight: '700',
     color: colors.text,
     marginBottom: 8,
   },
-  sectionDescription: {
+  cardSubtitle: {
     fontSize: 14,
     color: colors.text2,
-    lineHeight: 20,
-    marginBottom: 20,
+    marginBottom: 16,
+  },
+  yearGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 12,
+  },
+  yearCard: {
+    flex: 1,
+    minWidth: 80,
+    backgroundColor: colors.bg3,
+    borderWidth: 2,
+    borderColor: colors.border,
+    borderRadius: 8,
+    padding: 16,
+    alignItems: 'center',
+    position: 'relative',
+  },
+  yearCardActive: {
+    borderColor: colors.accent,
+    backgroundColor: `${colors.accent}15`,
+  },
+  yearText: {
+    fontSize: 20,
+    fontWeight: '700',
+    color: colors.text2,
+  },
+  yearTextActive: {
+    color: colors.accent,
+  },
+  yearCheck: {
+    position: 'absolute',
+    top: 4,
+    right: 4,
   },
   uploadArea: {
     borderWidth: 2,
     borderStyle: 'dashed',
     borderColor: colors.border,
     borderRadius: 12,
-    padding: 40,
+    padding: 32,
     alignItems: 'center',
-    backgroundColor: colors.bg2,
-    marginBottom: 16,
+    backgroundColor: colors.bg,
+    marginBottom: 12,
   },
   uploadText: {
     fontSize: 16,
     fontWeight: '600',
     color: colors.text,
-    marginTop: 16,
+    marginTop: 12,
+    textAlign: 'center',
   },
   uploadSize: {
     fontSize: 13,
@@ -647,40 +473,24 @@ const createStyles = (colors: any) => StyleSheet.create({
   uploadHint: {
     fontSize: 12,
     color: colors.text3,
-    marginTop: 12,
+    marginTop: 8,
   },
-  extractBtn: {
+  sampleBtn: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    gap: 10,
-    backgroundColor: colors.accent,
-    paddingVertical: 14,
-    paddingHorizontal: 24,
-    borderRadius: 10,
+    gap: 8,
+    backgroundColor: colors.bg,
+    borderWidth: 2,
+    borderColor: colors.accent,
+    paddingVertical: 12,
+    paddingHorizontal: 20,
+    borderRadius: 8,
   },
-  extractBtnText: {
-    fontSize: 15,
+  sampleBtnText: {
+    fontSize: 14,
     fontWeight: '600',
-    color: '#fff',
-  },
-  processingCard: {
-    backgroundColor: colors.bg2,
-    borderWidth: 1,
-    borderColor: colors.border,
-    borderRadius: 10,
-    padding: 20,
-    alignItems: 'center',
-  },
-  processingText: {
-    fontSize: 15,
-    fontWeight: '600',
-    color: colors.text,
-    marginBottom: 6,
-  },
-  processingSubtext: {
-    fontSize: 13,
-    color: colors.text3,
+    color: colors.accent,
   },
   saveBtn: {
     flexDirection: 'row',
@@ -699,74 +509,31 @@ const createStyles = (colors: any) => StyleSheet.create({
   saveBtnDisabled: {
     opacity: 0.6,
   },
-  summaryGrid: {
+  statsRow: {
     flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: 12,
-    marginBottom: 20,
+    justifyContent: 'space-around',
+    marginTop: 16,
   },
-  summaryCard: {
-    flex: 1,
-    minWidth: 150,
-    backgroundColor: colors.bg2,
-    borderWidth: 1,
-    borderColor: colors.border,
-    borderRadius: 12,
-    padding: 16,
+  statItem: {
     alignItems: 'center',
   },
-  summaryIcon: {
-    width: 48,
-    height: 48,
-    borderRadius: 24,
-    backgroundColor: `${colors.accent}20`,
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginBottom: 12,
-  },
-  summaryValue: {
+  statValue: {
     fontSize: 28,
     fontWeight: '700',
     color: colors.text,
-    marginBottom: 4,
   },
-  summaryLabel: {
+  statLabel: {
     fontSize: 12,
-    fontWeight: '500',
     color: colors.text3,
-    textAlign: 'center',
-  },
-  infoCard: {
-    flexDirection: 'row',
-    gap: 12,
-    backgroundColor: `${colors.accent}10`,
-    borderWidth: 1,
-    borderColor: `${colors.accent}30`,
-    borderRadius: 10,
-    padding: 16,
-    marginBottom: 20,
-  },
-  infoContent: {
-    flex: 1,
-  },
-  infoTitle: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: colors.text,
-    marginBottom: 4,
-  },
-  infoText: {
-    fontSize: 13,
-    color: colors.text2,
-    lineHeight: 18,
+    marginTop: 4,
   },
   targetCard: {
     backgroundColor: colors.bg2,
-    borderWidth: 1,
-    borderColor: colors.border,
     borderRadius: 12,
     padding: 16,
     marginBottom: 16,
+    borderWidth: 1,
+    borderColor: colors.border,
   },
   targetHeader: {
     flexDirection: 'row',
@@ -815,23 +582,12 @@ const createStyles = (colors: any) => StyleSheet.create({
     marginBottom: 12,
   },
   targetMeta: {
-    flexDirection: 'row',
-    gap: 16,
     marginBottom: 12,
-    flexWrap: 'wrap',
   },
-  metaItem: {
-    flexDirection: 'row',
-    gap: 6,
-  },
-  metaLabel: {
+  metaText: {
     fontSize: 12,
-    fontWeight: '600',
     color: colors.text3,
-  },
-  metaValue: {
-    fontSize: 12,
-    color: colors.text,
+    marginBottom: 4,
   },
   accountableSection: {
     marginTop: 12,
@@ -863,24 +619,5 @@ const createStyles = (colors: any) => StyleSheet.create({
     fontSize: 11,
     fontWeight: '500',
     color: colors.text2,
-  },
-  emptyState: {
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingVertical: 60,
-    paddingHorizontal: 20,
-  },
-  emptyStateText: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: colors.text2,
-    marginTop: 16,
-    marginBottom: 8,
-  },
-  emptyStateSubtext: {
-    fontSize: 13,
-    color: colors.text3,
-    textAlign: 'center',
-    lineHeight: 18,
   },
 });

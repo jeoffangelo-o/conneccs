@@ -262,3 +262,20 @@ export function getDaysUntilDeadline(deadline: Date): number {
   const diff = deadline.getTime() - now.getTime();
   return Math.ceil(diff / (1000 * 60 * 60 * 24));
 }
+
+/**
+ * Get all faculty users (FACULTY, CHAIR, COORDINATOR roles)
+ * This is the single source of truth for determining who counts as "faculty"
+ */
+export function getFacultyUsers(users: User[]): User[] {
+  return users.filter(
+    (u: User) => u.role === 'FACULTY' || u.role === 'CHAIR' || u.role === 'COORDINATOR'
+  );
+}
+
+/**
+ * Get total faculty count from users array
+ */
+export function getTotalFacultyCount(users: User[]): number {
+  return getFacultyUsers(users).length;
+}

@@ -223,7 +223,11 @@ export default function CalendarScreen({ navigation }) {
         </View>
       </View>
 
-      <ScrollView style={styles.content}>
+      <ScrollView 
+        style={styles.content}
+        keyboardShouldPersistTaps="handled"
+        showsVerticalScrollIndicator={false}
+      >
         {/* Calendar Card */}
         <View style={styles.calendarCard}>
           {/* Month Navigation */}

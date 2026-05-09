@@ -7,7 +7,7 @@ import usersData from '../assets/data/users.json';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useAuth } from './AuthContext';
 import { calculateA4, calculateFinalRating } from '../utils/calculations';
-import { isTargetSubmissionLate, getTargetKRAType } from '../utils/businessRules';
+import { isTargetSubmissionLate, getTargetKRAType, getFacultyUsers } from '../utils/businessRules';
 
 interface DataContextType {
   ipcrs: IPCR[];
@@ -974,9 +974,7 @@ export const DataProvider = ({ children }: { children: ReactNode }) => {
    * Get compliance dashboard data
    */
   const getComplianceDashboard = () => {
-    const facultyList = usersData.filter(
-      (u: any) => u.role === 'FACULTY' || u.role === 'COORDINATOR' || u.role === 'CHAIR'
-    );
+    const facultyList = getFacultyUsers(usersData as any[]);
 
     return facultyList.map((faculty: any) => {
       const facultyIPCRs = ipcrs.filter(i => i.facultyId === faculty.id);

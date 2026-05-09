@@ -222,6 +222,22 @@ export default function LoginScreen({ navigation }) {
               </TouchableOpacity>
               <TouchableOpacity 
                 style={styles.quickLoginBtn}
+                onPress={() => quickLogin('baluis@cspc.edu.ph', 'coordinator123')}
+              >
+                <TamaguiText fontSize={12} fontWeight="600" color="$accent">
+                  Extension (Baluis)
+                </TamaguiText>
+              </TouchableOpacity>
+              <TouchableOpacity 
+                style={styles.quickLoginBtn}
+                onPress={() => quickLogin('benosa@cspc.edu.ph', 'coordinator123')}
+              >
+                <TamaguiText fontSize={12} fontWeight="600" color="$accent">
+                  Research (Benosa)
+                </TamaguiText>
+              </TouchableOpacity>
+              <TouchableOpacity 
+                style={styles.quickLoginBtn}
                 onPress={() => quickLogin('admin@cspc.edu.ph', 'admin123')}
               >
                 <TamaguiText fontSize={12} fontWeight="600" color="$accent">

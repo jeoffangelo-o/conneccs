@@ -8,12 +8,17 @@ import {
   StyleSheet,
   Platform,
   useWindowDimensions,
+  Modal,
+  Alert,
 } from 'react-native';
+import { YStack, XStack, Text as TamaguiText } from 'tamagui';
 import { useTheme } from '../context/ThemeContext';
 import { useAuth } from '../../context/AuthContext';
 import { StatusBar } from 'expo-status-bar';
 import { SvgIcon } from '../components/SvgIcon';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import * as DocumentPicker from 'expo-document-picker';
+import * as ImagePicker from 'expo-image-picker';
 
 const MESSAGES_STORAGE_KEY = '@conneccs_messages';
 
@@ -199,6 +204,7 @@ export default function MessagesScreen({ navigation }) {
   const [showMembers, setShowMembers] = useState(width > 1024);
   const [showChannels, setShowChannels] = useState(width > 768);
   const [isLoading, setIsLoading] = useState(true);
+  const [showAttachmentChoice, setShowAttachmentChoice] = useState(false);
 
   // Update sidebar visibility when window resizes
   useEffect(() => {
@@ -262,6 +268,150 @@ export default function MessagesScreen({ navigation }) {
     setChannelMessageLists(updatedMessages);
     await saveMessages(updatedMessages);
     setMessageText('');
+  };
+
+  const handleAttachmentPress = () => {
+    if (Platform.OS === 'web') {
+      // On web, show custom modal
+      setShowAttachmentChoice(true);
+    } else {
+      // On mobile, show native dialog
+      Alert.alert(
+        'Add Attachment',
+        'Choose an option',
+        [
+          {
+            text: 'Take Photo',
+            onPress: () => handleTakePhoto(),
+          },
+          {
+            text: 'Choose from Files',
+            onPress: () => handleChooseFile(),
+          },
+          {
+            text: 'Cancel',
+            style: 'cancel',
+          },
+        ]
+      );
+    }
+  };
+
+  const handleTakePhoto = async () => {
+    setShowAttachmentChoice(false);
+    
+    if (Platform.OS === 'web') {
+      // On web, use file input with capture
+      const input = document.createElement('input');
+      input.type = 'file';
+      input.accept = 'image/*';
+      input.capture = 'environment';
+      input.onchange = (e: any) => {
+        const file = e.target.files[0];
+        if (file) {
+          sendImageMessage(file.name, URL.createObjectURL(file));
+        }
+      };
+      input.click();
+    } else {
+      // On mobile, use camera
+      try {
+        const permissionResult = await ImagePicker.requestCameraPermissionsAsync();
+        
+        if (permissionResult.granted === false) {
+          Alert.alert('Permission Required', 'Permission to access camera is required!');
+          return;
+        }
+
+        const result = await ImagePicker.launchCameraAsync({
+          allowsEditing: true,
+          quality: 0.8,
+        });
+
+        if (!result.canceled && result.assets && result.assets.length > 0) {
+          sendImageMessage('Photo', result.assets[0].uri);
+        }
+      } catch (error) {
+        Alert.alert('Error', 'Failed to take photo');
+      }
+    }
+  };
+
+  const handleChooseFile = async () => {
+    setShowAttachmentChoice(false);
+    
+    if (Platform.OS === 'web') {
+      // On web, use file input
+      const input = document.createElement('input');
+      input.type = 'file';
+      input.accept = 'image/*,.pdf,.doc,.docx,.xls,.xlsx';
+      input.onchange = (e: any) => {
+        const file = e.target.files[0];
+        if (file) {
+          const fileSize = (file.size / (1024 * 1024)).toFixed(2);
+          sendFileMessage(file.name, fileSize);
+        }
+      };
+      input.click();
+    } else {
+      // On mobile, use document picker
+      try {
+        const result = await DocumentPicker.getDocumentAsync({
+          type: '*/*',
+          copyToCacheDirectory: true,
+        });
+
+        if (!result.canceled && result.assets && result.assets.length > 0) {
+          const file = result.assets[0];
+          const fileSize = (file.size / (1024 * 1024)).toFixed(2);
+          sendFileMessage(file.name, fileSize);
+        }
+      } catch (error) {
+        Alert.alert('Error', 'Failed to pick file');
+      }
+    }
+  };
+
+  const sendImageMessage = async (fileName: string, imageUrl: string) => {
+    const newMessage: Message = {
+      id: String(Date.now()),
+      author: user?.name || 'Anonymous',
+      role: user?.role || 'User',
+      avatar: user?.initials || 'U',
+      time: 'Just now',
+      text: `📷 Shared an image: ${fileName}`,
+    };
+
+    const updatedMessages = {
+      ...channelMessageLists,
+      [activeChannel]: [...currentMessages, newMessage],
+    };
+
+    setChannelMessageLists(updatedMessages);
+    await saveMessages(updatedMessages);
+  };
+
+  const sendFileMessage = async (fileName: string, fileSize: string) => {
+    const newMessage: Message = {
+      id: String(Date.now()),
+      author: user?.name || 'Anonymous',
+      role: user?.role || 'User',
+      avatar: user?.initials || 'U',
+      time: 'Just now',
+      text: `Shared a file:`,
+      attachment: {
+        name: fileName,
+        size: `${fileSize} MB`,
+      },
+    };
+
+    const updatedMessages = {
+      ...channelMessageLists,
+      [activeChannel]: [...currentMessages, newMessage],
+    };
+
+    setChannelMessageLists(updatedMessages);
+    await saveMessages(updatedMessages);
   };
 
   const groupedMembers = members.reduce((acc, member) => {
@@ -424,7 +574,7 @@ export default function MessagesScreen({ navigation }) {
                 onSubmitEditing={handleSendMessage}
                 returnKeyType="send"
               />
-              <TouchableOpacity style={styles.inputBtn}>
+              <TouchableOpacity style={styles.inputBtn} onPress={handleAttachmentPress}>
                 <SvgIcon name="plus" size={18} color={colors.text3} style={{}} />
               </TouchableOpacity>
               <TouchableOpacity 
@@ -461,6 +611,140 @@ export default function MessagesScreen({ navigation }) {
           </View>
         )}
       </View>
+
+      {/* Attachment Choice Modal */}
+      <Modal
+        visible={showAttachmentChoice}
+        transparent={true}
+        animationType="fade"
+        onRequestClose={() => setShowAttachmentChoice(false)}
+      >
+        <TouchableOpacity
+          style={{
+            flex: 1,
+            backgroundColor: 'rgba(0,0,0,0.5)',
+            justifyContent: 'center',
+            alignItems: 'center',
+            padding: 16,
+          }}
+          activeOpacity={1}
+          onPress={() => setShowAttachmentChoice(false)}
+        >
+          <TouchableOpacity
+            activeOpacity={1}
+            onPress={(e) => e.stopPropagation()}
+            style={{ width: '100%', maxWidth: 400 }}
+          >
+            <YStack bg="$bg2" br="$4" p="$5" maxWidth={400} width="100%">
+              {/* Modal Header */}
+              <XStack jc="space-between" ai="center" mb="$4">
+                <TamaguiText fontSize={20} fontWeight="800" color="$text">
+                  Add Attachment
+                </TamaguiText>
+                <XStack
+                  w={32}
+                  h={32}
+                  bg="$bg3"
+                  br={16}
+                  ai="center"
+                  jc="center"
+                  pressStyle={{ opacity: 0.7 }}
+                  onPress={() => setShowAttachmentChoice(false)}
+                  cursor="pointer"
+                >
+                  <SvgIcon name="x" size={18} color={colors.text} style={{}} />
+                </XStack>
+              </XStack>
+
+              <TamaguiText fontSize={14} color="$text3" mb="$4">
+                Choose how you want to add an attachment
+              </TamaguiText>
+
+              {/* Take Photo Button */}
+              <XStack
+                bg="$accent"
+                p="$4"
+                br="$3"
+                ai="center"
+                gap="$3"
+                mb="$3"
+                pressStyle={{ opacity: 0.8 }}
+                onPress={handleTakePhoto}
+                cursor="pointer"
+              >
+                <YStack
+                  w={48}
+                  h={48}
+                  bg="rgba(255,255,255,0.2)"
+                  br={24}
+                  ai="center"
+                  jc="center"
+                >
+                  <SvgIcon name="camera" size={24} color="#fff" style={{}} />
+                </YStack>
+                <YStack f={1}>
+                  <TamaguiText fontSize={16} fontWeight="700" color="#fff" mb={2}>
+                    Take Photo
+                  </TamaguiText>
+                  <TamaguiText fontSize={12} color="rgba(255,255,255,0.8)">
+                    Use your camera to capture a photo
+                  </TamaguiText>
+                </YStack>
+              </XStack>
+
+              {/* Choose from Files Button */}
+              <XStack
+                bg="$bg3"
+                p="$4"
+                br="$3"
+                ai="center"
+                gap="$3"
+                bw={1}
+                bc="$border"
+                pressStyle={{ opacity: 0.7 }}
+                onPress={handleChooseFile}
+                cursor="pointer"
+              >
+                <YStack
+                  w={48}
+                  h={48}
+                  bg="$accent"
+                  br={24}
+                  ai="center"
+                  jc="center"
+                >
+                  <SvgIcon name="document" size={24} color="#fff" style={{}} />
+                </YStack>
+                <YStack f={1}>
+                  <TamaguiText fontSize={16} fontWeight="700" color="$text" mb={2}>
+                    Choose from Files
+                  </TamaguiText>
+                  <TamaguiText fontSize={12} color="$text3">
+                    Select a file or image from your device
+                  </TamaguiText>
+                </YStack>
+              </XStack>
+
+              {/* Cancel Button */}
+              <XStack
+                bg="$border"
+                p="$3.5"
+                br="$3"
+                ai="center"
+                jc="center"
+                mt="$4"
+                pressStyle={{ opacity: 0.8 }}
+                onPress={() => setShowAttachmentChoice(false)}
+                cursor="pointer"
+              >
+                <TamaguiText fontSize={14} fontWeight="700" color="$text">
+                  Cancel
+                </TamaguiText>
+              </XStack>
+            </YStack>
+          </TouchableOpacity>
+        </TouchableOpacity>
+      </Modal>
     </View>
   );
 }

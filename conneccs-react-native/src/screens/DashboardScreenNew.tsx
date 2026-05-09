@@ -18,7 +18,7 @@ import { IpcrCard } from '../../components/IpcrCard';
 import usersData from '../../assets/data/users.json';
 import { User } from '../../types';
 import { WebScrollView } from '../components/WebScrollView';
-import { getNextDeadline, getDaysUntilDeadline } from '../../utils/businessRules';
+import { getNextDeadline, getDaysUntilDeadline, getTotalFacultyCount } from '../../utils/businessRules';
 import { calculateFinalRating } from '../../utils/calculations';
 
 type FilterType = 'All' | 'Completed' | 'In Progress' | 'Revision Required';
@@ -159,7 +159,7 @@ export default function DashboardScreen({ navigation }) {
           queueCount: deanQueue.length,
           avgRating,
           approvedCount: approvedIPCRs.length,
-          totalFaculty: ipcrs.length,
+          totalFaculty: getTotalFacultyCount(usersData as any[]),
           distribution,
         };
 

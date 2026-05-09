@@ -9,6 +9,7 @@ import {
 } from '../types';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import usersData from '../assets/data/users.json';
+import { getFacultyUsers } from '../utils/businessRules';
 
 interface ReportorialContextType {
   requirements: ReportorialRequirement[];
@@ -49,7 +50,7 @@ interface ReportorialContextType {
 const ReportorialContext = createContext<ReportorialContextType | undefined>(undefined);
 
 // Version number - increment this to force reload of initial data
-const DATA_VERSION = 2;
+const DATA_VERSION = 3;
 
 // Initial requirements data (from the screen)
 const initialRequirements: ReportorialRequirement[] = [
@@ -64,6 +65,7 @@ const initialRequirements: ReportorialRequirement[] = [
     remarks: 'ALL COS AND ADMIN PART-TIME',
     staff: 'JO',
     category: 'REPORTORIAL',
+    templateFileUrl: 'https://example.com/templates/letter-of-intent.pdf',
     createdAt: new Date().toISOString(),
   },
   {
@@ -77,6 +79,7 @@ const initialRequirements: ReportorialRequirement[] = [
     remarks: 'COS FULL-TIME / COS PART-TIME / ADMIN PART-TIME',
     staff: 'JO',
     category: 'REPORTORIAL',
+    templateFileUrl: 'https://example.com/templates/permit-to-teach.pdf',
     createdAt: new Date().toISOString(),
   },
   {
@@ -90,6 +93,7 @@ const initialRequirements: ReportorialRequirement[] = [
     remarks: 'ALL FACULTY MEMBERS',
     staff: 'JO',
     category: 'REPORTORIAL',
+    templateFileUrl: 'https://example.com/templates/workload-schedule.pdf',
     createdAt: new Date().toISOString(),
   },
   {
@@ -103,6 +107,7 @@ const initialRequirements: ReportorialRequirement[] = [
     remarks: 'ALL FACULTY MEMBERS',
     staff: 'STEPH',
     category: 'REPORTORIAL',
+    templateFileUrl: 'https://example.com/templates/syllabus.pdf',
     createdAt: new Date().toISOString(),
   },
   {
@@ -116,6 +121,7 @@ const initialRequirements: ReportorialRequirement[] = [
     remarks: 'All Faculty Members handling Non-Laboratory Subjects/courses',
     staff: 'VIANNE',
     category: 'REPORTORIAL',
+    templateFileUrl: 'https://example.com/templates/cmc-template.pdf',
     createdAt: new Date().toISOString(),
   },
   {
@@ -129,6 +135,7 @@ const initialRequirements: ReportorialRequirement[] = [
     remarks: 'ALL FACULTY MEMBERS',
     staff: 'CHEN',
     category: 'REPORTORIAL',
+    templateFileUrl: 'https://example.com/templates/midterm-grades.pdf',
     createdAt: new Date().toISOString(),
   },
   {
@@ -142,6 +149,7 @@ const initialRequirements: ReportorialRequirement[] = [
     remarks: 'ALL FACULTY MEMBERS',
     staff: 'CHEN',
     category: 'REPORTORIAL',
+    templateFileUrl: 'https://example.com/templates/dropped-students.pdf',
     createdAt: new Date().toISOString(),
   },
   {
@@ -155,6 +163,7 @@ const initialRequirements: ReportorialRequirement[] = [
     remarks: 'PROGRAM CHAIRS',
     staff: 'CHEN',
     category: 'REPORTORIAL',
+    templateFileUrl: 'https://example.com/templates/class-observation.pdf',
     createdAt: new Date().toISOString(),
   },
   {
@@ -168,6 +177,7 @@ const initialRequirements: ReportorialRequirement[] = [
     remarks: 'ALL FACULTY MEMBERS',
     staff: 'STEPH',
     category: 'REPORTORIAL',
+    templateFileUrl: 'https://example.com/templates/tos-rubric.pdf',
     createdAt: new Date().toISOString(),
   },
   {
@@ -181,6 +191,7 @@ const initialRequirements: ReportorialRequirement[] = [
     remarks: 'ALL FACULTY MEMBERS',
     staff: 'STEPH',
     category: 'REPORTORIAL',
+    templateFileUrl: 'https://example.com/templates/rubric-assessment.pdf',
     createdAt: new Date().toISOString(),
   },
   {
@@ -194,6 +205,7 @@ const initialRequirements: ReportorialRequirement[] = [
     remarks: 'ALL FACULTY MEMBERS',
     staff: 'CHEN',
     category: 'REPORTORIAL',
+    templateFileUrl: 'https://example.com/templates/sias-grade-sheet.pdf',
     createdAt: new Date().toISOString(),
   },
   {
@@ -207,6 +219,7 @@ const initialRequirements: ReportorialRequirement[] = [
     remarks: 'All Class Advisers',
     staff: 'JO',
     category: 'REPORTORIAL',
+    templateFileUrl: 'https://example.com/templates/top-ten.pdf',
     createdAt: new Date().toISOString(),
   },
   {
@@ -220,6 +233,7 @@ const initialRequirements: ReportorialRequirement[] = [
     remarks: 'All Class Advisers',
     staff: 'JO',
     category: 'REPORTORIAL',
+    templateFileUrl: 'https://example.com/templates/delinquency-report.pdf',
     createdAt: new Date().toISOString(),
   },
   {
@@ -233,6 +247,7 @@ const initialRequirements: ReportorialRequirement[] = [
     remarks: 'All Class Advisers',
     staff: 'JO',
     category: 'REPORTORIAL',
+    templateFileUrl: 'https://example.com/templates/deans-list.pdf',
     createdAt: new Date().toISOString(),
   },
   {
@@ -246,6 +261,7 @@ const initialRequirements: ReportorialRequirement[] = [
     remarks: 'All Class Advisers',
     staff: 'STEPH',
     category: 'REPORTORIAL',
+    templateFileUrl: 'https://example.com/templates/class-record.pdf',
     createdAt: new Date().toISOString(),
   },
   {
@@ -259,6 +275,7 @@ const initialRequirements: ReportorialRequirement[] = [
     remarks: 'AS REQUESTED BY FACULTY',
     staff: 'JO',
     category: 'OTHER_DOCUMENTS',
+    templateFileUrl: 'https://example.com/templates/makeup-class.pdf',
     createdAt: new Date().toISOString(),
   },
   {
@@ -272,6 +289,7 @@ const initialRequirements: ReportorialRequirement[] = [
     remarks: 'WHEN APPLICABLE/FILED BY FACULTY',
     staff: 'VIANNE',
     category: 'OTHER_DOCUMENTS',
+    templateFileUrl: 'https://example.com/templates/leave-form.pdf',
     createdAt: new Date().toISOString(),
   },
 ];
@@ -471,7 +489,7 @@ export const ReportorialProvider = ({ children }: { children: ReactNode }) => {
     if (!requirement) return;
 
     // Get all faculty members
-    const allFaculty = usersData.filter((u: any) => u.role === 'FACULTY' || u.role === 'CHAIR' || u.role === 'COORDINATOR');
+    const allFaculty = getFacultyUsers(usersData as any[]);
     
     // Filter out those who have already submitted
     const submittedFacultyIds = submissions
@@ -524,7 +542,7 @@ export const ReportorialProvider = ({ children }: { children: ReactNode }) => {
   };
 
   const generateNotSubmittedReport = (requirementId: string): ReportorialReport => {
-    const allFaculty = usersData.filter((u: any) => u.role === 'FACULTY' || u.role === 'CHAIR' || u.role === 'COORDINATOR');
+    const allFaculty = getFacultyUsers(usersData as any[]);
     const submittedFacultyIds = submissions
       .filter(sub => sub.requirementId === requirementId)
       .map(sub => sub.facultyId);
@@ -551,7 +569,7 @@ export const ReportorialProvider = ({ children }: { children: ReactNode }) => {
   };
 
   const generateSummaryReport = (requirementId: string): ReportorialReport => {
-    const allFaculty = usersData.filter((u: any) => u.role === 'FACULTY' || u.role === 'CHAIR' || u.role === 'COORDINATOR');
+    const allFaculty = getFacultyUsers(usersData as any[]);
     const requirementSubmissions = getSubmissionsForRequirement(requirementId);
     
     const facultyList = allFaculty.map((f: any) => {

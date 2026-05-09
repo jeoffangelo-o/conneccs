@@ -2,20 +2,25 @@ import React, { useState } from 'react';
 import {
   View,
   Text,
-  ScrollView,
   TouchableOpacity,
   StyleSheet,
   Modal,
   TextInput,
   Alert,
+  Platform,
 } from 'react-native';
+import { ScrollView } from 'tamagui';
 import { useAuth } from '../../context/AuthContext';
 import { useData } from '../../context/DataContext';
-import { Ionicons } from '@expo/vector-icons';
+import { useTheme } from '../context/ThemeContext';
+import { StatusBar } from 'expo-status-bar';
+import { SvgIcon } from '../components/SvgIcon';
 
-export default function CoordinatorQueueScreen() {
+export default function CoordinatorQueueScreen({ navigation }) {
+  const { colors, isDark } = useTheme();
   const { user } = useAuth();
   const { getCoordinatorQueue, coordinatorEndorseTarget, coordinatorReturnTarget } = useData();
+  const styles = React.useMemo(() => createStyles(colors), [colors]);
   
   const [activeTab, setActiveTab] = useState<'pending' | 'endorsed' | 'returned'>('pending');
   const [selectedTarget, setSelectedTarget] = useState<any>(null);
@@ -60,7 +65,11 @@ export default function CoordinatorQueueScreen() {
     if (!selectedTarget) return;
 
     if (actionType === 'return' && !note.trim()) {
-      Alert.alert('Error', 'Please provide a reason for returning this target');
+      if (Platform.OS === 'web') {
+        window.alert('Please provide a reason for returning this target');
+      } else {
+        Alert.alert('Error', 'Please provide a reason for returning this target');
+      }
       return;
     }
 
@@ -71,20 +80,32 @@ export default function CoordinatorQueueScreen() {
           selectedTarget.target.id,
           note || 'Verified and endorsed'
         );
-        Alert.alert('Success', 'Target endorsed successfully');
+        if (Platform.OS === 'web') {
+          window.alert('Target endorsed successfully');
+        } else {
+          Alert.alert('Success', 'Target endorsed successfully');
+        }
       } else {
         await coordinatorReturnTarget(
           selectedTarget.ipcr.id,
           selectedTarget.target.id,
           note
         );
-        Alert.alert('Success', 'Target returned to faculty');
+        if (Platform.OS === 'web') {
+          window.alert('Target returned to faculty');
+        } else {
+          Alert.alert('Success', 'Target returned to faculty');
+        }
       }
       setModalVisible(false);
       setSelectedTarget(null);
       setNote('');
     } catch (error) {
-      Alert.alert('Error', 'Failed to process target');
+      if (Platform.OS === 'web') {
+        window.alert('Failed to process target');
+      } else {
+        Alert.alert('Error', 'Failed to process target');
+      }
     }
   };
 
@@ -104,7 +125,7 @@ export default function CoordinatorQueueScreen() {
         <Text style={styles.targetDescription}>{target.description}</Text>
         
         <View style={styles.infoRow}>
-          <Ionicons name="calendar-outline" size={16} color="#666" />
+          <SvgIcon name="calendar" size={16} color={colors.text3} style={{}} />
           <Text style={styles.infoText}>
             Submitted: {target.submittedAt ? new Date(target.submittedAt).toLocaleDateString() : 'N/A'}
           </Text>
@@ -112,7 +133,7 @@ export default function CoordinatorQueueScreen() {
 
         {target.isLate && (
           <View style={styles.lateWarning}>
-            <Ionicons name="warning" size={16} color="#ef4444" />
+            <SvgIcon name="alertCircle" size={16} color={colors.red} style={{}} />
             <Text style={styles.lateText}>LATE SUBMISSION</Text>
           </View>
         )}
@@ -146,14 +167,14 @@ export default function CoordinatorQueueScreen() {
               style={[styles.button, styles.endorseButton]}
               onPress={() => handleEndorse(item)}
             >
-              <Ionicons name="checkmark-circle" size={20} color="#fff" />
+              <SvgIcon name="checkCircle" size={20} color="#fff" style={{}} />
               <Text style={styles.buttonText}>Endorse</Text>
             </TouchableOpacity>
             <TouchableOpacity
               style={[styles.button, styles.returnButton]}
               onPress={() => handleReturn(item)}
             >
-              <Ionicons name="arrow-back-circle" size={20} color="#fff" />
+              <SvgIcon name="arrowBack" size={20} color="#fff" style={{}} />
               <Text style={styles.buttonText}>Return</Text>
             </TouchableOpacity>
           </View>
@@ -171,13 +192,23 @@ export default function CoordinatorQueueScreen() {
 
   return (
     <View style={styles.container}>
-      <View style={styles.header}>
-        <Text style={styles.title}>
-          {coordinatorType === 'RESEARCH' ? 'Research' : 'Extension'} Verification Queue
-        </Text>
-        <Text style={styles.subtitle}>
-          {coordinatorType === 'RESEARCH' ? 'KRA 2' : 'KRA 3'} Targets
-        </Text>
+      <StatusBar style={isDark ? 'light' : 'dark'} />
+      
+      {/* Topbar with Menu */}
+      <View style={styles.topbar}>
+        <View style={styles.topbarLeft}>
+          <TouchableOpacity onPress={() => navigation.openDrawer()}>
+            <SvgIcon name="menu" size={24} color={colors.text} style={{}} />
+          </TouchableOpacity>
+          <View style={styles.topbarTitle}>
+            <Text style={styles.topbarTitleText}>
+              {coordinatorType === 'RESEARCH' ? 'Research' : 'Extension'} Verification Queue
+            </Text>
+            <Text style={styles.topbarBreadcrumb}>
+              {coordinatorType === 'RESEARCH' ? 'KRA 2' : 'KRA 3'} Targets
+            </Text>
+          </View>
+        </View>
       </View>
 
       <View style={styles.tabs}>
@@ -207,10 +238,14 @@ export default function CoordinatorQueueScreen() {
         </TouchableOpacity>
       </View>
 
-      <ScrollView style={styles.content}>
+      <ScrollView 
+        flex={1}
+        contentContainerStyle={styles.content}
+        showsVerticalScrollIndicator={false}
+      >
         {filteredQueue.length === 0 ? (
           <View style={styles.emptyState}>
-            <Ionicons name="folder-open-outline" size={64} color="#ccc" />
+            <SvgIcon name="folder" size={64} color={colors.text3} style={{}} />
             <Text style={styles.emptyText}>No targets in this category</Text>
           </View>
         ) : (
@@ -226,10 +261,15 @@ export default function CoordinatorQueueScreen() {
         onRequestClose={() => setModalVisible(false)}
       >
         <View style={styles.modalOverlay}>
-          <View style={styles.modalContent}>
-            <Text style={styles.modalTitle}>
-              {actionType === 'endorse' ? 'Endorse Target' : 'Return Target'}
-            </Text>
+          <View style={[styles.modalContent, { backgroundColor: colors.bg2 }]}>
+            <View style={styles.modalHeader}>
+              <Text style={styles.modalTitle}>
+                {actionType === 'endorse' ? 'Endorse Target' : 'Return Target'}
+              </Text>
+              <TouchableOpacity onPress={() => setModalVisible(false)}>
+                <SvgIcon name="close" size={24} color={colors.text} style={{}} />
+              </TouchableOpacity>
+            </View>
 
             {selectedTarget && (
               <View style={styles.modalTargetInfo}>
@@ -281,32 +321,42 @@ export default function CoordinatorQueueScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+const createStyles = (colors: any) => StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f5f5f5',
+    backgroundColor: colors.bg,
   },
-  header: {
-    backgroundColor: '#fff',
-    padding: 20,
+  topbar: {
+    backgroundColor: colors.bg2,
     borderBottomWidth: 1,
-    borderBottomColor: '#e0e0e0',
+    borderBottomColor: colors.border,
+    paddingHorizontal: 24,
+    paddingVertical: 16,
+    paddingTop: 48,
   },
-  title: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    color: '#333',
+  topbarLeft: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 16,
   },
-  subtitle: {
-    fontSize: 14,
-    color: '#666',
-    marginTop: 4,
+  topbarTitle: {
+    flex: 1,
+  },
+  topbarTitleText: {
+    fontSize: 18,
+    fontWeight: '700',
+    color: colors.text,
+  },
+  topbarBreadcrumb: {
+    fontSize: 11,
+    color: colors.text3,
+    marginTop: 2,
   },
   tabs: {
     flexDirection: 'row',
-    backgroundColor: '#fff',
+    backgroundColor: colors.bg2,
     borderBottomWidth: 1,
-    borderBottomColor: '#e0e0e0',
+    borderBottomColor: colors.border,
   },
   tab: {
     flex: 1,
@@ -315,30 +365,27 @@ const styles = StyleSheet.create({
   },
   activeTab: {
     borderBottomWidth: 2,
-    borderBottomColor: '#3b82f6',
+    borderBottomColor: colors.accent,
   },
   tabText: {
     fontSize: 14,
-    color: '#666',
+    color: colors.text3,
   },
   activeTabText: {
-    color: '#3b82f6',
+    color: colors.accent,
     fontWeight: '600',
   },
   content: {
-    flex: 1,
     padding: 16,
+    paddingBottom: 32,
   },
   card: {
-    backgroundColor: '#fff',
+    backgroundColor: colors.bg2,
     borderRadius: 8,
     padding: 16,
     marginBottom: 16,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 3,
+    borderWidth: 1,
+    borderColor: colors.border,
   },
   cardHeader: {
     flexDirection: 'row',
@@ -349,7 +396,7 @@ const styles = StyleSheet.create({
   facultyName: {
     fontSize: 16,
     fontWeight: 'bold',
-    color: '#333',
+    color: colors.text,
     flex: 1,
   },
   badge: {
@@ -358,28 +405,28 @@ const styles = StyleSheet.create({
     borderRadius: 4,
   },
   badgeSUBMITTED: {
-    backgroundColor: '#fef3c7',
+    backgroundColor: `${colors.orange}20`,
   },
   badgeENDORSED: {
-    backgroundColor: '#d1fae5',
+    backgroundColor: `${colors.green}20`,
   },
   badgeRETURNED: {
-    backgroundColor: '#fee2e2',
+    backgroundColor: `${colors.red}20`,
   },
   badgeText: {
     fontSize: 10,
     fontWeight: '600',
-    color: '#333',
+    color: colors.text,
   },
   kraType: {
     fontSize: 12,
-    color: '#3b82f6',
+    color: colors.accent,
     fontWeight: '600',
     marginBottom: 8,
   },
   targetDescription: {
     fontSize: 14,
-    color: '#666',
+    color: colors.text2,
     marginBottom: 12,
   },
   infoRow: {
@@ -389,38 +436,38 @@ const styles = StyleSheet.create({
   },
   infoText: {
     fontSize: 12,
-    color: '#666',
+    color: colors.text3,
     marginLeft: 6,
   },
   lateWarning: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#fee2e2',
+    backgroundColor: `${colors.red}20`,
     padding: 8,
     borderRadius: 4,
     marginBottom: 12,
   },
   lateText: {
     fontSize: 12,
-    color: '#ef4444',
+    color: colors.red,
     fontWeight: '600',
     marginLeft: 6,
   },
   accomplishmentSection: {
     marginTop: 12,
     padding: 12,
-    backgroundColor: '#f9fafb',
+    backgroundColor: colors.bg3,
     borderRadius: 4,
   },
   sectionTitle: {
     fontSize: 12,
     fontWeight: '600',
-    color: '#333',
+    color: colors.text,
     marginBottom: 4,
   },
   accomplishmentText: {
     fontSize: 13,
-    color: '#666',
+    color: colors.text2,
   },
   ratingSection: {
     marginTop: 12,
@@ -432,12 +479,12 @@ const styles = StyleSheet.create({
   },
   ratingItem: {
     fontSize: 13,
-    color: '#666',
+    color: colors.text2,
   },
   ratingAvg: {
     fontSize: 13,
     fontWeight: '600',
-    color: '#3b82f6',
+    color: colors.accent,
   },
   documentsSection: {
     marginTop: 12,
@@ -457,10 +504,10 @@ const styles = StyleSheet.create({
     gap: 6,
   },
   endorseButton: {
-    backgroundColor: '#10b981',
+    backgroundColor: colors.green,
   },
   returnButton: {
-    backgroundColor: '#ef4444',
+    backgroundColor: colors.red,
   },
   buttonText: {
     color: '#fff',
@@ -470,18 +517,18 @@ const styles = StyleSheet.create({
   noteSection: {
     marginTop: 12,
     padding: 12,
-    backgroundColor: '#eff6ff',
+    backgroundColor: `${colors.accent}15`,
     borderRadius: 4,
   },
   noteLabel: {
     fontSize: 12,
     fontWeight: '600',
-    color: '#3b82f6',
+    color: colors.accent,
     marginBottom: 4,
   },
   noteText: {
     fontSize: 13,
-    color: '#666',
+    color: colors.text2,
   },
   emptyState: {
     alignItems: 'center',
@@ -490,12 +537,12 @@ const styles = StyleSheet.create({
   },
   emptyText: {
     fontSize: 16,
-    color: '#999',
+    color: colors.text3,
     marginTop: 16,
   },
   errorText: {
     fontSize: 16,
-    color: '#ef4444',
+    color: colors.red,
     textAlign: 'center',
     marginTop: 40,
   },
@@ -504,22 +551,27 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(0,0,0,0.5)',
     justifyContent: 'center',
     alignItems: 'center',
+    padding: 20,
   },
   modalContent: {
-    backgroundColor: '#fff',
     borderRadius: 12,
     padding: 24,
-    width: '90%',
+    width: '100%',
     maxWidth: 500,
+  },
+  modalHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 16,
   },
   modalTitle: {
     fontSize: 20,
     fontWeight: 'bold',
-    color: '#333',
-    marginBottom: 16,
+    color: colors.text,
   },
   modalTargetInfo: {
-    backgroundColor: '#f9fafb',
+    backgroundColor: colors.bg3,
     padding: 12,
     borderRadius: 6,
     marginBottom: 16,
@@ -527,22 +579,24 @@ const styles = StyleSheet.create({
   modalTargetText: {
     fontSize: 14,
     fontWeight: '600',
-    color: '#333',
+    color: colors.text,
     marginBottom: 4,
   },
   modalTargetDesc: {
     fontSize: 12,
-    color: '#666',
+    color: colors.text2,
   },
   inputLabel: {
     fontSize: 14,
     fontWeight: '600',
-    color: '#333',
+    color: colors.text,
     marginBottom: 8,
   },
   textInput: {
     borderWidth: 1,
-    borderColor: '#d1d5db',
+    borderColor: colors.border,
+    backgroundColor: colors.bg3,
+    color: colors.text,
     borderRadius: 6,
     padding: 12,
     fontSize: 14,
@@ -561,13 +615,15 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   cancelButton: {
-    backgroundColor: '#f3f4f6',
+    backgroundColor: colors.bg3,
+    borderWidth: 1,
+    borderColor: colors.border,
   },
   submitButton: {
-    backgroundColor: '#3b82f6',
+    backgroundColor: colors.accent,
   },
   cancelButtonText: {
-    color: '#666',
+    color: colors.text,
     fontSize: 14,
     fontWeight: '600',
   },

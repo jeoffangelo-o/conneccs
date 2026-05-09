@@ -86,7 +86,7 @@ export const parseDeadline = (deadlineStr: string): Date | null => {
  */
 export const getTimelinessStatus = (
   deadline: string,
-  submissionDate?: Date
+  submissionDate?: Date | string
 ): {
   status: 'submitted' | 'pending' | 'overdue' | 'no-deadline';
   daysUntil?: number;
@@ -98,11 +98,27 @@ export const getTimelinessStatus = (
     return { status: 'no-deadline', color: '#6b7280' };
   }
 
-  const now = submissionDate || new Date();
+  // Convert submissionDate to Date if it's a string
+  let submissionDateObj: Date | undefined;
+  if (submissionDate) {
+    if (typeof submissionDate === 'string') {
+      submissionDateObj = new Date(submissionDate);
+    } else {
+      submissionDateObj = submissionDate;
+    }
+  }
+
+  const now = submissionDateObj || new Date();
+  
+  // Ensure now is a valid Date
+  if (!(now instanceof Date) || isNaN(now.getTime())) {
+    return { status: 'no-deadline', color: '#6b7280' };
+  }
+
   const timeDiff = deadlineDate.getTime() - now.getTime();
   const daysUntil = Math.ceil(timeDiff / (1000 * 60 * 60 * 24));
 
-  if (submissionDate) {
+  if (submissionDateObj) {
     return { status: 'submitted', daysUntil, color: '#10b981' };
   } else if (daysUntil < 0) {
     return { status: 'overdue', daysUntil: Math.abs(daysUntil), color: '#ef4444' };

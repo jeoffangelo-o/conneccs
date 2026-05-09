@@ -9,7 +9,7 @@ import {
   Modal,
   TextInput as RNTextInput,
 } from 'react-native';
-import { ScrollView } from 'tamagui';
+import { WebScrollView } from '../components/WebScrollView';
 import { useTheme } from '../context/ThemeContext';
 import { useAuth } from '../../context/AuthContext';
 import { useReportorial } from '../../context/ReportorialContext';
@@ -17,6 +17,7 @@ import { StatusBar } from 'expo-status-bar';
 import { SvgIcon } from '../components/SvgIcon';
 import * as DocumentPicker from 'expo-document-picker';
 import usersData from '../../assets/data/users.json';
+import { getFacultyUsers } from '../../utils/businessRules';
 
 export default function ReportorialFolderScreen({ navigation, route }) {
   const { colors, isDark } = useTheme();
@@ -56,6 +57,14 @@ export default function ReportorialFolderScreen({ navigation, route }) {
   const [qualityRating, setQualityRating] = useState('');
   const [timelinessRating, setTimelinessRating] = useState('');
   const [remarks, setRemarks] = useState('');
+  
+  // Document preview state
+  const [previewModalVisible, setPreviewModalVisible] = useState(false);
+  const [previewDocument, setPreviewDocument] = useState<any>(null);
+  
+  // Upload modal state
+  const [uploadModalVisible, setUploadModalVisible] = useState(false);
+  const [uploadType, setUploadType] = useState<'faculty' | 'template' | null>(null);
 
   const isSecretary = user?.role === 'SECRETARY';
   const isFaculty = user?.role === 'FACULTY';
@@ -69,9 +78,7 @@ export default function ReportorialFolderScreen({ navigation, route }) {
   }
 
   const requirementSubmissions = getSubmissionsForRequirement(requirementId);
-  const allFaculty = usersData.filter((u: any) => 
-    u.role === 'FACULTY' || u.role === 'CHAIR' || u.role === 'COORDINATOR'
-  );
+  const allFaculty = getFacultyUsers(usersData as any[]);
   
   const submittedCount = requirementSubmissions.length;
   const totalCount = allFaculty.length;
@@ -80,6 +87,12 @@ export default function ReportorialFolderScreen({ navigation, route }) {
 
   // Handle faculty submission upload
   const handleFacultyUpload = async () => {
+    setUploadType('faculty');
+    setUploadModalVisible(true);
+  };
+
+  // Perform faculty upload after confirmation
+  const performFacultyUpload = async () => {
     if (!user) return;
 
     if (Platform.OS === 'web') {
@@ -101,6 +114,7 @@ export default function ReportorialFolderScreen({ navigation, route }) {
             status: 'SUBMITTED' as const,
           };
           submitRequirement(submission);
+          setUploadModalVisible(false);
           Alert.alert('Success', `File uploaded: ${file.name}`);
         }
       };
@@ -126,6 +140,7 @@ export default function ReportorialFolderScreen({ navigation, route }) {
             status: 'SUBMITTED' as const,
           };
           submitRequirement(submission);
+          setUploadModalVisible(false);
           Alert.alert('Success', `File uploaded: ${file.name}`);
         }
       } catch (error) {
@@ -136,6 +151,12 @@ export default function ReportorialFolderScreen({ navigation, route }) {
 
   // Handle template upload (Secretary only)
   const handleUploadTemplate = async () => {
+    setUploadType('template');
+    setUploadModalVisible(true);
+  };
+
+  // Perform template upload after confirmation
+  const performTemplateUpload = async () => {
     if (Platform.OS === 'web') {
       const input = document.createElement('input');
       input.type = 'file';
@@ -145,6 +166,7 @@ export default function ReportorialFolderScreen({ navigation, route }) {
         if (file) {
           const mockUrl = `https://example.com/templates/${file.name}`;
           uploadTemplate(requirementId, mockUrl);
+          setUploadModalVisible(false);
           Alert.alert('Success', `Template uploaded: ${file.name}`);
         }
       };
@@ -160,6 +182,7 @@ export default function ReportorialFolderScreen({ navigation, route }) {
           const file = result.assets[0];
           const mockUrl = `https://example.com/templates/${file.name}`;
           uploadTemplate(requirementId, mockUrl);
+          setUploadModalVisible(false);
           Alert.alert('Success', `Template uploaded: ${file.name}`);
         }
       } catch (error) {
@@ -219,11 +242,32 @@ export default function ReportorialFolderScreen({ navigation, route }) {
     }
   };
 
-  // Handle rate submission
+  // Handle rate submission (for secretary rating faculty submissions)
   const handleRateSubmission = (submission: any) => {
     setSelectedSubmission(submission);
     setQualityRating(submission.qualityRating?.toString() || '');
-    setTimelinessRating(submission.timelinessRating?.toString() || '');
+    
+    // Calculate automatic timeliness rating based on deadline
+    let autoTimelinessRating = 5; // Default to 5 (on time)
+    if (requirement.deadline && submission.submittedAt) {
+      const deadlineDate = new Date(requirement.deadline);
+      const submittedDate = new Date(submission.submittedAt);
+      
+      // If deadline is a string like "May 2026", try to parse it
+      if (isNaN(deadlineDate.getTime())) {
+        // For unparseable dates, default to 5
+        autoTimelinessRating = 5;
+      } else if (submittedDate > deadlineDate) {
+        // Late submission
+        const daysLate = Math.floor((submittedDate.getTime() - deadlineDate.getTime()) / (1000 * 60 * 60 * 24));
+        if (daysLate > 30) autoTimelinessRating = 1;
+        else if (daysLate > 14) autoTimelinessRating = 2;
+        else if (daysLate > 7) autoTimelinessRating = 3;
+        else autoTimelinessRating = 4;
+      }
+    }
+    
+    setTimelinessRating(autoTimelinessRating.toString());
     setRemarks(submission.remarks || '');
     setRatingModalVisible(true);
   };
@@ -269,7 +313,11 @@ export default function ReportorialFolderScreen({ navigation, route }) {
         </View>
       </View>
 
-      <ScrollView flex={1} contentContainerStyle={styles.content}>
+      <WebScrollView 
+        contentContainerStyle={styles.content}
+        keyboardShouldPersistTaps="handled"
+        showsVerticalScrollIndicator={false}
+      >
         {/* Faculty View - Simple folder view */}
         {isFaculty && (
           <>
@@ -301,9 +349,9 @@ export default function ReportorialFolderScreen({ navigation, route }) {
             </View>
 
             {/* Template File */}
-            {requirement.templateFileUrl && (
-              <View style={styles.templateCard}>
-                <Text style={styles.sectionTitle}>Template File</Text>
+            <View style={styles.templateCard}>
+              <Text style={styles.sectionTitle}>Template File</Text>
+              {requirement.templateFileUrl ? (
                 <View style={styles.templateInfo}>
                   <SvgIcon name="fileText" size={24} color={colors.accent} style={{}} />
                   <View style={{ flex: 1, marginLeft: 12 }}>
@@ -314,8 +362,10 @@ export default function ReportorialFolderScreen({ navigation, route }) {
                     <Text style={styles.replaceButton}>Download</Text>
                   </TouchableOpacity>
                 </View>
-              </View>
-            )}
+              ) : (
+                <Text style={styles.templateUrl}>No template file available</Text>
+              )}
+            </View>
 
             {/* My Submission */}
             <View style={styles.submissionsCard}>
@@ -330,14 +380,74 @@ export default function ReportorialFolderScreen({ navigation, route }) {
                   <Text style={styles.submissionDate}>
                     {new Date(getFacultySubmission(requirementId, user?.id)?.submittedAt || '').toLocaleDateString()}
                   </Text>
-                  {getFacultySubmission(requirementId, user?.id)?.qualityRating && (
-                    <View style={styles.ratingInfo}>
-                      <Text style={styles.ratingLabel}>Rating:</Text>
-                      <Text style={styles.ratingValue}>
-                        Quality: {getFacultySubmission(requirementId, user?.id)?.qualityRating}/5 | 
-                        Timeliness: {getFacultySubmission(requirementId, user?.id)?.timelinessRating}/5
-                      </Text>
+                  
+                  {/* File Preview */}
+                  {getFacultySubmission(requirementId, user?.id)?.fileName && (
+                    <View style={styles.filePreviewBox}>
+                      <SvgIcon name="fileText" size={20} color={colors.accent} style={{}} />
+                      <View style={{ flex: 1, marginLeft: 12 }}>
+                        <Text style={styles.fileName}>{getFacultySubmission(requirementId, user?.id)?.fileName}</Text>
+                      </View>
+                      <TouchableOpacity 
+                        style={styles.previewButton}
+                        onPress={() => {
+                          setPreviewDocument(getFacultySubmission(requirementId, user?.id));
+                          setPreviewModalVisible(true);
+                        }}
+                      >
+                        <Text style={styles.previewButtonText}>Preview</Text>
+                      </TouchableOpacity>
                     </View>
+                  )}
+                  
+                  {/* Rating Display or Rate Button */}
+                  {getFacultySubmission(requirementId, user?.id)?.qualityRating && getFacultySubmission(requirementId, user?.id)?.timelinessRating ? (
+                    <View>
+                      <View style={styles.ratingDisplayRow}>
+                        <View style={styles.ratingDisplayBox}>
+                          <Text style={styles.ratingDisplayLabel}>Quality:</Text>
+                          <Text style={styles.ratingDisplayStars}>
+                            {'⭐'.repeat(getFacultySubmission(requirementId, user?.id)?.qualityRating || 0)}
+                          </Text>
+                          <Text style={styles.ratingDisplayValue}>
+                            {getFacultySubmission(requirementId, user?.id)?.qualityRating}/5
+                          </Text>
+                        </View>
+                        <View style={styles.ratingDisplayBox}>
+                          <Text style={styles.ratingDisplayLabel}>Timeliness:</Text>
+                          <Text style={styles.ratingDisplayStars}>
+                            {'⭐'.repeat(getFacultySubmission(requirementId, user?.id)?.timelinessRating || 0)}
+                          </Text>
+                          <Text style={styles.ratingDisplayValue}>
+                            {getFacultySubmission(requirementId, user?.id)?.timelinessRating}/5
+                          </Text>
+                        </View>
+                      </View>
+                      {/* Average Rating */}
+                      <View style={styles.averageRatingBox}>
+                        <Text style={styles.averageLabel}>Average Rating:</Text>
+                        <Text style={styles.averageStars}>
+                          {'⭐'.repeat(Math.round(((getFacultySubmission(requirementId, user?.id)?.qualityRating || 0) + (getFacultySubmission(requirementId, user?.id)?.timelinessRating || 0)) / 2))}
+                        </Text>
+                        <Text style={styles.averageValue}>
+                          {(((getFacultySubmission(requirementId, user?.id)?.qualityRating || 0) + (getFacultySubmission(requirementId, user?.id)?.timelinessRating || 0)) / 2).toFixed(1)}/5
+                        </Text>
+                      </View>
+                    </View>
+                  ) : (
+                    <TouchableOpacity 
+                      style={styles.selfRateButton}
+                      onPress={() => {
+                        setSelectedSubmission(getFacultySubmission(requirementId, user?.id));
+                        setQualityRating('');
+                        setTimelinessRating('');
+                        setRemarks('');
+                        setRatingModalVisible(true);
+                      }}
+                    >
+                      <SvgIcon name="star" size={18} color="#fff" style={{}} />
+                      <Text style={styles.selfRateButtonText}>Rate My Submission</Text>
+                    </TouchableOpacity>
                   )}
                 </View>
               ) : (
@@ -493,10 +603,6 @@ export default function ReportorialFolderScreen({ navigation, route }) {
             </View>
           </View>
         )}
-                <Text style={styles.actionButtonText}>Pending List</Text>
-              </TouchableOpacity>
-            </View>
-          </View>
 
           {/* Submissions List */}
           <View style={styles.submissionsCard}>
@@ -543,6 +649,7 @@ export default function ReportorialFolderScreen({ navigation, route }) {
                       <TouchableOpacity
                         style={styles.rateButton}
                         onPress={() => handleRateSubmission(submission)}
+                      >
                         <Text style={styles.rateButtonText}>Rate</Text>
                       </TouchableOpacity>
                     ) : null}
@@ -555,7 +662,7 @@ export default function ReportorialFolderScreen({ navigation, route }) {
         </>
         )}
         {/* End Secretary View */}
-      </ScrollView>
+      </WebScrollView>
 
       {/* Rating Modal */}
       <Modal
@@ -563,6 +670,7 @@ export default function ReportorialFolderScreen({ navigation, route }) {
         transparent
         animationType="fade"
         onRequestClose={() => setRatingModalVisible(false)}
+      >
         <View style={styles.modalOverlay}>
           <View style={[styles.modalContent, { backgroundColor: colors.bg2 }]}>
             <View style={styles.modalHeader}>
@@ -576,8 +684,19 @@ export default function ReportorialFolderScreen({ navigation, route }) {
               <View style={styles.modalBody}>
                 <Text style={styles.modalSubtitle}>{selectedSubmission.facultyName}</Text>
                 
+                {/* Quality Rating */}
                 <View style={styles.inputGroup}>
-                  <Text style={styles.inputLabel}>Quality Rating (1-5)</Text>
+                  <View style={styles.ratingLabelRow}>
+                    <Text style={styles.inputLabel}>Quality Rating (1-5)</Text>
+                    {qualityRating && (
+                      <View style={styles.ratingIndicator}>
+                        <Text style={styles.ratingStars}>
+                          {'⭐'.repeat(Math.min(parseInt(qualityRating) || 0, 5))}
+                        </Text>
+                        <Text style={styles.ratingNumber}>{qualityRating}/5</Text>
+                      </View>
+                    )}
+                  </View>
                   <RNTextInput
                     style={[styles.input, { backgroundColor: colors.bg3, color: colors.text, borderColor: colors.border }]}
                     value={qualityRating}
@@ -588,18 +707,27 @@ export default function ReportorialFolderScreen({ navigation, route }) {
                   />
                 </View>
 
+                {/* Timeliness Rating - Automatic */}
                 <View style={styles.inputGroup}>
-                  <Text style={styles.inputLabel}>Timeliness Rating (1-5)</Text>
-                  <RNTextInput
-                    style={[styles.input, { backgroundColor: colors.bg3, color: colors.text, borderColor: colors.border }]}
-                    value={timelinessRating}
-                    onChangeText={setTimelinessRating}
-                    keyboardType="numeric"
-                    placeholder="Enter 1-5"
-                    placeholderTextColor={colors.text3}
-                  />
+                  <View style={styles.ratingLabelRow}>
+                    <Text style={styles.inputLabel}>Timeliness Rating (1-5) - Automatic</Text>
+                    {timelinessRating && (
+                      <View style={styles.ratingIndicator}>
+                        <Text style={styles.ratingStars}>
+                          {'⭐'.repeat(Math.min(parseInt(timelinessRating) || 0, 5))}
+                        </Text>
+                        <Text style={styles.ratingNumber}>{timelinessRating}/5</Text>
+                      </View>
+                    )}
+                  </View>
+                  <View style={[styles.input, { backgroundColor: colors.bg3, borderColor: colors.border, justifyContent: 'center' }]}>
+                    <Text style={{ fontSize: 14, color: colors.text, fontWeight: '600' }}>
+                      {timelinessRating}/5 (Auto-calculated based on deadline)
+                    </Text>
+                  </View>
                 </View>
 
+                {/* Remarks */}
                 <View style={styles.inputGroup}>
                   <Text style={styles.inputLabel}>Remarks (Optional)</Text>
                   <RNTextInput
@@ -617,12 +745,128 @@ export default function ReportorialFolderScreen({ navigation, route }) {
                   <TouchableOpacity
                     style={[styles.modalButton, { backgroundColor: colors.bg3 }]}
                     onPress={() => setRatingModalVisible(false)}
+                  >
                     <Text style={[styles.modalButtonText, { color: colors.text }]}>Cancel</Text>
                   </TouchableOpacity>
                   <TouchableOpacity
                     style={[styles.modalButton, { backgroundColor: colors.accent }]}
                     onPress={handleSaveRating}
+                  >
                     <Text style={[styles.modalButtonText, { color: '#fff' }]}>Save Rating</Text>
+                  </TouchableOpacity>
+                </View>
+              </View>
+            )}
+          </View>
+        </View>
+      </Modal>
+
+      {/* Upload Modal */}
+      <Modal
+        visible={uploadModalVisible}
+        transparent
+        animationType="fade"
+        onRequestClose={() => setUploadModalVisible(false)}
+      >
+        <View style={styles.modalOverlay}>
+          <View style={[styles.modalContent, { backgroundColor: colors.bg2 }]}>
+            <View style={styles.modalHeader}>
+              <Text style={styles.modalTitle}>
+                {uploadType === 'faculty' ? 'Upload Submission' : 'Upload Template'}
+              </Text>
+              <TouchableOpacity onPress={() => setUploadModalVisible(false)}>
+                <SvgIcon name="close" size={24} color={colors.text} style={{}} />
+              </TouchableOpacity>
+            </View>
+
+            <View style={styles.modalBody}>
+              <Text style={styles.modalSubtitle}>
+                {uploadType === 'faculty' 
+                  ? 'Select a file to submit for this requirement'
+                  : 'Select a template file for this requirement'}
+              </Text>
+
+              <View style={styles.uploadInfo}>
+                <SvgIcon name="info" size={20} color={colors.accent} style={{}} />
+                <Text style={styles.uploadInfoText}>
+                  Supported formats: PDF, DOC, DOCX, XLS, XLSX
+                </Text>
+              </View>
+
+              <View style={styles.modalActions}>
+                <TouchableOpacity
+                  style={[styles.modalButton, { backgroundColor: colors.bg3 }]}
+                  onPress={() => setUploadModalVisible(false)}
+                >
+                  <Text style={[styles.modalButtonText, { color: colors.text }]}>Cancel</Text>
+                </TouchableOpacity>
+                <TouchableOpacity
+                  style={[styles.modalButton, { backgroundColor: colors.accent }]}
+                  onPress={() => {
+                    if (uploadType === 'faculty') {
+                      performFacultyUpload();
+                    } else {
+                      performTemplateUpload();
+                    }
+                  }}
+                >
+                  <SvgIcon name="upload" size={16} color="#fff" style={{ marginRight: 6 }} />
+                  <Text style={[styles.modalButtonText, { color: '#fff' }]}>Choose File</Text>
+                </TouchableOpacity>
+              </View>
+            </View>
+          </View>
+        </View>
+      </Modal>
+
+      {/* Document Preview Modal */}
+      <Modal
+        visible={previewModalVisible}
+        transparent
+        animationType="fade"
+        onRequestClose={() => setPreviewModalVisible(false)}
+      >
+        <View style={styles.modalOverlay}>
+          <View style={[styles.previewModalContent, { backgroundColor: colors.bg2 }]}>
+            <View style={styles.modalHeader}>
+              <Text style={styles.modalTitle}>Document Preview</Text>
+              <TouchableOpacity onPress={() => setPreviewModalVisible(false)}>
+                <SvgIcon name="close" size={24} color={colors.text} style={{}} />
+              </TouchableOpacity>
+            </View>
+
+            {previewDocument && (
+              <View style={styles.previewBody}>
+                <View style={styles.previewFileInfo}>
+                  <SvgIcon name="fileText" size={32} color={colors.accent} style={{}} />
+                  <View style={{ flex: 1, marginLeft: 16 }}>
+                    <Text style={styles.previewFileName}>{previewDocument.fileName}</Text>
+                    <Text style={styles.previewFileSize}>
+                      Submitted: {new Date(previewDocument.submittedAt).toLocaleDateString()}
+                    </Text>
+                  </View>
+                </View>
+
+                <View style={styles.previewActions}>
+                  <TouchableOpacity 
+                    style={[styles.previewActionButton, { backgroundColor: colors.accent }]}
+                    onPress={() => {
+                      if (Platform.OS === 'web') {
+                        window.open(previewDocument.fileUrl, '_blank');
+                      } else {
+                        Alert.alert('Open Document', `Opening: ${previewDocument.fileName}`);
+                      }
+                    }}
+                  >
+                    <SvgIcon name="download" size={18} color="#fff" style={{}} />
+                    <Text style={styles.previewActionText}>Open/Download</Text>
+                  </TouchableOpacity>
+
+                  <TouchableOpacity 
+                    style={[styles.previewActionButton, { backgroundColor: colors.bg3 }]}
+                    onPress={() => setPreviewModalVisible(false)}
+                  >
+                    <Text style={[styles.previewActionText, { color: colors.text }]}>Close</Text>
                   </TouchableOpacity>
                 </View>
               </View>
@@ -1011,6 +1255,184 @@ function createStyles(colors: any) {
   modalButtonText: {
     fontSize: 14,
     fontWeight: '600',
+  },
+  filePreviewBox: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: colors.bg3,
+    borderRadius: 8,
+    padding: 12,
+    marginTop: 12,
+    borderWidth: 1,
+    borderColor: colors.border,
+  },
+  fileName: {
+    fontSize: 13,
+    fontWeight: '600',
+    color: colors.text,
+  },
+  previewButton: {
+    backgroundColor: colors.accent,
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 6,
+  },
+  previewButtonText: {
+    fontSize: 12,
+    fontWeight: '600',
+    color: '#fff',
+  },
+  previewModalContent: {
+    width: '100%',
+    maxWidth: 600,
+    borderRadius: 12,
+    padding: 24,
+  },
+  previewBody: {
+    gap: 20,
+  },
+  previewFileInfo: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: colors.bg3,
+    borderRadius: 8,
+    padding: 16,
+    borderWidth: 1,
+    borderColor: colors.border,
+  },
+  previewFileName: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: colors.text,
+  },
+  previewFileSize: {
+    fontSize: 12,
+    color: colors.text3,
+    marginTop: 4,
+  },
+  previewActions: {
+    flexDirection: 'row',
+    gap: 12,
+  },
+  previewActionButton: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 8,
+    paddingVertical: 12,
+    borderRadius: 8,
+  },
+  previewActionText: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#fff',
+  },
+  uploadInfo: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: `${colors.accent}20`,
+    borderRadius: 8,
+    padding: 12,
+    gap: 10,
+    marginBottom: 16,
+  },
+  uploadInfoText: {
+    flex: 1,
+    fontSize: 12,
+    color: colors.accent,
+    fontWeight: '500',
+  },
+  // Self-rating styles
+  ratingDisplayRow: {
+    flexDirection: 'row',
+    gap: 12,
+    marginTop: 12,
+  },
+  ratingDisplayBox: {
+    flex: 1,
+    backgroundColor: `${colors.accent}15`,
+    borderRadius: 8,
+    padding: 10,
+    alignItems: 'center',
+  },
+  ratingDisplayLabel: {
+    fontSize: 11,
+    fontWeight: '600',
+    color: colors.text3,
+    marginBottom: 4,
+  },
+  ratingDisplayStars: {
+    fontSize: 16,
+    marginBottom: 4,
+  },
+  ratingDisplayValue: {
+    fontSize: 13,
+    fontWeight: '700',
+    color: colors.accent,
+  },
+  averageRatingBox: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 8,
+    backgroundColor: `${colors.green}20`,
+    borderRadius: 8,
+    padding: 12,
+    marginTop: 12,
+    borderWidth: 2,
+    borderColor: colors.green,
+  },
+  averageLabel: {
+    fontSize: 13,
+    fontWeight: '700',
+    color: colors.green,
+  },
+  averageStars: {
+    fontSize: 18,
+  },
+  averageValue: {
+    fontSize: 16,
+    fontWeight: '800',
+    color: colors.green,
+  },
+  selfRateButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 8,
+    backgroundColor: colors.accent,
+    paddingVertical: 12,
+    borderRadius: 8,
+    marginTop: 12,
+  },
+  selfRateButtonText: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#fff',
+  },
+  ratingLabelRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 8,
+  },
+  ratingIndicator: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    backgroundColor: `${colors.accent}20`,
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: 6,
+  },
+  ratingStars: {
+    fontSize: 14,
+  },
+  ratingNumber: {
+    fontSize: 12,
+    fontWeight: '600',
+    color: colors.accent,
   },
 });
 }

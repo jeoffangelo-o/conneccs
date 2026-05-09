@@ -15,7 +15,9 @@
       "package": "com.ccs.conneccs"
     },
     "web": {
-      "bundler": "metro"
-    }
+      "bundler": "metro",
+      "favicon": "./assets/logo.png"
+    },
+    "icon": "./assets/logo.png"
   }
 }

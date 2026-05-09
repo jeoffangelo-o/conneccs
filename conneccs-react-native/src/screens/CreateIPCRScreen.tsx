@@ -2,20 +2,19 @@ import React, { useState } from 'react';
 import {
   View,
   Text,
-  ScrollView,
   TouchableOpacity,
   TextInput,
   StyleSheet,
   Alert,
   Platform,
 } from 'react-native';
+import { ScrollView } from 'tamagui';
 import { useTheme } from '../context/ThemeContext';
 import { useAuth } from '../../context/AuthContext';
 import { useData } from '../../context/DataContext';
 import { StatusBar } from 'expo-status-bar';
 import { SvgIcon } from '../components/SvgIcon';
 import { IPCR, IPCRMajorFunction, IPCRTarget } from '../../types';
-import { WebScrollView } from '../components/WebScrollView';
 
 type Period = 'Jan-Jun' | 'Jul-Dec' | 'Jan-Dec';
 
@@ -27,19 +26,62 @@ export default function CreateIPCRScreen({ navigation }) {
   
   const [step, setStep] = useState(1);
   const [period, setPeriod] = useState<Period>('Jan-Jun');
-  const [selectedMajorFunction, setSelectedMajorFunction] = useState('');
-  const [selectedIndicator, setSelectedIndicator] = useState('');
+  const [year, setYear] = useState(2026);
+  const [selectedMajorFunctions, setSelectedMajorFunctions] = useState<string[]>([]);
+  const [selectedIndicators, setSelectedIndicators] = useState<string[]>([]);
   const [targetDescription, setTargetDescription] = useState('');
   const [targetMeasures, setTargetMeasures] = useState('');
 
-  const periods: Period[] = ['Jan-Jun', 'Jul-Dec', 'Jan-Dec'];
+  const periods: { period: Period; year: number }[] = [
+    { period: 'Jan-Jun', year: 2026 },
+    { period: 'Jul-Dec', year: 2026 },
+    { period: 'Jan-Dec', year: 2027 },
+  ];
+
+  // Toggle major function selection
+  const toggleMajorFunction = (mfId: string) => {
+    setSelectedMajorFunctions(prev => {
+      if (prev.includes(mfId)) {
+        // Remove if already selected
+        return prev.filter(id => id !== mfId);
+      } else {
+        // Add if not selected
+        return [...prev, mfId];
+      }
+    });
+  };
+
+  // Toggle indicator selection
+  const toggleIndicator = (indicatorId: string) => {
+    setSelectedIndicators(prev => {
+      if (prev.includes(indicatorId)) {
+        return prev.filter(id => id !== indicatorId);
+      } else {
+        return [...prev, indicatorId];
+      }
+    });
+  };
+
+  // Get all indicators from selected major functions
+  const getAvailableIndicators = () => {
+    const indicators: any[] = [];
+    selectedMajorFunctions.forEach(mfId => {
+      const mf = opcr.majorFunctions.find(m => m.id === mfId);
+      if (mf) {
+        mf.successIndicators.forEach(si => {
+          indicators.push({ ...si, majorFunctionId: mfId, majorFunctionTitle: mf.title });
+        });
+      }
+    });
+    return indicators;
+  };
 
   // Check for duplicate active IPCR
   const hasDuplicateIPCR = () => {
     return ipcrs.some(
       ipcr =>
         ipcr.facultyId === user?.id &&
-        ipcr.period === `${period} 2025` &&
+        ipcr.period === `${period} ${year}` &&
         ipcr.status !== 'COMPLETED'
     );
   };
@@ -56,19 +98,19 @@ export default function CreateIPCRScreen({ navigation }) {
       }
       setStep(2);
     } else if (step === 2) {
-      if (!selectedMajorFunction) {
+      if (selectedMajorFunctions.length === 0) {
         if (Platform.OS === 'web') {
-          window.alert('Please select a major function');
+          window.alert('Please select at least one major function');
         } else {
-          Alert.alert('Error', 'Please select a major function');
+          Alert.alert('Error', 'Please select at least one major function');
         }
         return;
       }
-      if (!selectedIndicator) {
+      if (selectedIndicators.length === 0) {
         if (Platform.OS === 'web') {
-          window.alert('Please select a success indicator');
+          window.alert('Please select at least one success indicator');
         } else {
-          Alert.alert('Error', 'Please select a success indicator');
+          Alert.alert('Error', 'Please select at least one success indicator');
         }
         return;
       }
@@ -87,35 +129,61 @@ export default function CreateIPCRScreen({ navigation }) {
   };
 
   const handleSubmit = () => {
-    const mf = opcr.majorFunctions.find(m => m.id === selectedMajorFunction);
-    if (!mf) return;
+    // Create targets for each selected indicator
+    const majorFunctionsMap: { [key: string]: IPCRMajorFunction } = {};
 
-    const newTarget: IPCRTarget = {
-      id: `it-${Date.now()}`,
-      parentOpIndicatorId: selectedIndicator,
-      description: targetDescription,
-      measures: targetMeasures,
-      q1Rating: null,
-      e2Rating: null,
-      t3Rating: null,
-      a4Rating: null,
-      actualAccomplishments: '',
-      remarks: '',
-      movFileUrls: [],
-    };
+    selectedIndicators.forEach(indicatorId => {
+      // Find which major function this indicator belongs to
+      let parentMF: any = null;
+      let indicator: any = null;
 
-    const newMajorFunction: IPCRMajorFunction = {
-      id: `imf-${Date.now()}`,
-      title: mf.title,
-      category: mf.category,
-      weight: mf.weight,
-      targets: [newTarget],
-    };
+      for (const mf of opcr.majorFunctions) {
+        const si = mf.successIndicators.find(s => s.id === indicatorId);
+        if (si) {
+          parentMF = mf;
+          indicator = si;
+          break;
+        }
+      }
+
+      if (!parentMF || !indicator) return;
+
+      // Create target for this indicator
+      const newTarget: IPCRTarget = {
+        id: `it-${Date.now()}-${Math.random()}`,
+        parentOpIndicatorId: indicatorId,
+        description: targetDescription,
+        measures: targetMeasures,
+        q1Rating: null,
+        e2Rating: null,
+        t3Rating: null,
+        a4Rating: null,
+        actualAccomplishments: '',
+        remarks: '',
+        movFileUrls: [],
+      };
+
+      // Add to major function map
+      if (!majorFunctionsMap[parentMF.id]) {
+        majorFunctionsMap[parentMF.id] = {
+          id: `imf-${Date.now()}-${parentMF.id}`,
+          title: parentMF.title,
+          category: parentMF.category,
+          weight: parentMF.weight,
+          targets: [],
+        };
+      }
+
+      majorFunctionsMap[parentMF.id].targets.push(newTarget);
+    });
+
+    // Convert map to array
+    const majorFunctions = Object.values(majorFunctionsMap);
 
     const newIPCR: IPCR = {
       id: `ipcr-${Date.now()}`,
-      year: 2026,
-      period: `${period} 2025`,
+      year: year,
+      period: `${period} ${year}`,
       facultyId: user!.id,
       notedByChairId: null,
       verifiedByVpaa: null,
@@ -124,23 +192,20 @@ export default function CreateIPCRScreen({ navigation }) {
       currentPhase: 'TARGET_SETTING',
       finalRating: null,
       adjectivalRating: null,
-      majorFunctions: [newMajorFunction],
+      majorFunctions: majorFunctions,
     };
 
     addIPCR(newIPCR);
     
     if (Platform.OS === 'web') {
-      window.alert('IPCR created successfully!');
+      window.alert(`IPCR created successfully with ${selectedIndicators.length} target(s)!`);
       navigation.goBack();
     } else {
-      Alert.alert('Success', 'IPCR created successfully!', [
+      Alert.alert('Success', `IPCR created successfully with ${selectedIndicators.length} target(s)!`, [
         { text: 'OK', onPress: () => navigation.goBack() },
       ]);
     }
   };
-
-  const selectedMF = opcr.majorFunctions.find(m => m.id === selectedMajorFunction);
-  const selectedSI = selectedMF?.successIndicators.find(si => si.id === selectedIndicator);
 
   return (
     <View style={styles.container}>
@@ -171,8 +236,8 @@ export default function CreateIPCRScreen({ navigation }) {
         ))}
       </View>
 
-      <WebScrollView 
-        style={styles.scrollView}
+      <ScrollView 
+        flex={1}
         contentContainerStyle={styles.content}
         keyboardShouldPersistTaps="handled"
         showsVerticalScrollIndicator={false}
@@ -188,20 +253,23 @@ export default function CreateIPCRScreen({ navigation }) {
             <View style={styles.periodGrid}>
               {periods.map((p) => (
                 <TouchableOpacity
-                  key={p}
+                  key={`${p.period}-${p.year}`}
                   style={[
                     styles.periodCard,
-                    period === p && styles.periodCardActive,
+                    period === p.period && year === p.year && styles.periodCardActive,
                   ]}
-                  onPress={() => setPeriod(p)}
+                  onPress={() => {
+                    setPeriod(p.period);
+                    setYear(p.year);
+                  }}
                 >
                   <Text
                     style={[
                       styles.periodText,
-                      period === p && styles.periodTextActive,
+                      period === p.period && year === p.year && styles.periodTextActive,
                     ]}
                   >
-                    {p} 2025
+                    {p.period} {p.year}
                   </Text>
                 </TouchableOpacity>
               ))}
@@ -209,50 +277,76 @@ export default function CreateIPCRScreen({ navigation }) {
           </View>
         )}
 
-        {/* Step 2: Select OPCR Parent Target */}
+        {/* Step 2: Select OPCR Parent Targets */}
         {step === 2 && (
           <View style={styles.stepContainer}>
-            <Text style={styles.stepTitle}>Select OPCR Parent Target</Text>
+            <Text style={styles.stepTitle}>Select OPCR Parent Targets</Text>
             <Text style={styles.stepSubtitle}>
-              Link your IPCR to an office-level target
+              Select one or more major functions and their indicators
             </Text>
 
             <View style={styles.formGroup}>
-              <Text style={styles.label}>Major Function</Text>
+              <Text style={styles.label}>
+                Major Functions ({selectedMajorFunctions.length} selected)
+              </Text>
               {opcr.majorFunctions.map((mf) => (
                 <TouchableOpacity
                   key={mf.id}
                   style={[
-                    styles.selectCard,
-                    selectedMajorFunction === mf.id && styles.selectCardActive,
+                    styles.checkboxCard,
+                    selectedMajorFunctions.includes(mf.id) && styles.checkboxCardActive,
                   ]}
-                  onPress={() => {
-                    setSelectedMajorFunction(mf.id);
-                    setSelectedIndicator('');
-                  }}
+                  onPress={() => toggleMajorFunction(mf.id)}
                 >
-                  <Text style={styles.selectTitle}>{mf.title}</Text>
-                  <Text style={styles.selectSubtitle}>
-                    {mf.category} • {(mf.weight * 100)}%
-                  </Text>
+                  <View style={styles.checkboxRow}>
+                    <View style={[
+                      styles.checkbox,
+                      selectedMajorFunctions.includes(mf.id) && styles.checkboxChecked,
+                    ]}>
+                      {selectedMajorFunctions.includes(mf.id) && (
+                        <SvgIcon name="check" size={16} color="#fff" />
+                      )}
+                    </View>
+                    <View style={styles.checkboxContent}>
+                      <Text style={styles.selectTitle}>{mf.title}</Text>
+                      <Text style={styles.selectSubtitle}>
+                        {mf.category} • {(mf.weight * 100)}%
+                      </Text>
+                    </View>
+                  </View>
                 </TouchableOpacity>
               ))}
             </View>
 
-            {selectedMF && (
+            {selectedMajorFunctions.length > 0 && (
               <View style={styles.formGroup}>
-                <Text style={styles.label}>Success Indicator</Text>
-                {selectedMF.successIndicators.map((si) => (
+                <Text style={styles.label}>
+                  Success Indicators ({selectedIndicators.length} selected)
+                </Text>
+                {getAvailableIndicators().map((si) => (
                   <TouchableOpacity
                     key={si.id}
                     style={[
-                      styles.selectCard,
-                      selectedIndicator === si.id && styles.selectCardActive,
+                      styles.checkboxCard,
+                      selectedIndicators.includes(si.id) && styles.checkboxCardActive,
                     ]}
-                    onPress={() => setSelectedIndicator(si.id)}
+                    onPress={() => toggleIndicator(si.id)}
                   >
-                    <Text style={styles.selectCode}>{si.code}</Text>
-                    <Text style={styles.selectDescription}>{si.description}</Text>
+                    <View style={styles.checkboxRow}>
+                      <View style={[
+                        styles.checkbox,
+                        selectedIndicators.includes(si.id) && styles.checkboxChecked,
+                      ]}>
+                        {selectedIndicators.includes(si.id) && (
+                          <SvgIcon name="check" size={16} color="#fff" />
+                        )}
+                      </View>
+                      <View style={styles.checkboxContent}>
+                        <Text style={styles.selectCode}>{si.code}</Text>
+                        <Text style={styles.selectDescription}>{si.description}</Text>
+                        <Text style={styles.indicatorMF}>from {si.majorFunctionTitle}</Text>
+                      </View>
+                    </View>
                   </TouchableOpacity>
                 ))}
               </View>
@@ -307,19 +401,22 @@ export default function CreateIPCRScreen({ navigation }) {
             <View style={styles.reviewCard}>
               <View style={styles.reviewRow}>
                 <Text style={styles.reviewLabel}>Period:</Text>
-                <Text style={styles.reviewValue}>{period} 2025</Text>
+                <Text style={styles.reviewValue}>{period} {year}</Text>
               </View>
 
               <View style={styles.reviewRow}>
-                <Text style={styles.reviewLabel}>Major Function:</Text>
-                <Text style={styles.reviewValue}>{selectedMF?.title}</Text>
+                <Text style={styles.reviewLabel}>Major Functions Selected:</Text>
+                <Text style={styles.reviewValue}>{selectedMajorFunctions.length}</Text>
               </View>
 
               <View style={styles.reviewRow}>
-                <Text style={styles.reviewLabel}>Success Indicator:</Text>
-                <Text style={styles.reviewValue}>
-                  {selectedSI?.code} - {selectedSI?.description}
-                </Text>
+                <Text style={styles.reviewLabel}>Success Indicators Selected:</Text>
+                <Text style={styles.reviewValue}>{selectedIndicators.length}</Text>
+              </View>
+
+              <View style={styles.reviewRow}>
+                <Text style={styles.reviewLabel}>Total Targets to Create:</Text>
+                <Text style={styles.reviewValue}>{selectedIndicators.length}</Text>
               </View>
 
               <View style={styles.divider} />
@@ -336,7 +433,7 @@ export default function CreateIPCRScreen({ navigation }) {
             </View>
           </View>
         )}
-      </WebScrollView>
+      </ScrollView>
 
       {/* Footer Buttons */}
       <View style={styles.footer}>
@@ -365,9 +462,6 @@ const createStyles = (colors) => StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: colors.bg,
-  },
-  scrollView: {
-    flex: 1,
   },
   topbar: {
     backgroundColor: colors.bg2,
@@ -581,5 +675,47 @@ const createStyles = (colors) => StyleSheet.create({
     color: colors.text,
     fontSize: 15,
     fontWeight: '600',
+  },
+  // Checkbox styles
+  checkboxCard: {
+    backgroundColor: colors.bg2,
+    borderWidth: 2,
+    borderColor: colors.border,
+    borderRadius: 12,
+    padding: 16,
+    marginBottom: 12,
+  },
+  checkboxCardActive: {
+    borderColor: colors.accent,
+    backgroundColor: `${colors.accent}10`,
+  },
+  checkboxRow: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    gap: 12,
+  },
+  checkbox: {
+    width: 24,
+    height: 24,
+    borderRadius: 6,
+    borderWidth: 2,
+    borderColor: colors.border,
+    backgroundColor: colors.bg3,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginTop: 2,
+  },
+  checkboxChecked: {
+    backgroundColor: colors.accent,
+    borderColor: colors.accent,
+  },
+  checkboxContent: {
+    flex: 1,
+  },
+  indicatorMF: {
+    fontSize: 11,
+    color: colors.text3,
+    marginTop: 4,
+    fontStyle: 'italic',
   },
 });

@@ -2,19 +2,26 @@ import React, { useState } from 'react';
 import {
   View,
   Text,
-  ScrollView,
   TouchableOpacity,
   StyleSheet,
   Alert,
+  Platform,
 } from 'react-native';
+import { ScrollView } from 'tamagui';
 import { useAuth } from '../../context/AuthContext';
 import { useData } from '../../context/DataContext';
-import { Ionicons } from '@expo/vector-icons';
+import { useTheme } from '../context/ThemeContext';
+import { StatusBar } from 'expo-status-bar';
+import { SvgIcon } from '../components/SvgIcon';
 import { getAdjectivalRating } from '../../utils/calculations';
+import { getTotalFacultyCount } from '../../utils/businessRules';
+import usersData from '../../assets/data/users.json';
 
-export default function DeanOPCRConsolidationScreen() {
+export default function DeanOPCRConsolidationScreen({ navigation }) {
   const { user } = useAuth();
   const { ipcrs, opcr } = useData();
+  const { colors, isDark } = useTheme();
+  const styles = React.useMemo(() => createStyles(colors), [colors]);
   const [consolidated, setConsolidated] = useState(false);
 
   if (!user || user.role !== 'DEAN') {
@@ -25,7 +32,6 @@ export default function DeanOPCRConsolidationScreen() {
     );
   }
 
-  // Get all approved/final IPCRs
   const approvedIPCRs = ipcrs.filter(
     ipcr =>
       ipcr.overallStatus === 'APPROVED' ||
@@ -33,8 +39,8 @@ export default function DeanOPCRConsolidationScreen() {
       (ipcr.finalRating !== null && ipcr.finalRating > 0)
   );
 
-  // Calculate college-level statistics
-  const totalFaculty = ipcrs.length;
+  // Use actual faculty count from users, not just IPCRs count
+  const totalFaculty = getTotalFacultyCount(usersData as any[]);
   const approvedCount = approvedIPCRs.length;
   const pendingCount = totalFaculty - approvedCount;
   
@@ -45,7 +51,6 @@ export default function DeanOPCRConsolidationScreen() {
 
   const collegeAdjectival = getAdjectivalRating(averageRating);
 
-  // Rating distribution
   const ratingDistribution = {
     outstanding: approvedIPCRs.filter(i => (i.finalRating || 0) >= 4.5).length,
     verySatisfactory: approvedIPCRs.filter(i => (i.finalRating || 0) >= 3.5 && (i.finalRating || 0) < 4.5).length,
@@ -55,64 +60,93 @@ export default function DeanOPCRConsolidationScreen() {
   };
 
   const handleSubmitCertification = () => {
-    Alert.alert(
-      'Submit OPCR Certification',
-      'This will submit the consolidated OPCR report to IPDU. Continue?',
-      [
-        { text: 'Cancel', style: 'cancel' },
-        {
-          text: 'Submit',
-          onPress: () => {
-            setConsolidated(true);
-            Alert.alert('Success', 'OPCR certification submitted to IPDU');
+    if (Platform.OS === 'web') {
+      const confirmed = window.confirm('Submit OPCR Certification\n\nThis will submit the consolidated OPCR report to IPDU. Continue?');
+      if (confirmed) {
+        setConsolidated(true);
+        window.alert('OPCR certification submitted to IPDU');
+      }
+    } else {
+      Alert.alert(
+        'Submit OPCR Certification',
+        'This will submit the consolidated OPCR report to IPDU. Continue?',
+        [
+          { text: 'Cancel', style: 'cancel' },
+          {
+            text: 'Submit',
+            onPress: () => {
+              setConsolidated(true);
+              Alert.alert('Success', 'OPCR certification submitted to IPDU');
+            },
           },
-        },
-      ]
-    );
+        ]
+      );
+    }
   };
 
   const handleExportReport = () => {
-    Alert.alert('Export Report', 'Export functionality will be implemented');
+    if (Platform.OS === 'web') {
+      window.alert('Export functionality will be implemented');
+    } else {
+      Alert.alert('Export Report', 'Export functionality will be implemented');
+    }
   };
 
   return (
     <View style={styles.container}>
-      <View style={styles.header}>
-        <Text style={styles.title}>OPCR Consolidation</Text>
-        <Text style={styles.subtitle}>College of Computer Studies - {opcr.year}</Text>
+      <StatusBar style={isDark ? 'light' : 'dark'} />
+      
+      {/* Topbar */}
+      <View style={styles.topbar}>
+        <View style={styles.topbarLeft}>
+          <TouchableOpacity 
+            onPress={() => navigation.navigate('Main')}
+            style={{ padding: 10 }}
+          >
+            <SvgIcon name="arrowBack" size={24} color={colors.text} style={{}} />
+          </TouchableOpacity>
+          <View style={styles.topbarTitle}>
+            <Text style={styles.topbarTitleText}>OPCR Consolidation</Text>
+            <Text style={styles.topbarBreadcrumb}>College of Computer Studies - {opcr.year}</Text>
+          </View>
+        </View>
       </View>
 
-      <ScrollView style={styles.content}>
+      <ScrollView 
+        flex={1}
+        backgroundColor={colors.bg}
+        contentContainerStyle={{ padding: 16, paddingBottom: 32 }}
+      >
         {/* Summary Cards */}
         <View style={styles.summaryGrid}>
-          <View style={[styles.summaryCard, styles.primaryCard]}>
-            <Ionicons name="people" size={32} color="#3b82f6" />
+          <View style={styles.summaryCard}>
+            <SvgIcon name="people" size={32} color={colors.blue} style={{}} />
             <Text style={styles.summaryValue}>{totalFaculty}</Text>
             <Text style={styles.summaryLabel}>Total Faculty</Text>
           </View>
 
-          <View style={[styles.summaryCard, styles.successCard]}>
-            <Ionicons name="checkmark-circle" size={32} color="#10b981" />
+          <View style={styles.summaryCard}>
+            <SvgIcon name="checkCircle" size={32} color={colors.green} style={{}} />
             <Text style={styles.summaryValue}>{approvedCount}</Text>
             <Text style={styles.summaryLabel}>Approved</Text>
           </View>
 
-          <View style={[styles.summaryCard, styles.warningCard]}>
-            <Ionicons name="time" size={32} color="#f59e0b" />
+          <View style={styles.summaryCard}>
+            <SvgIcon name="clock" size={32} color={colors.orange} style={{}} />
             <Text style={styles.summaryValue}>{pendingCount}</Text>
             <Text style={styles.summaryLabel}>Pending</Text>
           </View>
 
-          <View style={[styles.summaryCard, styles.ratingCard]}>
-            <Ionicons name="star" size={32} color="#8b5cf6" />
+          <View style={styles.summaryCard}>
+            <SvgIcon name="star" size={32} color={colors.purple} style={{}} />
             <Text style={styles.summaryValue}>{averageRating.toFixed(2)}</Text>
             <Text style={styles.summaryLabel}>College Avg</Text>
           </View>
         </View>
 
         {/* College Rating */}
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Overall College Rating</Text>
+        <View style={styles.card}>
+          <Text style={styles.cardTitle}>Overall College Rating</Text>
           <View style={styles.ratingBox}>
             <Text style={styles.ratingValue}>{averageRating.toFixed(3)}</Text>
             <Text style={styles.ratingAdjectival}>{collegeAdjectival}</Text>
@@ -120,35 +154,35 @@ export default function DeanOPCRConsolidationScreen() {
         </View>
 
         {/* Rating Distribution */}
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Rating Distribution</Text>
+        <View style={styles.card}>
+          <Text style={styles.cardTitle}>Rating Distribution</Text>
           <View style={styles.distributionList}>
             <View style={styles.distributionItem}>
-              <View style={[styles.distributionBar, { width: `${(ratingDistribution.outstanding / approvedCount) * 100}%`, backgroundColor: '#10b981' }]} />
+              <View style={[styles.distributionBar, { width: `${(ratingDistribution.outstanding / (approvedCount || 1)) * 100}%`, backgroundColor: '#10b981' }]} />
               <Text style={styles.distributionLabel}>Outstanding: {ratingDistribution.outstanding}</Text>
             </View>
             <View style={styles.distributionItem}>
-              <View style={[styles.distributionBar, { width: `${(ratingDistribution.verySatisfactory / approvedCount) * 100}%`, backgroundColor: '#3b82f6' }]} />
+              <View style={[styles.distributionBar, { width: `${(ratingDistribution.verySatisfactory / (approvedCount || 1)) * 100}%`, backgroundColor: '#3b82f6' }]} />
               <Text style={styles.distributionLabel}>Very Satisfactory: {ratingDistribution.verySatisfactory}</Text>
             </View>
             <View style={styles.distributionItem}>
-              <View style={[styles.distributionBar, { width: `${(ratingDistribution.satisfactory / approvedCount) * 100}%`, backgroundColor: '#f59e0b' }]} />
+              <View style={[styles.distributionBar, { width: `${(ratingDistribution.satisfactory / (approvedCount || 1)) * 100}%`, backgroundColor: '#f59e0b' }]} />
               <Text style={styles.distributionLabel}>Satisfactory: {ratingDistribution.satisfactory}</Text>
             </View>
             <View style={styles.distributionItem}>
-              <View style={[styles.distributionBar, { width: `${(ratingDistribution.unsatisfactory / approvedCount) * 100}%`, backgroundColor: '#ef4444' }]} />
+              <View style={[styles.distributionBar, { width: `${(ratingDistribution.unsatisfactory / (approvedCount || 1)) * 100}%`, backgroundColor: '#ef4444' }]} />
               <Text style={styles.distributionLabel}>Unsatisfactory: {ratingDistribution.unsatisfactory}</Text>
             </View>
             <View style={styles.distributionItem}>
-              <View style={[styles.distributionBar, { width: `${(ratingDistribution.poor / approvedCount) * 100}%`, backgroundColor: '#991b1b' }]} />
+              <View style={[styles.distributionBar, { width: `${(ratingDistribution.poor / (approvedCount || 1)) * 100}%`, backgroundColor: '#991b1b' }]} />
               <Text style={styles.distributionLabel}>Poor: {ratingDistribution.poor}</Text>
             </View>
           </View>
         </View>
 
         {/* Faculty List */}
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Faculty Ratings</Text>
+        <View style={styles.card}>
+          <Text style={styles.cardTitle}>Faculty Ratings</Text>
           {approvedIPCRs.map(ipcr => (
             <View key={ipcr.id} style={styles.facultyCard}>
               <View style={styles.facultyInfo}>
@@ -167,40 +201,29 @@ export default function DeanOPCRConsolidationScreen() {
         <View style={styles.actionSection}>
           {!consolidated ? (
             <>
-              <TouchableOpacity
-                style={[styles.actionButton, styles.exportButton]}
-                onPress={handleExportReport}
-              >
-                <Ionicons name="download-outline" size={20} color="#3b82f6" />
+              <TouchableOpacity style={styles.exportButton} onPress={handleExportReport}>
+                <SvgIcon name="download" size={20} color={colors.blue} style={{}} />
                 <Text style={styles.exportButtonText}>Export Report</Text>
               </TouchableOpacity>
 
               <TouchableOpacity
-                style={[styles.actionButton, styles.submitButton]}
+                style={[styles.submitButton, pendingCount > 0 && styles.submitButtonDisabled]}
                 onPress={handleSubmitCertification}
                 disabled={pendingCount > 0}
               >
-                <Ionicons name="send" size={20} color="#fff" />
-                <Text style={styles.submitButtonText}>
-                  Submit Certification to IPDU
-                </Text>
+                <SvgIcon name="send" size={20} color="#fff" style={{}} />
+                <Text style={styles.submitButtonText}>Submit Certification to IPDU</Text>
               </TouchableOpacity>
 
               {pendingCount > 0 && (
-                <Text style={styles.warningText}>
-                  ⚠️ {pendingCount} IPCR(s) still pending approval
-                </Text>
+                <Text style={styles.warningText}>⚠️ {pendingCount} IPCR(s) still pending approval</Text>
               )}
             </>
           ) : (
             <View style={styles.consolidatedBanner}>
-              <Ionicons name="checkmark-circle" size={32} color="#10b981" />
-              <Text style={styles.consolidatedText}>
-                OPCR Consolidated and Submitted to IPDU
-              </Text>
-              <Text style={styles.consolidatedDate}>
-                {new Date().toLocaleDateString()}
-              </Text>
+              <SvgIcon name="checkCircle" size={32} color={colors.green} style={{}} />
+              <Text style={styles.consolidatedText}>OPCR Consolidated and Submitted to IPDU</Text>
+              <Text style={styles.consolidatedDate}>{new Date().toLocaleDateString()}</Text>
             </View>
           )}
         </View>
@@ -209,30 +232,44 @@ export default function DeanOPCRConsolidationScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+const createStyles = (colors: any) => StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f5f5f5',
+    backgroundColor: colors.bg,
   },
-  header: {
-    backgroundColor: '#fff',
-    padding: 20,
+  topbar: {
+    backgroundColor: colors.bg2,
     borderBottomWidth: 1,
-    borderBottomColor: '#e0e0e0',
+    borderBottomColor: colors.border,
+    paddingHorizontal: 24,
+    paddingVertical: 16,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingTop: 48,
   },
-  title: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    color: '#333',
+  topbarLeft: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 16,
+    flex: 1,
   },
-  subtitle: {
-    fontSize: 14,
-    color: '#666',
-    marginTop: 4,
+  topbarTitle: {
+    flex: 1,
+  },
+  topbarTitleText: {
+    fontSize: 18,
+    fontWeight: '700',
+    color: colors.text,
+  },
+  topbarBreadcrumb: {
+    fontSize: 11,
+    color: colors.text3,
+    marginTop: 2,
   },
   content: {
-    flex: 1,
     padding: 16,
+    paddingBottom: 32,
   },
   summaryGrid: {
     flexDirection: 'row',
@@ -242,76 +279,55 @@ const styles = StyleSheet.create({
   },
   summaryCard: {
     flex: 1,
-    minWidth: '45%',
-    backgroundColor: '#fff',
-    borderRadius: 8,
+    minWidth: 150,
+    backgroundColor: colors.bg2,
+    borderRadius: 12,
     padding: 16,
     alignItems: 'center',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 3,
-  },
-  primaryCard: {
-    borderLeftWidth: 4,
-    borderLeftColor: '#3b82f6',
-  },
-  successCard: {
-    borderLeftWidth: 4,
-    borderLeftColor: '#10b981',
-  },
-  warningCard: {
-    borderLeftWidth: 4,
-    borderLeftColor: '#f59e0b',
-  },
-  ratingCard: {
-    borderLeftWidth: 4,
-    borderLeftColor: '#8b5cf6',
+    borderWidth: 1,
+    borderColor: colors.border,
   },
   summaryValue: {
     fontSize: 32,
-    fontWeight: 'bold',
-    color: '#333',
+    fontWeight: '700',
+    color: colors.text,
     marginTop: 8,
   },
   summaryLabel: {
     fontSize: 12,
-    color: '#666',
+    fontWeight: '500',
+    color: colors.text3,
     marginTop: 4,
   },
-  section: {
-    backgroundColor: '#fff',
-    borderRadius: 8,
-    padding: 16,
+  card: {
+    backgroundColor: colors.bg2,
+    borderRadius: 12,
+    padding: 20,
     marginBottom: 16,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 3,
+    borderWidth: 1,
+    borderColor: colors.border,
   },
-  sectionTitle: {
+  cardTitle: {
     fontSize: 18,
-    fontWeight: 'bold',
-    color: '#333',
+    fontWeight: '700',
+    color: colors.text,
     marginBottom: 16,
   },
   ratingBox: {
     alignItems: 'center',
     padding: 24,
-    backgroundColor: '#f9fafb',
+    backgroundColor: colors.bg3,
     borderRadius: 8,
   },
   ratingValue: {
     fontSize: 48,
-    fontWeight: 'bold',
-    color: '#3b82f6',
+    fontWeight: '700',
+    color: colors.accent,
   },
   ratingAdjectival: {
     fontSize: 20,
     fontWeight: '600',
-    color: '#666',
+    color: colors.text2,
     marginTop: 8,
   },
   distributionList: {
@@ -327,7 +343,7 @@ const styles = StyleSheet.create({
   },
   distributionLabel: {
     fontSize: 14,
-    color: '#666',
+    color: colors.text2,
     marginLeft: 8,
   },
   facultyCard: {
@@ -335,7 +351,7 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     alignItems: 'center',
     padding: 12,
-    backgroundColor: '#f9fafb',
+    backgroundColor: colors.bg3,
     borderRadius: 6,
     marginBottom: 8,
   },
@@ -345,11 +361,11 @@ const styles = StyleSheet.create({
   facultyName: {
     fontSize: 14,
     fontWeight: '600',
-    color: '#333',
+    color: colors.text,
   },
   facultyPeriod: {
     fontSize: 12,
-    color: '#666',
+    color: colors.text3,
     marginTop: 2,
   },
   facultyRating: {
@@ -357,18 +373,18 @@ const styles = StyleSheet.create({
   },
   facultyRatingValue: {
     fontSize: 18,
-    fontWeight: 'bold',
-    color: '#3b82f6',
+    fontWeight: '700',
+    color: colors.accent,
   },
   facultyRatingAdjectival: {
     fontSize: 11,
-    color: '#666',
+    color: colors.text3,
   },
   actionSection: {
     marginTop: 8,
     marginBottom: 32,
   },
-  actionButton: {
+  exportButton: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
@@ -376,17 +392,25 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     marginBottom: 12,
     gap: 8,
-  },
-  exportButton: {
-    backgroundColor: '#fff',
+    backgroundColor: colors.bg2,
     borderWidth: 1,
-    borderColor: '#3b82f6',
+    borderColor: colors.blue,
   },
   submitButton: {
-    backgroundColor: '#3b82f6',
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 14,
+    borderRadius: 8,
+    marginBottom: 12,
+    gap: 8,
+    backgroundColor: colors.accent,
+  },
+  submitButtonDisabled: {
+    opacity: 0.5,
   },
   exportButtonText: {
-    color: '#3b82f6',
+    color: colors.blue,
     fontSize: 16,
     fontWeight: '600',
   },
@@ -397,31 +421,33 @@ const styles = StyleSheet.create({
   },
   warningText: {
     fontSize: 14,
-    color: '#f59e0b',
+    color: colors.orange,
     textAlign: 'center',
     marginTop: 8,
   },
   consolidatedBanner: {
     alignItems: 'center',
     padding: 24,
-    backgroundColor: '#d1fae5',
+    backgroundColor: `${colors.green}20`,
     borderRadius: 8,
+    borderWidth: 1,
+    borderColor: colors.green,
   },
   consolidatedText: {
     fontSize: 16,
     fontWeight: '600',
-    color: '#10b981',
+    color: colors.green,
     marginTop: 12,
     textAlign: 'center',
   },
   consolidatedDate: {
     fontSize: 14,
-    color: '#666',
+    color: colors.text3,
     marginTop: 4,
   },
   errorText: {
     fontSize: 16,
-    color: '#ef4444',
+    color: colors.red,
     textAlign: 'center',
     marginTop: 40,
   },

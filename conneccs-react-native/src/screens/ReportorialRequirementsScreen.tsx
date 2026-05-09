@@ -7,6 +7,8 @@ import {
   StyleSheet,
   Alert,
   Platform,
+  Modal,
+  TextInput as RNTextInput,
 } from 'react-native';
 import { useTheme } from '../context/ThemeContext';
 import { useAuth } from '../../context/AuthContext';
@@ -19,9 +21,17 @@ import { clearReportorialCache, debugReportorialData } from '../../utils/clearRe
 export default function ReportorialRequirementsScreen({ navigation }) {
   const { colors, isDark } = useTheme();
   const { user } = useAuth();
-  const { requirements, submissions, getSubmissionsForRequirement } = useReportorial();
+  const { requirements, submissions, getSubmissionsForRequirement, rateSubmission } = useReportorial();
   const styles = createStyles(colors);
   const [activeTab, setActiveTab] = useState<'requirements' | 'other'>('requirements');
+  
+  // Rating modal state
+  const [ratingModalVisible, setRatingModalVisible] = useState(false);
+  const [selectedSubmission, setSelectedSubmission] = useState<any>(null);
+  const [selectedRequirement, setSelectedRequirement] = useState<any>(null);
+  const [qualityRating, setQualityRating] = useState('');
+  const [timelinessRating, setTimelinessRating] = useState('');
+  const [remarks, setRemarks] = useState('');
 
   console.log('=== REPORTORIAL DEBUG ===');
   console.log('Total requirements:', requirements.length);
@@ -165,8 +175,51 @@ export default function ReportorialRequirementsScreen({ navigation }) {
         
         {submission && (
           <View style={styles.submissionInfo}>
-            <Text style={styles.submissionLabel}>Your submission: {submission.submittedAt.toLocaleDateString()}</Text>
-            <Text style={styles.submissionLabel}>Q: {submission.qualityRating}/5 | T: {submission.timelinessRating}/5</Text>
+            <Text style={styles.submissionLabel}>
+              Your submission: {new Date(submission.submittedAt).toLocaleDateString()}
+            </Text>
+            <View style={styles.ratingDisplayRow}>
+              <View style={styles.ratingDisplay}>
+                <Text style={styles.ratingDisplayLabel}>Quality:</Text>
+                <Text style={styles.ratingDisplayStars}>
+                  {submission.qualityRating ? '⭐'.repeat(submission.qualityRating) : '-'}
+                </Text>
+                <Text style={styles.ratingDisplayValue}>{submission.qualityRating || '-'}/5</Text>
+              </View>
+              <View style={styles.ratingDisplay}>
+                <Text style={styles.ratingDisplayLabel}>Timeliness:</Text>
+                <Text style={styles.ratingDisplayStars}>
+                  {submission.timelinessRating ? '⭐'.repeat(submission.timelinessRating) : '-'}
+                </Text>
+                <Text style={styles.ratingDisplayValue}>{submission.timelinessRating || '-'}/5</Text>
+              </View>
+            </View>
+            {submission.qualityRating && submission.timelinessRating && (
+              <View style={styles.averageRatingBox}>
+                <Text style={styles.averageLabel}>Average Rating:</Text>
+                <Text style={styles.averageStars}>
+                  {'⭐'.repeat(Math.round((submission.qualityRating + submission.timelinessRating) / 2))}
+                </Text>
+                <Text style={styles.averageValue}>
+                  {((submission.qualityRating + submission.timelinessRating) / 2).toFixed(1)}/5
+                </Text>
+              </View>
+            )}
+            {!submission.qualityRating && (
+              <TouchableOpacity 
+                style={styles.rateButton}
+                onPress={() => {
+                  setSelectedSubmission(submission);
+                  setSelectedRequirement(req);
+                  setQualityRating('');
+                  setTimelinessRating('');
+                  setRemarks('');
+                  setRatingModalVisible(true);
+                }}
+              >
+                <Text style={styles.rateButtonText}>Rate This Submission</Text>
+              </TouchableOpacity>
+            )}
           </View>
         )}
         
@@ -178,6 +231,32 @@ export default function ReportorialRequirementsScreen({ navigation }) {
         </View>
       </TouchableOpacity>
     );
+  };
+
+  const handleSaveRating = () => {
+    if (!selectedSubmission || !selectedRequirement) return;
+
+    const q = parseFloat(qualityRating);
+    const t = parseFloat(timelinessRating);
+
+    if (isNaN(q) || q < 1 || q > 5) {
+      Alert.alert('Invalid Rating', 'Quality rating must be between 1 and 5');
+      return;
+    }
+
+    if (isNaN(t) || t < 1 || t > 5) {
+      Alert.alert('Invalid Rating', 'Timeliness rating must be between 1 and 5');
+      return;
+    }
+
+    rateSubmission(selectedSubmission.id, q, t, remarks);
+    setRatingModalVisible(false);
+    
+    if (Platform.OS === 'web') {
+      window.alert('Rating saved successfully!');
+    } else {
+      Alert.alert('Success', 'Rating saved successfully!');
+    }
   };
 
   return (
@@ -234,13 +313,117 @@ export default function ReportorialRequirementsScreen({ navigation }) {
       </View>
 
       {/* Grid */}
-      <ScrollView style={styles.content}>
+      <ScrollView 
+        style={styles.content}
+        keyboardShouldPersistTaps="handled"
+        showsVerticalScrollIndicator={false}
+      >
         <View style={styles.grid}>
           {activeTab === 'requirements'
             ? filteredRequirements.map(renderRequirementCard)
             : filteredOtherDocuments.map(renderRequirementCard)}
         </View>
       </ScrollView>
+
+      {/* Rating Modal */}
+      <Modal
+        visible={ratingModalVisible}
+        transparent
+        animationType="fade"
+        onRequestClose={() => setRatingModalVisible(false)}
+      >
+        <View style={styles.modalOverlay}>
+          <View style={[styles.modalContent, { backgroundColor: colors.bg2 }]}>
+            <View style={styles.modalHeader}>
+              <Text style={styles.modalTitle}>Rate Submission</Text>
+              <TouchableOpacity onPress={() => setRatingModalVisible(false)}>
+                <SvgIcon name="close" size={24} color={colors.text} style={{}} />
+              </TouchableOpacity>
+            </View>
+
+            {selectedSubmission && selectedRequirement && (
+              <View style={styles.modalBody}>
+                <Text style={styles.modalSubtitle}>{selectedRequirement.requirement}</Text>
+                
+                {/* Quality Rating */}
+                <View style={styles.inputGroup}>
+                  <View style={styles.ratingLabelRow}>
+                    <Text style={styles.inputLabel}>Quality Rating (1-5)</Text>
+                    {qualityRating && (
+                      <View style={styles.ratingIndicator}>
+                        <Text style={styles.ratingStars}>
+                          {'⭐'.repeat(Math.min(parseInt(qualityRating) || 0, 5))}
+                        </Text>
+                        <Text style={styles.ratingNumber}>{qualityRating}/5</Text>
+                      </View>
+                    )}
+                  </View>
+                  <RNTextInput
+                    style={[styles.input, { backgroundColor: colors.bg3, color: colors.text, borderColor: colors.border }]}
+                    value={qualityRating}
+                    onChangeText={setQualityRating}
+                    keyboardType="numeric"
+                    placeholder="Enter 1-5"
+                    placeholderTextColor={colors.text3}
+                  />
+                </View>
+
+                {/* Timeliness Rating */}
+                <View style={styles.inputGroup}>
+                  <View style={styles.ratingLabelRow}>
+                    <Text style={styles.inputLabel}>Timeliness Rating (1-5)</Text>
+                    {timelinessRating && (
+                      <View style={styles.ratingIndicator}>
+                        <Text style={styles.ratingStars}>
+                          {'⭐'.repeat(Math.min(parseInt(timelinessRating) || 0, 5))}
+                        </Text>
+                        <Text style={styles.ratingNumber}>{timelinessRating}/5</Text>
+                      </View>
+                    )}
+                  </View>
+                  <RNTextInput
+                    style={[styles.input, { backgroundColor: colors.bg3, color: colors.text, borderColor: colors.border }]}
+                    value={timelinessRating}
+                    onChangeText={setTimelinessRating}
+                    keyboardType="numeric"
+                    placeholder="Enter 1-5"
+                    placeholderTextColor={colors.text3}
+                  />
+                </View>
+
+                {/* Remarks */}
+                <View style={styles.inputGroup}>
+                  <Text style={styles.inputLabel}>Remarks (Optional)</Text>
+                  <RNTextInput
+                    style={[styles.textArea, { backgroundColor: colors.bg3, color: colors.text, borderColor: colors.border }]}
+                    value={remarks}
+                    onChangeText={setRemarks}
+                    multiline
+                    numberOfLines={4}
+                    placeholder="Enter remarks..."
+                    placeholderTextColor={colors.text3}
+                  />
+                </View>
+
+                <View style={styles.modalActions}>
+                  <TouchableOpacity
+                    style={[styles.modalButton, { backgroundColor: colors.bg3 }]}
+                    onPress={() => setRatingModalVisible(false)}
+                  >
+                    <Text style={[styles.modalButtonText, { color: colors.text }]}>Cancel</Text>
+                  </TouchableOpacity>
+                  <TouchableOpacity
+                    style={[styles.modalButton, { backgroundColor: colors.accent }]}
+                    onPress={handleSaveRating}
+                  >
+                    <Text style={[styles.modalButtonText, { color: '#fff' }]}>Save Rating</Text>
+                  </TouchableOpacity>
+                </View>
+              </View>
+            )}
+          </View>
+        </View>
+      </Modal>
     </View>
   );
 }
@@ -510,5 +693,140 @@ const createStyles = (colors: any) => StyleSheet.create({
     fontSize: 15,
     fontWeight: '700',
     color: '#fff',
+  },
+  rateButton: {
+    marginTop: 8,
+    paddingVertical: 8,
+    paddingHorizontal: 12,
+    backgroundColor: colors.accent,
+    borderRadius: 6,
+    alignItems: 'center',
+  },
+  rateButtonText: {
+    fontSize: 12,
+    fontWeight: '600',
+    color: '#fff',
+  },
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.5)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 20,
+  },
+  modalContent: {
+    width: '100%',
+    maxWidth: 500,
+    borderRadius: 12,
+    padding: 24,
+  },
+  modalHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 20,
+  },
+  modalTitle: {
+    fontSize: 18,
+    fontWeight: '700',
+    color: colors.text,
+  },
+  modalBody: {
+    gap: 16,
+  },
+  modalSubtitle: {
+    fontSize: 14,
+    color: colors.text2,
+    marginBottom: 8,
+  },
+  modalActions: {
+    flexDirection: 'row',
+    gap: 12,
+    marginTop: 8,
+  },
+  modalButton: {
+    flex: 1,
+    paddingVertical: 12,
+    borderRadius: 8,
+    alignItems: 'center',
+  },
+  modalButtonText: {
+    fontSize: 14,
+    fontWeight: '600',
+  },
+  ratingLabelRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 8,
+  },
+  ratingIndicator: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    backgroundColor: `${colors.accent}20`,
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: 6,
+  },
+  ratingStars: {
+    fontSize: 14,
+  },
+  ratingNumber: {
+    fontSize: 12,
+    fontWeight: '600',
+    color: colors.accent,
+  },
+  ratingDisplayRow: {
+    flexDirection: 'row',
+    gap: 12,
+    marginTop: 8,
+  },
+  ratingDisplay: {
+    flex: 1,
+    backgroundColor: `${colors.accent}15`,
+    borderRadius: 8,
+    padding: 10,
+    alignItems: 'center',
+  },
+  ratingDisplayLabel: {
+    fontSize: 11,
+    fontWeight: '600',
+    color: colors.text3,
+    marginBottom: 4,
+  },
+  ratingDisplayStars: {
+    fontSize: 16,
+    marginBottom: 4,
+  },
+  ratingDisplayValue: {
+    fontSize: 13,
+    fontWeight: '700',
+    color: colors.accent,
+  },
+  averageRatingBox: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 8,
+    backgroundColor: `${colors.green}20`,
+    borderRadius: 8,
+    padding: 12,
+    marginTop: 12,
+    borderWidth: 2,
+    borderColor: colors.green,
+  },
+  averageLabel: {
+    fontSize: 13,
+    fontWeight: '700',
+    color: colors.green,
+  },
+  averageStars: {
+    fontSize: 18,
+  },
+  averageValue: {
+    fontSize: 16,
+    fontWeight: '800',
+    color: colors.green,
   },
 });
